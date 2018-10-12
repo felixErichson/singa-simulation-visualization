@@ -10,10 +10,8 @@
         font: 12px Arial;
     }
 
-
-
     path {
-        stroke: firebrick;
+
         stroke-width: 2;
         fill: none;
     }
@@ -45,34 +43,40 @@
 <body>
 
 
-
 <script>
 
     // Set the dimensions of the canvas / graph
-    var margin = {top: 30, right: 20, bottom: 30, left: 50},
-        width = 600 - margin.left - margin.right,
+    var margin = {top: 30, right: 50, bottom: 30, left: 50},
+        width = 700 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
-
 
 
     //---------Gehört zum Mouseover dings---------
     var
 
-        bisectTime = d3.bisector(function(a, b) { return a.elapsed_time - b.elapsed_time; }).right;
-        formatValue = d3.format(",.2f"),
-        formatCurrency = function(d) { return  formatValue(d); };
+        bisectTime = d3.bisector(function (a, b) {
+            return a.elapsed_time - b.elapsed_time;
+        }).right;
+    formatValue = d3.format(",.2f"),
+        formatCurrency = function (d) {
+            return formatValue(d);
+        };
     //-----------------------------------------------------
 
     // Set the ranges
     var x = d3.scale.linear().range([0, width]);
-    var y = d3.scale.linear().range([height, 0]);
+    var y0 = d3.scale.linear().range([height, 0]);
+    var y1 = d3.scale.linear().range([height, 0]);
 
     // Define the axes
     var xAxis = d3.svg.axis().scale(x)
         .orient("bottom").ticks(5);
 
-    var yAxis = d3.svg.axis().scale(y)
+    var yAxisLeft = d3.svg.axis().scale(y0)
         .orient("left").ticks(5);
+
+    var yAxisRight = d3.svg.axis().scale(y1)
+        .orient("right").ticks(5);
 
 
     // Define the line
@@ -81,18 +85,27 @@
             return x(d.elapsed_time);
         })
         .y(function (d) {
-            return y(d.concentration);
+            return y0(d.concentration);
+        });
+
+
+    var valueline2 = d3.svg.line()
+        .x(function (d) {
+            return x(d.elapsed_time);
+        })
+        .y(function (d) {
+            return y1(d.concentration);
         });
 
     var div = d3.select("body")
         .append("div")
-        .attr("id","Boxdiv")
+        .attr("id", "Boxdiv")
         .style("position", "absolute")
         .style("top", "350px")
-        .style("left",0)
-        .style("width", width +margin.left + margin.right+"px")
-        .style("height", 50+"px")
-      //  .style("background-color", "blue")
+        .style("left", 0)
+        .style("width", 350 + "px")
+        .style("height", 100 + "px")
+    // .style("background-color", "blue")
 
 
     // Adds the svg canvas
@@ -103,15 +116,15 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-//Label X-Axis
+    //Label X-Axis
     svg.append("text")
         .attr("class", "x label")
         .attr("text-anchor", "end")
         .attr("x", width)
-        .attr("y", height +20)
+        .attr("y", height + 20)
         .text("Elapsed time [ms]");
 
-//Label Y-Axis
+    //Label Y-Axis
     svg.append("text")
         .attr("class", "y label")
         .attr("text-anchor", "end")
@@ -129,9 +142,46 @@
             d.elapsed_time = +d.elapsed_time;
             d.concentration = +d.concentration;
             d.compartment = d.compartment;
+
         });
 
-        // Add Coiceboxes-------------------------------------------------------------------------------------------------
+        var nested_data = d3.nest()
+            .key(function (d) {
+                return d.species;
+            })
+            .key(function (d) {
+                return d.compartment;
+            })
+            .rollup(function (d) {
+                d.scale = d3.extent(d, function (d) {
+                    return d.concentration
+                });
+                return d;
+            })
+            .entries(data);
+
+
+        //TODO Alle Scales auf der Konsole anzeigen lassen
+        //TODO Alle [0..0] rauslöschen
+        // TODO Gruppieren der Bereiche
+        nested_data.forEach(function (d) {
+            d.values.forEach(function (d) {
+                console.log(d);
+                d.values.forEach(function (d) {
+
+                })
+            })
+            // var minmax =
+            // var min = minmax[0];
+            // var max = minmax[1];
+            //  return min !== 0 && max !== 0;
+
+        });
+
+
+        console.log(nested_data);
+
+        //-----------Key the data for drop down---------------------------------------------------------------------------
 
         var compartmentSelection = d3.nest()
             .key(function (d) {
@@ -142,6 +192,22 @@
             })
             .entries(data);
 
+
+        var speciesSelection = d3.nest()
+            .key(function (d) {
+                return d.species;
+            })
+            .rollup(function (v) {
+                return v.length;
+            })
+            .entries(data);
+
+
+        //---------------------------------------------------------------------------------------------------------------
+
+        // Add Coiceboxes-------------------------------------------------------------------------------------------------
+
+        //Dropdown Box 1 Compartment
         var dropdown = d3.select('#Boxdiv')
             .append("select")
             .attr("id", "CompartmentList")
@@ -162,15 +228,8 @@
                 return d.key
             });
 
-        var speciesSelection = d3.nest()
-            .key(function (d) {
-                return d.species;
-            })
-            .rollup(function (v) {
-                return v.length;
-            })
-            .entries(data);
 
+        //Dropdown box 2 (Species)
         var dropdown2 = d3.select('#Boxdiv')
             .append("select")
             .attr("id", "SpeciesList")
@@ -193,14 +252,62 @@
 
         selectedSpecies = d3.select("#SpeciesList").property("value");
 
+
+        // The Second Box-----------------------------------------------------------------
+
+        //Dropdown Box 1 Compartment
+        var dropdown = d3.select('#Boxdiv')
+            .append("select")
+            .attr("id", "CompartmentList2")
+            .on('change', onchange);
+
+        var options =
+            dropdown.selectAll('option')
+                .data(compartmentSelection)
+                .enter()
+                .append('option');
+
+
+        options.text(function (d) {
+            return d.key
+
+        })
+            .attr("value", function (d) {
+                return d.key
+            });
+
+
+        //Dropdown box 2 (Species)
+        var dropdown2 = d3.select('#Boxdiv')
+            .append("select")
+            .attr("id", "SpeciesList2")
+            .on('change', onchange);
+
+        var options2 =
+            dropdown2.selectAll('option')
+                .data(speciesSelection)
+                .enter()
+                .append('option');
+
+        options2.text(function (d) {
+            return d.key
+        })
+            .attr("value", function (d) {
+                return d.key
+            });
+
+        selectedCompartment2 = d3.select("#CompartmentList2").property("value");
+
+        selectedSpecies2 = d3.select("#SpeciesList2").property("value");
+
 //-------------------------------------------------------------------------------------------------------------------------
         // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
         // Bei den Select Items mit beachten
         x.domain(d3.extent(data, function (d) {
             return d.elapsed_time;
         }));
-
-        y.domain([0, d3.max(data.filter(function (d) {
+//Left------------
+        y0.domain([0, d3.max(data.filter(function (d) {
             return d.species == selectedSpecies && d.compartment == selectedCompartment
         }), function (d) {
             return d.concentration
@@ -215,84 +322,49 @@
 
         // Add the Y Axis
         svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
+            .attr("class", "y axis left")
+            .style("fill", "#d95f02")
+            .call(yAxisLeft);
+
 
         svg.append("path")
             .data([data])
-            .attr("class", "line")
+            .attr("id", "line")
+            .style("stroke", "#d95f02")
             .attr("d", valueline(data.filter(function (d) {
-                return d.species ==selectedSpecies && d.compartment == selectedCompartment
+                return d.species == selectedSpecies && d.compartment == selectedCompartment
+
+            })));
+
+        //Second line ------------------------------------------------------------------------------------------------------
+//RIGHT--------------
+        y1.domain([0, d3.max(data.filter(function (d) {
+            return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+        }), function (d) {
+            return d.concentration
+        })]);
+
+        svg.append("g")
+            .attr("class", "y axis right")
+            .attr("transform", "translate(" + width + " ,0)")
+            .style("fill", "#66a61e")
+            .call(yAxisRight);
+
+        svg.append("path")
+            .data([data])
+            .attr("id", "line2")
+            .style("stroke", "#66a61e")
+            .attr("d", valueline2(data.filter(function (d) {
+                return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
 
             })));
 
 
-       // mouseover function (data)_______________________________________________________________________________________
-        /*
-             var focus = svg.append("g")
-                    .attr("class", "focus")
-                    .style("display", "none");
-
-                focus.append("circle")                                 // **********
-                    .attr("class", "y")                                // **********
-                    .style("fill", "none")                             // **********
-                    .style("stroke", "blue")                           // **********
-                    .attr("r", 4);
-
-                svg.append("rect")                                     // **********
-                    .attr("width", width)                              // **********
-                    .attr("height", height)                            // **********
-                    .style("fill", "none")                             // **********
-                    .style("pointer-events", "all")                    // **********
-                    .on("mouseover", function() { focus.style("display", null); })
-                    .on("mouseout", function() { focus.style("display", "none"); })
-                    .on("mousemove", mousemove);
-
-
-                function mousemove() {                                 // **********
-                    var x0 = x.invert(d3.mouse(this)[0]),              // **********
-                        i = bisectTime(data, x0, 1),                   // **********
-                        d0 = data[i - 1],                              // **********
-                        d1 = data[i],                                  // **********
-                        d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;     // **********
-
-                    focus.select("circle.y")                           // **********
-                        .attr("transform",                             // **********
-                            "translate(" + x(d.elapsed_time) + "," +         // **********
-                            y(d.concentration) + ")");        // **********
-                }
-
-
-                 focus.append("text")
-                     .attr("x", 9)
-                     .attr("dy", ".35em");
-
-                 svg.append("rect")
-                     .attr("class", "overlay")
-                     .attr("width", width)
-                     .attr("height", height)
-                     .on("mouseover", function() { focus.style("display", null); })
-                     .on("mouseout", function() { focus.style("display", "none"); })
-                     .on("mousemove", mousemove);
-
-                 function mousemove() {
-                     var x0 = x.invert(d3.mouse(this)[0]),
-                         i = bisectTime(data, x0, 1),
-                         d0 = data[i - 1],
-                         d1 = data[i],
-                         d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;
-                     focus.attr("transform", "translate(" + x(d.elapsed_time) + "," + y(d.concentration) + ")");
-                     focus.select("text").text(formatCurrency(d.concentration));
-                 }*/
-
-        //___________________________________________________________________________________________________________________
-
     });
 
-
-
-
-
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
 
     function onchange() {
         // Add the valueline path.
@@ -306,16 +378,18 @@
             });
 
 
-
             selectedCompartment = d3.select("#CompartmentList").property("value");
 
             selectedSpecies = d3.select("#SpeciesList").property("value");
 
+            // Select the section we want to apply our changes to
+            var svg = d3.select("body").transition();
 
             x.domain(d3.extent(data, function (d) {
                 return d.elapsed_time;
             }));
-            y.domain([0, d3.max(data.filter(function (d) {
+
+            y0.domain([0, d3.max(data.filter(function (d) {
                 return d.species == selectedSpecies && d.compartment == selectedCompartment
 
             }), function (d) {
@@ -323,27 +397,40 @@
             })]);
 
 
-            // Select the section we want to apply our changes to
-            var svg = d3.select("body").transition();
-
             // Make the changes
-            svg.select(".line")   // change the line
+            svg.select("#line")   // change the line
                 .duration(750)
                 .attr("d", valueline(data.filter(function (d) {
                     return d.species == selectedSpecies && d.compartment == selectedCompartment
                 })));
 
-            svg.select(".x.axis") // change the x axis
+
+            svg.select(".y.axis.left") // change the y axis
                 .duration(750)
-                .call(xAxis);
-            svg.select(".y.axis") // change the y axis
+                .call(yAxisLeft);
+
+//Second Graph-------------------------------------------------------------------------
+
+            selectedCompartment2 = d3.select("#CompartmentList2").property("value");
+
+            selectedSpecies2 = d3.select("#SpeciesList2").property("value");
+
+            y1.domain([0, d3.max(data.filter(function (d) {
+                return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+
+            }), function (d) {
+                return d.concentration
+            })]);
+
+            svg.select("#line2")   // change the line
                 .duration(750)
-                .call(yAxis);
+                .attr("d", valueline2(data.filter(function (d) {
+                    return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+                })));
 
-
-
-
-
+            svg.select(".y.axis.right") // change the y axis
+                .duration(750)
+                .call(yAxisRight);
 
 
         });
@@ -351,6 +438,70 @@
 
     }
 
+    //TODO Mouse over dings einfügen
+    // mouseover function (data)_______________________________________________________________________________________
+    /*
+    var focus = svg.append("g")
+    .attr("class", "focus")
+    .style("display", "none");
+
+    focus.append("circle")                                 // **********
+    .attr("class", "y")                                // **********
+    .style("fill", "none")                             // **********
+    .style("stroke", "blue")                           // **********
+    .attr("r", 4);
+
+    svg.append("rect")                                     // **********
+    .attr("width", width)                              // **********
+    .attr("height", height)                            // **********
+    .style("fill", "none")                             // **********
+    .style("pointer-events", "all")                    // **********
+    .on("mouseover", function() { focus.style("display", null); })
+    .on("mouseout", function() { focus.style("display", "none"); })
+    .on("mousemove", mousemove);
+
+
+    function mousemove() {                                 // **********
+    var x0 = x.invert(d3.mouse(this)[0]),              // **********
+    i = bisectTime(data, x0, 1),                   // **********
+    d0 = data[i - 1],                              // **********
+    d1 = data[i],                                  // **********
+    d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;     // **********
+
+    focus.select("circle.y")                           // **********
+    .attr("transform",                             // **********
+    "translate(" + x(d.elapsed_time) + "," +         // **********
+    y(d.concentration) + ")");        // **********
+    }
+
+
+    focus.append("text")
+    .attr("x", 9)
+    .attr("dy", ".35em");
+
+    svg.append("rect")
+    .attr("class", "overlay")
+    .attr("width", width)
+    .attr("height", height)
+    .on("mouseover", function() { focus.style("display", null); })
+    .on("mouseout", function() { focus.style("display", "none"); })
+    .on("mousemove", mousemove);
+
+    function mousemove() {
+    var x0 = x.invert(d3.mouse(this)[0]),
+    i = bisectTime(data, x0, 1),
+    d0 = data[i - 1],
+    d1 = data[i],
+    d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;
+    focus.attr("transform", "translate(" + x(d.elapsed_time) + "," + y(d.concentration) + ")");
+    focus.select("text").text(formatCurrency(d.concentration));
+    }*/
+
+    //___________________________________________________________________________________________________________________
+
+
 </script>
 </body>
 </html>
+
+
