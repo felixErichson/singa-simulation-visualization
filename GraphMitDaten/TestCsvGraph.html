@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style> /* set the CSS */
+
+    body {
+        font: 12px Arial;
+    }
+
+
+
+    path {
+        stroke: firebrick;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    .focus circle {
+        fill: none;
+        stroke: steelblue;
+    }
+
+    </style>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+
+</head>
+<body>
+
+
+
+<script>
+
+    // Set the dimensions of the canvas / graph
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+        width = 600 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom;
+
+
+
+    //---------Gehört zum Mouseover dings---------
+    var
+
+        bisectTime = d3.bisector(function(a, b) { return a.elapsed_time - b.elapsed_time; }).right;
+        formatValue = d3.format(",.2f"),
+        formatCurrency = function(d) { return  formatValue(d); };
+    //-----------------------------------------------------
+
+    // Set the ranges
+    var x = d3.scale.linear().range([0, width]);
+    var y = d3.scale.linear().range([height, 0]);
+
+    // Define the axes
+    var xAxis = d3.svg.axis().scale(x)
+        .orient("bottom").ticks(5);
+
+    var yAxis = d3.svg.axis().scale(y)
+        .orient("left").ticks(5);
+
+
+    // Define the line
+    var valueline = d3.svg.line()
+        .x(function (d) {
+            return x(d.elapsed_time);
+        })
+        .y(function (d) {
+            return y(d.concentration);
+        });
+
+    var div = d3.select("body")
+        .append("div")
+        .attr("id","Boxdiv")
+        .style("position", "absolute")
+        .style("top", "350px")
+        .style("left",0)
+        .style("width", width +margin.left + margin.right+"px")
+        .style("height", 50+"px")
+      //  .style("background-color", "blue")
+
+
+    // Adds the svg canvas
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//Label X-Axis
+    svg.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", width)
+        .attr("y", height +20)
+        .text("Elapsed time [ms]");
+
+//Label Y-Axis
+    svg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", -50)
+        .attr("x", -70)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text("Concentration [nmol/l]");
+
+
+    // Get the data
+    d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
+        data.forEach(function (d) {
+            d.species = d.species
+            d.elapsed_time = +d.elapsed_time;
+            d.concentration = +d.concentration;
+            d.compartment = d.compartment;
+        });
+
+        // Add Coiceboxes-------------------------------------------------------------------------------------------------
+
+        var compartmentSelection = d3.nest()
+            .key(function (d) {
+                return d.compartment;
+            })
+            .rollup(function (v) {
+                return v.length;
+            })
+            .entries(data);
+
+        var dropdown = d3.select('#Boxdiv')
+            .append("select")
+            .attr("id", "CompartmentList")
+            .on('change', onchange);
+
+        var options =
+            dropdown.selectAll('option')
+                .data(compartmentSelection)
+                .enter()
+                .append('option');
+
+
+        options.text(function (d) {
+            return d.key
+
+        })
+            .attr("value", function (d) {
+                return d.key
+            });
+
+        var speciesSelection = d3.nest()
+            .key(function (d) {
+                return d.species;
+            })
+            .rollup(function (v) {
+                return v.length;
+            })
+            .entries(data);
+
+        var dropdown2 = d3.select('#Boxdiv')
+            .append("select")
+            .attr("id", "SpeciesList")
+            .on('change', onchange);
+
+        var options2 =
+            dropdown2.selectAll('option')
+                .data(speciesSelection)
+                .enter()
+                .append('option');
+
+        options2.text(function (d) {
+            return d.key
+        })
+            .attr("value", function (d) {
+                return d.key
+            });
+
+        selectedCompartment = d3.select("#CompartmentList").property("value");
+
+        selectedSpecies = d3.select("#SpeciesList").property("value");
+
+//-------------------------------------------------------------------------------------------------------------------------
+        // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
+        // Bei den Select Items mit beachten
+        x.domain(d3.extent(data, function (d) {
+            return d.elapsed_time;
+        }));
+
+        y.domain([0, d3.max(data.filter(function (d) {
+            return d.species == selectedSpecies && d.compartment == selectedCompartment
+        }), function (d) {
+            return d.concentration
+        })]);
+
+
+        // Add the X Axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        // Add the Y Axis
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        svg.append("path")
+            .data([data])
+            .attr("class", "line")
+            .attr("d", valueline(data.filter(function (d) {
+                return d.species ==selectedSpecies && d.compartment == selectedCompartment
+
+            })));
+
+
+       // mouseover function (data)_______________________________________________________________________________________
+        /*
+             var focus = svg.append("g")
+                    .attr("class", "focus")
+                    .style("display", "none");
+
+                focus.append("circle")                                 // **********
+                    .attr("class", "y")                                // **********
+                    .style("fill", "none")                             // **********
+                    .style("stroke", "blue")                           // **********
+                    .attr("r", 4);
+
+                svg.append("rect")                                     // **********
+                    .attr("width", width)                              // **********
+                    .attr("height", height)                            // **********
+                    .style("fill", "none")                             // **********
+                    .style("pointer-events", "all")                    // **********
+                    .on("mouseover", function() { focus.style("display", null); })
+                    .on("mouseout", function() { focus.style("display", "none"); })
+                    .on("mousemove", mousemove);
+
+
+                function mousemove() {                                 // **********
+                    var x0 = x.invert(d3.mouse(this)[0]),              // **********
+                        i = bisectTime(data, x0, 1),                   // **********
+                        d0 = data[i - 1],                              // **********
+                        d1 = data[i],                                  // **********
+                        d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;     // **********
+
+                    focus.select("circle.y")                           // **********
+                        .attr("transform",                             // **********
+                            "translate(" + x(d.elapsed_time) + "," +         // **********
+                            y(d.concentration) + ")");        // **********
+                }
+
+
+                 focus.append("text")
+                     .attr("x", 9)
+                     .attr("dy", ".35em");
+
+                 svg.append("rect")
+                     .attr("class", "overlay")
+                     .attr("width", width)
+                     .attr("height", height)
+                     .on("mouseover", function() { focus.style("display", null); })
+                     .on("mouseout", function() { focus.style("display", "none"); })
+                     .on("mousemove", mousemove);
+
+                 function mousemove() {
+                     var x0 = x.invert(d3.mouse(this)[0]),
+                         i = bisectTime(data, x0, 1),
+                         d0 = data[i - 1],
+                         d1 = data[i],
+                         d = x0 - d0.elapsed_time > d1.elapsed_time - x0 ? d1 : d0;
+                     focus.attr("transform", "translate(" + x(d.elapsed_time) + "," + y(d.concentration) + ")");
+                     focus.select("text").text(formatCurrency(d.concentration));
+                 }*/
+
+        //___________________________________________________________________________________________________________________
+
+    });
+
+
+
+
+
+
+    function onchange() {
+        // Add the valueline path.
+
+        d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
+            data.forEach(function (d) {
+                d.species = d.species
+                d.elapsed_time = +d.elapsed_time;
+                d.concentration = +d.concentration;
+                d.compartment = d.compartment;
+            });
+
+
+
+            selectedCompartment = d3.select("#CompartmentList").property("value");
+
+            selectedSpecies = d3.select("#SpeciesList").property("value");
+
+
+            x.domain(d3.extent(data, function (d) {
+                return d.elapsed_time;
+            }));
+            y.domain([0, d3.max(data.filter(function (d) {
+                return d.species == selectedSpecies && d.compartment == selectedCompartment
+
+            }), function (d) {
+                return d.concentration
+            })]);
+
+
+            // Select the section we want to apply our changes to
+            var svg = d3.select("body").transition();
+
+            // Make the changes
+            svg.select(".line")   // change the line
+                .duration(750)
+                .attr("d", valueline(data.filter(function (d) {
+                    return d.species == selectedSpecies && d.compartment == selectedCompartment
+                })));
+
+            svg.select(".x.axis") // change the x axis
+                .duration(750)
+                .call(xAxis);
+            svg.select(".y.axis") // change the y axis
+                .duration(750)
+                .call(yAxis);
+
+
+
+
+
+
+
+        });
+
+
+    }
+
+</script>
+</body>
+</html>
