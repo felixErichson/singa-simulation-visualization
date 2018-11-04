@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style> /* set the CSS */
+
+    body {
+        font: 12px Arial;
+    }
+
+    path {
+
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    div {
+        background-color: #000000;
+        color: #445588;
+        margin-right: 0;
+        padding: 0 auto;
+        width: 300px;
+        height: 150px;
+    }
+
+    .focus circle {
+        fill: none;
+        stroke: steelblue;
+    }
+
+    </style>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+
+</head>
+<body>
+
+
+<script>
+
+
+    // Get the data
+    d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
+        data.forEach(function (d) {
+            d.species = d.species
+            d.elapsed_time = +d.elapsed_time;
+            d.concentration = +d.concentration;
+            d.compartment = d.compartment;
+
+        });
+
+        var nested_data = d3.nest()
+            .key(function (d) {
+                return d.species;
+            })
+            .key(function (d) {
+                return d.compartment;
+            })
+            .rollup(function (d) {
+                d.scalemin = d3.min(d, function (d) {
+                    return d.concentration
+                });
+
+                d.scalemax = d3.max(d, function (d) {
+                    return d.concentration;
+                });
+                return d;
+            })
+            //.map(data, d3.map);
+            .entries(data);
+
+
+        var i;
+        for (i = 0; i < nested_data.length; i++) {
+            for (var j = 0; j < 2; j++) {
+                if (nested_data[i].values[j].values.scalemax > 0) {
+                    console.log(nested_data[i].key);
+                    var hlp1 = nested_data [i].key;
+                    var hlp2 = nested_data[i].values[j].values[0].compartment;
+                    var id = "k" + i.toString();
+
+
+                    var div = d3.select("body")
+                        .append("div")
+                        .attr("class", id);
+
+                    var width = parseInt($("." + id).css("width"), 10);
+                    var height = parseInt($("." + id).css("height"), 10);
+
+
+                    createchart(hlp1, hlp2, data, width, height, id);
+
+
+                }
+            }
+        }
+
+
+        /* for (var i = 0; i = 3; i++){
+              for (var j = 0; j = 3; j++){
+
+            }
+         }*/
+        // console.log(nested_data[2].values[3].values.scalemax)
+
+
+        // console.log(nested_data[12].values[1].values.scalemax);//.forEach(function (d) {
+        //    if (d..scalemin === 0){
+        //      d.remove();
+        //  }
+        //}));
+        //TODO Alle Scales auf der Konsole anzeigen lassen
+        //TODO Alle [0..0] rauslöschen
+        // TODO Gruppieren der Bereiche
+        /*
+                return nested_data.forEach(function (d) {
+                    d.values.forEach(function (d) {
+
+                        d.values.forEach(function (d) {
+                            if (d.scale === 0) {
+
+                            }
+                        })
+                    })
+
+                })
+                test = data.filter(function (d) {
+                    return d.scale !== 0
+
+                });
+
+                nested_data.forEach(function (d) {
+                    d.values.forEach(function (d) {
+                       // console.log(d);
+                        d.values.forEach(function (d) {
+                            if (d.scale === 0 ){
+                            console.log(nested_data)
+                            }
+                        })
+                    })
+                    // var minmax =
+                    // var min = minmax[0];
+                    // var max = minmax[1];
+                    //  return min !== 0 && max !== 0;
+                });
+        */
+
+
+    })
+
+
+    //-------------------------------------------------------------------------------------------------------------------------
+    function createchart(spec, comp, ttt, w, h, id) {
+
+        // Set the dimensions of the canvas / graph
+
+
+        var margin = {top: 30, right: 50, bottom: 35, left: 50},
+            width = w - margin.left - margin.right,
+            height = h - margin.top - margin.bottom;
+
+
+        // Set the ranges
+        var x = d3.scale.linear().range([0, width]);
+        var y0 = d3.scale.linear().range([height, 0]);
+
+
+        // Define the axes
+        var xAxis = d3.svg.axis().scale(x)
+            .orient("bottom").ticks(5);
+
+        var yAxisLeft = d3.svg.axis().scale(y0)
+            .orient("left").ticks(5);
+
+
+        // Define the line
+        var valueline = d3.svg.line()
+            .x(function (d) {
+                return x(d.elapsed_time);
+            })
+            .y(function (d) {
+                return y0(d.concentration);
+            });
+
+
+        // Adds the svg canvas
+        var svg = d3.select("." + id)
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+        //Label X-Axis
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "end")
+            .attr("x", width)
+            .attr("y", height + 30)
+            .text("Elapsed time [ms]");
+
+        //Label Y-Axis
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "end")
+            .attr("y", -45)
+            .attr("x", -0)
+            .attr("dy", ".50em")
+            .attr("transform", "rotate(-90)")
+            .text("Concentration [nmol/l]");
+
+        svg.append("text")
+            .attr("x", (width / 2))
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .style("text-decoration", "underline")
+            .text(spec + " - " + comp);
+
+        // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
+        // Bei den Select Items mit beachten
+        x.domain(d3.extent(ttt, function (d) {
+            return d.elapsed_time;
+        }));
+
+        y0.domain([0, d3.max(ttt.filter(function (d) {
+            return spec === d.species && comp === d.compartment
+        }), function (d) {
+            return d.concentration
+        })]);
+
+
+        // Add the X Axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        // Add the Y Axis
+        svg.append("g")
+            .attr("class", "y axis left")
+            .style("fill", "#d95f02")
+            .call(yAxisLeft);
+
+
+        svg.append("path")
+            .data([ttt])
+            .attr("id", "line")
+            .style("stroke", "#d95f02")
+            .attr("d", valueline(ttt.filter(function (d) {
+                return d.species === spec && d.compartment === comp
+
+            })));
+
+
+        $("div").mouseenter(function () {
+
+            $(this).css({width: '700px', height: '300px'});
+            width = parseInt($("." + id).css("width"), 10);
+            height = parseInt($("." + id).css("height"), 10);
+
+            d3.select("body")
+                .select("svg")
+                .attr("width", 700 + margin.left + margin.right)
+                .attr("height", 300 + margin.top + margin.bottom)
+
+                .select("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .select(".x.axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                .select(".y.axis.left")
+                .attr("transform", "translate(0," + width + ")")
+                .call(yAxisLeft)
+                .select('#line')
+                .attr("d", valueline(ttt.filter(function (d) {
+                    return d.species === spec && d.compartment === comp
+
+                })));
+
+
+        });
+
+        $("div").mouseleave(function () {
+
+
+            $(this).css({width: '300px', height: '150px'});
+            width = parseInt($("." + id).css("width"), 10);
+            height = parseInt($("." + id).css("height"), 10);
+
+            d3.select("body")
+                .select("svg")
+                .attr("width", 300 + margin.left + margin.right)
+                .attr("height", 150 + margin.top + margin.bottom)
+                .select("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+        });
+
+
+    }
+
+
+    /*
+        function onchange() {
+            // Add the valueline path.
+
+            d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
+                data.forEach(function (d) {
+                    d.species = d.species
+                    d.elapsed_time = +d.elapsed_time;
+                    d.concentration = +d.concentration;
+                    d.compartment = d.compartment;
+                });
+
+
+                selectedCompartment = d3.select("#CompartmentList").property("value");
+
+                selectedSpecies = d3.select("#SpeciesList").property("value");
+
+                // Select the section we want to apply our changes to
+                var svg = d3.select("body").transition();
+
+                x.domain(d3.extent(data, function (d) {
+                    return d.elapsed_time;
+                }));
+
+                y0.domain([0, d3.max(data.filter(function (d) {
+                    return d.species == selectedSpecies && d.compartment == selectedCompartment
+
+                }), function (d) {
+                    return d.concentration
+                })]);
+
+
+                // Make the changes
+                svg.select("#line")   // change the line
+                    .duration(750)
+                    .attr("d", valueline(data.filter(function (d) {
+                        return d.species == selectedSpecies && d.compartment == selectedCompartment
+                    })));
+
+
+                svg.select(".y.axis.left") // change the y axis
+                    .duration(750)
+                    .call(yAxisLeft);
+
+
+
+
+    //Second Graph-------------------------------------------------------------------------
+
+                selectedCompartment2 = d3.select("#CompartmentList2").property("value");
+
+                selectedSpecies2 = d3.select("#SpeciesList2").property("value");
+
+                y1.domain([0, d3.max(data.filter(function (d) {
+                    return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+
+                }), function (d) {
+                    return d.concentration
+                })]);
+
+                svg.select("#line2")   // change the line
+                    .duration(750)
+                    .attr("d", valueline2(data.filter(function (d) {
+                        return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+                    })));
+
+                svg.select(".y.axis.right") // change the y axis
+                    .duration(750)
+                    .call(yAxisRight);
+
+
+            });
+
+
+        }
+        */
+
+
+</script>
+</body>
+</html>
+
+
