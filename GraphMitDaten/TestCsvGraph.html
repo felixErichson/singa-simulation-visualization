@@ -45,13 +45,7 @@
 
 <script>
 
-    ranges = [
-        {min: 0.01, max: 1.50},
-        {min: 1.51, max: 15.00},
-        {min: 15.01, max: 99},
-        {min: 100, max: 299},
-        {min: 300, max: 999},
-    ];
+    //Settings of the graph
 
     // Set the dimensions of the canvas / graph
     var margin = {top: 30, right: 50, bottom: 30, left: 50},
@@ -75,7 +69,7 @@
         .orient("right").ticks(5);
 
 
-    // Define the line
+    // Define the lines
     var valueline = d3.svg.line()
         .x(function (d) {
             return x(d.elapsed_time);
@@ -93,6 +87,7 @@
             return y1(d.concentration);
         });
 
+    //Define div container
     var div = d3.select("body")
         .append("div")
         .attr("id", "Boxdiv")
@@ -141,6 +136,8 @@
 
         });
 
+        // Nest the Data________________________________________________________________________________________________
+
         nested_data = d3.nest()
             .key(function (d) {
                 return d.species;
@@ -160,6 +157,8 @@
             })
 
             .entries(data);
+
+        console.log(nested_data[11].values[0].values.scalemax);
 
 
         //-----------Key the data for drop down---------------------------------------------------------------------------
@@ -201,31 +200,29 @@
 
         selectedSpecies2 = addChoiceboxSpec(speciesSelection, "SpeciesList2");
 
-
-// Hier muss die Bedingung rein! Oben wird die auswahl getroffen und unten die Achsen erstellt----------------------------
+        //The maximum of the Dataset------------------------------------------------------------
 
         var scalemax = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[0];
         var scalemax2 = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[1];
 
-        //-------------------------------------------------------------------------------------------------------------------------
-        // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
-        // Bei den Select Items mit beachten
+
+        // Add the X Axis
         x.domain(d3.extent(data, function (d) {
             return d.elapsed_time;
         }));
 
-        // Add the X Axis
         setXAxis(svg, xAxis);
 
-        if (ranges.min < scalemax < ranges.max && ranges.min < scalemax2 < ranges.max) {
-            y0.domain([0, Math.max(scalemax, scalemax2)]);
+        // Define the Y Axis and the valuelines. If statement for matching datarange-------------------------------------
+        if (Math.abs(Math.log10(Math.max(scalemax, scalemax2))) - Math.abs(Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
 
             // Add the Y Axis
+            y0.domain([0, Math.max(scalemax, scalemax2)]);
+
             setOneYAxis(svg, yAxisLeft, "y axis left");
-            //setOneYAxis(svg, yAxisRight,"y axis right");
 
 
-            // setPath(svg, data, "line", selectedSpecies, selectedCompartment);
+            // Add the lines
             svg.append("path")
                 .data([data])
                 .attr("id", "line")
@@ -248,7 +245,9 @@
         } else {
 
 
-//Left------------
+// Else Statement when the ranges are different--------------------------------------------------
+
+            // Add the Y Axis
             y0.domain([0, d3.max(data.filter(function (d) {
                 return d.species === selectedSpecies && d.compartment === selectedCompartment
             }), function (d) {
@@ -262,10 +261,11 @@
                 return d.concentration
             })]);
 
-            setOneYAxis(svg, yAxisLeft, "y axis left");
-            setOneYAxis(svg, yAxisRight, "y axis right");
-            // Add the Y Axis
+            setOneYAxis(svg, yAxisLeft, "y axis left", "#d95f02");
+            setOneYAxis(svg, yAxisRight, "y axis right", "#66a61e");
 
+
+            //Add the lines---------------------------------------------------------
             svg.append("path")
                 .data([data])
                 .attr("id", "line")
@@ -275,8 +275,6 @@
 
                 })));
 
-
-            //Second line ------------------------------------------------------------------------------------------------------
 
             svg.append("path")
                 .data([data])
@@ -291,9 +289,13 @@
         }
 
 
-
     });
 
+
+    //Functions
+
+
+    //Get the maximum value of a dataset____________________________________________________________________________________
     function getTheRange(nested_data, spec1, comp1, spec2, comp2) {
 
         var scalemax = 0;
@@ -328,6 +330,7 @@
         return [scalemax, scalemax2];
     }
 
+    //Add choicebox for compartment_________________________________________________________________________________________
     function addChoiceBoxComp(compartmentSelection, name) {
         //Dropdown Box 1 Compartment
         var dropdown = d3.select('#Boxdiv')
@@ -354,7 +357,7 @@
 
     }
 
-
+    //Set the choiceboxes for species___________________________________________________________________________________________________
     function addChoiceboxSpec(speciesSelection, name) {
         //Dropdown box 2 (Species)
         var dropdown2 = d3.select('#Boxdiv')
@@ -379,6 +382,7 @@
 
     }
 
+    //Set the Axis__________________________________________________________________________________________________________
     function setXAxis(svg, XA) {
 
         svg.append("g")
@@ -389,15 +393,14 @@
 
     }
 
-    function setOneYAxis(svg, call, name) {
+    function setOneYAxis(svg, call, name, fill) {
         svg.append("g")
             .attr("class", name)
-            .style("fill", "#d95f02")
+            .style("fill", fill)
             .call(call);
     }
 
-
-
+    //Function onChange ____________________________________________________________________________________________________
     function onchange() {
         // Add the valueline path.
 
@@ -430,9 +433,10 @@
             var scalemax2 = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[1];
 
 
-            if (Math.abs(Math.log10(Math.max(scalemax, scalemax2))) - Math.abs(Math.log10(Math.min(scalemax, scalemax2))) < 2) {
+            if (Math.abs(Math.log10(Math.max(scalemax, scalemax2))) - Math.abs(Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
 
                 y0.domain([0, Math.max(scalemax, scalemax2)]);
+                y1.domain([0, 0]);
 
                 // Make the changes
                 svg.select("#line")   // change the line
@@ -451,6 +455,11 @@
                 svg.select(".y.axis.left") // change the y axis
                     .duration(750)
                     .call(yAxisLeft);
+
+
+                svg.select(".y.axis.right") // change the y axis
+                    .duration(750)
+                    .call(yAxisRight);
 
 
             } else {
@@ -476,8 +485,6 @@
                     .call(yAxisLeft);
 
 
-
-//Second Graph-------------------------------------------------------------------------
 
 
                 y1.domain([0, d3.max(data.filter(function (d) {
