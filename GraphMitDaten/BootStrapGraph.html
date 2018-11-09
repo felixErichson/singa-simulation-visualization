@@ -17,6 +17,9 @@
         fill: none;
     }
 
+
+
+
     .axis path,
     .axis line {
         fill: none;
@@ -37,14 +40,13 @@
 
     #Boxes {
         margin: auto;
-        width: 20%;
-        padding: 10px;
+        padding: 20px;
 
     }
 
     svg {
         margin: auto;
-        padding: 10px;
+        padding: 0px;
 
     }
 
@@ -223,17 +225,24 @@
         // Add Coiceboxes-------------------------------------------------------------------------------------------------
 
 
-        selectedCompartment = addChoiceBoxComp(compartmentSelection, "CompartmentList", "warning");
-
-        selectedSpecies = addChoiceboxSpec(speciesSelection, "SpeciesList", "warning");
-
-
-        // The Second Box-----------------------------------------------------------------
+        addChoiceBox(compartmentSelection,  "warning", "1", "Compartment");
+        addChoiceBox(speciesSelection,  "warning", "2", "Species");
+        addChoiceBox(compartmentSelection,  "info", "3", "Compartment");
+        addChoiceBox(speciesSelection, "info", "4", "Species");
 
 
-        selectedCompartment2 = addChoiceBoxComp(compartmentSelection, "CompartmentList2", "success");
 
-        selectedSpecies2 = addChoiceboxSpec(speciesSelection, "SpeciesList2", "success");
+
+        selectedCompartment = $("#btn-d1").text();
+        selectedSpecies = $("#btn-d2").text();
+
+            // The Second Box-----------------------------------------------------------------
+
+
+
+        selectedCompartment2 = $("#btn-d3").text();
+
+        selectedSpecies2 = $("#btn-d4").text();
 
         //The maximum of the Dataset------------------------------------------------------------
 
@@ -261,7 +270,7 @@
             svg.append("path")
                 .data([data])
                 .attr("id", "line")
-                .style("stroke", "#d95f02")
+                .style("stroke", "#ffc107")
                 .attr("d", valueline(data.filter(function (d) {
                     return d.species == selectedSpecies && d.compartment == selectedCompartment
 
@@ -271,7 +280,7 @@
             svg.append("path")
                 .data([data])
                 .attr("id", "line2")
-                .style("stroke", "#66a61e")
+                .style("stroke", "#17a2b8")
                 .attr("d", valueline2(data.filter(function (d) {
                     return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
 
@@ -296,15 +305,15 @@
                 return d.concentration
             })]);
 
-            setOneYAxis(svg, yAxisLeft, "y axis left", "#d95f02");
-            setOneYAxis(svg, yAxisRight, "y axis right", "#66a61e");
+            setOneYAxis(svg, yAxisLeft, "y axis left", "#ffc107");
+            setOneYAxis(svg, yAxisRight, "y axis right", "#17a2b8");
 
 
             //Add the lines---------------------------------------------------------
             svg.append("path")
                 .data([data])
                 .attr("id", "line")
-                .style("stroke", "#d95f02")
+                .style("stroke", "#ffc107")
                 .attr("d", valueline(data.filter(function (d) {
                     return d.species == selectedSpecies && d.compartment == selectedCompartment
 
@@ -314,7 +323,7 @@
             svg.append("path")
                 .data([data])
                 .attr("id", "line2")
-                .style("stroke", "#66a61e")
+                .style("stroke", "#17a2b8")
                 .attr("d", valueline2(data.filter(function (d) {
                     return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
 
@@ -366,42 +375,41 @@
     }
 
     //Add choicebox for compartment_________________________________________________________________________________________
-    function addChoiceBoxComp(compartmentSelection, name, bootCl) {
+    function addChoiceBox(selection, bootCl, id, category) {
         //Dropdown Box 1 Compartment
 
 
         var dropOneComp = d3.select("#Boxes")
-            .append("div").attr("class", name).style("position", "relative").style("float", "left") //position: relative; margin-right: 240px
-            .append("div").attr("class", "dropdown")
-            .append("button").attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text("Compartment")
-            .append("span").attr("class", "caret")
-            .append("ul").attr("class", "dropdown-menu");
-        for (var i = 0; i < compartmentSelection.length; i++) {
-            dropOneComp.append("li").append("a").attr("href", "#").text(compartmentSelection[i].key);
+           .append("div").attr("class", "selection" + id).style("position", "relative").style("float", "left") //position: relative; margin-right: 240px
+            .append("div").attr("id","Tablediv" + id).attr("class", "dropdown")
+            .append("button").attr("id","btn-d"+id).attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text(category)
+            .append("span").attr("class", "caret");
+           var UlHelp= d3.select("#Tablediv" + id).append("ul").attr("id","TableMenu" + id).attr("class", "dropdown-menu");
+        for (var i = 0; i < selection.length; i++) {
+            UlHelp.append("li").append("a").attr("href", "#").text(selection[i].key).style("color",bootCl).on("click",function(){onchange()});
         }
-
-
-        console.log($(this).find("option:selected").text())
+        getTextFromBoxes("#TableMenu" + id, "#btn-d" + id);
 
 
     }
 
-    //Set the choiceboxes for species___________________________________________________________________________________________________
-    function addChoiceboxSpec(speciesSelection, name, bootCl) {
-        //Dropdown box 2 (Species)
-
-        var dropOneSpe = d3.select("#Boxes")
-            .append("div").attr("class", name).style("position", "relative").style("float", "left")
-            .append("div").attr("class", "dropdown").style("position", "relative")
-            .append("button").attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text("Species")
-            .append("span").attr("class", "caret")
-            .append("ul").attr("class", "dropdown-menu");
-        for (var i = 0; i < speciesSelection.length; i++) {
-            dropOneSpe.append("li").append("a").attr("href", "#").text(speciesSelection[i].key);
-        }
 
 
-        return $().find("option:selected").text()
+
+
+    function getTextFromBoxes(tabMenu, ButtonName){
+
+
+        $ ( tabMenu + " a").click(function (e) {
+            e.preventDefault();
+            var selText = $(this).text();
+            $(ButtonName).text(selText);
+            console.log(selText);
+
+            return selText;
+
+
+        })
 
     }
 
@@ -417,6 +425,15 @@
     }
 
     function setOneYAxis(svg, call, name, fill) {
+
+        if (call === yAxisRight){
+            svg.append("g")
+                .attr("class", name)
+                .attr("transform", "translate(" + width + " ,0)")
+                .style("fill", fill)
+                .call(call);
+        }
+
         svg.append("g")
             .attr("class", name)
             .style("fill", fill)
@@ -436,13 +453,12 @@
             });
 
 
-            selectedCompartment = d3.select("#CompartmentList").property("value");
+            selectedCompartment = $("#btn-d1").text();
+            selectedSpecies = $("#btn-d2").text();
 
-            selectedSpecies = d3.select("#SpeciesList").property("value");
+            selectedCompartment2 = $("#btn-d3").text();
 
-            selectedCompartment2 = d3.select("#CompartmentList2").property("value");
-
-            selectedSpecies2 = d3.select("#SpeciesList2").property("value");
+            selectedSpecies2 = $("#btn-d4").text();
 
 
             // Select the section we want to apply our changes to
@@ -477,6 +493,7 @@
 
                 svg.select(".y.axis.left") // change the y axis
                     .duration(750)
+                    .style("fill","grey")
                     .call(yAxisLeft);
 
 
@@ -505,6 +522,7 @@
 
                 svg.select(".y.axis.left") // change the y axis
                     .duration(750)
+                    .style("fill", "#ffc107")
                     .call(yAxisLeft);
 
 
