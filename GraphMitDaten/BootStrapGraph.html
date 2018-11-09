@@ -8,6 +8,7 @@
 
     body {
         font: 12px Arial;
+        text-align: center;
     }
 
     path {
@@ -34,6 +35,20 @@
         stroke: steelblue;
     }
 
+    #Boxes {
+        margin: auto;
+        width: 20%;
+        padding: 10px;
+
+    }
+
+    svg {
+        margin: auto;
+        padding: 10px;
+
+    }
+
+
     </style>
 
 
@@ -56,6 +71,20 @@
 
 </head>
 <body>
+
+<div id="main">
+
+
+</div>
+
+<div id="svg">
+
+
+</div>
+
+<div id="Boxes">
+
+</div>
 
 
 <script>
@@ -103,25 +132,14 @@
             return y1(d.concentration);
         });
 
-    //Define div container
-    var div = d3.select("body")
-        .append("div")
-        .attr("id", "Boxdiv")
-        .style("position", "absolute")
-        .style("top", "350px")
-        .style("left", 0)
-        .style("width", 350 + "px")
-        .style("height", 100 + "px");
-    //  .style("background-color", "blue");
-
-
     // Adds the svg canvas
-    var svg = d3.select("body")
+    var svg = d3.select("#svg")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .style("float", "left");
 
     //Label X-Axis
     svg.append("text")
@@ -205,17 +223,17 @@
         // Add Coiceboxes-------------------------------------------------------------------------------------------------
 
 
-        selectedCompartment = addChoiceBoxComp(compartmentSelection, "CompartmentList");
+        selectedCompartment = addChoiceBoxComp(compartmentSelection, "CompartmentList", "warning");
 
-        selectedSpecies = addChoiceboxSpec(speciesSelection, "SpeciesList");
+        selectedSpecies = addChoiceboxSpec(speciesSelection, "SpeciesList", "warning");
 
 
         // The Second Box-----------------------------------------------------------------
 
 
-        selectedCompartment2 = addChoiceBoxComp(compartmentSelection, "CompartmentList2");
+        selectedCompartment2 = addChoiceBoxComp(compartmentSelection, "CompartmentList2", "success");
 
-        selectedSpecies2 = addChoiceboxSpec(speciesSelection, "SpeciesList2");
+        selectedSpecies2 = addChoiceboxSpec(speciesSelection, "SpeciesList2", "success");
 
         //The maximum of the Dataset------------------------------------------------------------
 
@@ -348,55 +366,42 @@
     }
 
     //Add choicebox for compartment_________________________________________________________________________________________
-    function addChoiceBoxComp(compartmentSelection, name) {
+    function addChoiceBoxComp(compartmentSelection, name, bootCl) {
         //Dropdown Box 1 Compartment
 
-        var dropdown = d3.select('#Boxdiv')
-            .append("select")
-            .attr("id", name)
-            .on('change', onchange);
 
-        var options =
-            dropdown.selectAll('option')
-                .data(compartmentSelection)
-                .enter()
-                .append('option');
+        var dropOneComp = d3.select("#Boxes")
+            .append("div").attr("class", name).style("position", "relative").style("float", "left") //position: relative; margin-right: 240px
+            .append("div").attr("class", "dropdown")
+            .append("button").attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text("Compartment")
+            .append("span").attr("class", "caret")
+            .append("ul").attr("class", "dropdown-menu");
+        for (var i = 0; i < compartmentSelection.length; i++) {
+            dropOneComp.append("li").append("a").attr("href", "#").text(compartmentSelection[i].key);
+        }
 
 
-        options.text(function (d) {
-            return d.key
+        console.log($(this).find("option:selected").text())
 
-        })
-            .attr("value", function (d) {
-                return d.key
-            });
-
-        return d3.select("#" + name).property("value");
 
     }
 
     //Set the choiceboxes for species___________________________________________________________________________________________________
-    function addChoiceboxSpec(speciesSelection, name) {
+    function addChoiceboxSpec(speciesSelection, name, bootCl) {
         //Dropdown box 2 (Species)
-        var dropdown2 = d3.select('#Boxdiv')
-            .append("select")
-            .attr("id", name)
-            .on('change', onchange);
 
-        var options2 =
-            dropdown2.selectAll('option')
-                .data(speciesSelection)
-                .enter()
-                .append('option');
+        var dropOneSpe = d3.select("#Boxes")
+            .append("div").attr("class", name).style("position", "relative").style("float", "left")
+            .append("div").attr("class", "dropdown").style("position", "relative")
+            .append("button").attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text("Species")
+            .append("span").attr("class", "caret")
+            .append("ul").attr("class", "dropdown-menu");
+        for (var i = 0; i < speciesSelection.length; i++) {
+            dropOneSpe.append("li").append("a").attr("href", "#").text(speciesSelection[i].key);
+        }
 
-        options2.text(function (d) {
-            return d.key
-        })
-            .attr("value", function (d) {
-                return d.key
-            });
 
-        return d3.select("#" + name).property("value");
+        return $().find("option:selected").text()
 
     }
 
@@ -501,8 +506,6 @@
                 svg.select(".y.axis.left") // change the y axis
                     .duration(750)
                     .call(yAxisLeft);
-
-
 
 
                 y1.domain([0, d3.max(data.filter(function (d) {
