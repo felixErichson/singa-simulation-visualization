@@ -104,7 +104,6 @@
                     var width = parseInt($("." + id).css("width"), 10);
                     var height = parseInt($("." + id).css("height"), 10);
 
-
                     createchart(hlp1, hlp2, data, width, height, id);
 
 
@@ -113,57 +112,7 @@
         }
 
 
-        /* for (var i = 0; i = 3; i++){
-              for (var j = 0; j = 3; j++){
-
-            }
-         }*/
-        // console.log(nested_data[2].values[3].values.scalemax)
-
-
-        // console.log(nested_data[12].values[1].values.scalemax);//.forEach(function (d) {
-        //    if (d..scalemin === 0){
-        //      d.remove();
-        //  }
-        //}));
-        //TODO Alle Scales auf der Konsole anzeigen lassen
-        //TODO Alle [0..0] rauslöschen
-        // TODO Gruppieren der Bereiche
-        /*
-                return nested_data.forEach(function (d) {
-                    d.values.forEach(function (d) {
-
-                        d.values.forEach(function (d) {
-                            if (d.scale === 0) {
-
-                            }
-                        })
-                    })
-
-                })
-                test = data.filter(function (d) {
-                    return d.scale !== 0
-
-                });
-
-                nested_data.forEach(function (d) {
-                    d.values.forEach(function (d) {
-                       // console.log(d);
-                        d.values.forEach(function (d) {
-                            if (d.scale === 0 ){
-                            console.log(nested_data)
-                            }
-                        })
-                    })
-                    // var minmax =
-                    // var min = minmax[0];
-                    // var max = minmax[1];
-                    //  return min !== 0 && max !== 0;
-                });
-        */
-
-
-    })
+    });
 
 
     //-------------------------------------------------------------------------------------------------------------------------
@@ -273,28 +222,27 @@
 
         $("div").mouseenter(function () {
 
-            $(this).css({width: '700px', height: '300px'});
+
+            $(this).css({width: '600px', height: '300px'});
             width = parseInt($("." + id).css("width"), 10);
             height = parseInt($("." + id).css("height"), 10);
 
-            d3.select("body")
-                .select("svg")
-                .attr("width", 700 + margin.left + margin.right)
+            x = d3.scale.linear().range([0, width]);
+            y0 = d3.scale.linear().range([height, 0]);
+
+            var svg = d3.select("body").transition();
+
+            svg.select("svg")
+                .attr("width", 600 + margin.left + margin.right)
                 .attr("height", 300 + margin.top + margin.bottom)
-
                 .select("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                .select(".x.axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis)
-                .select(".y.axis.left")
-                .attr("transform", "translate(0," + width + ")")
-                .call(yAxisLeft)
-                .select('#line')
-                .attr("d", valueline(ttt.filter(function (d) {
-                    return d.species === spec && d.compartment === comp
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                })));
+
+            svg.select(".x.axis")
+                .attr("transform", "translate(0," + 150 + ")")
+                .call(xAxis);
+
 
 
         });
