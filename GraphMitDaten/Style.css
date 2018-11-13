@@ -1,0 +1,69 @@
+body {
+    font: 12px Arial;
+    text-align: center;
+}
+
+path {
+
+    stroke-width: 2;
+    fill: none;
+}
+
+
+
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+
+#Boxes {
+    margin: auto;
+    padding: 20px;
+
+}
+
+svg {
+    margin: auto;
+    padding: 0;
+
+}
+.btn.btn-outline-1_2,
+.btn.btn-outline-1_1{
+    border-color: #0d3a86;
+    color: #0d3a86;
+    background-color: transparent;
+
+}
+
+.btn-outline-1_2:hover,
+.btn-outline-1_1:hover {
+    color: #ffffff ;
+    background-color: #0d3a86;
+
+
+}
+
+.btn-outline-1:active{
+
+
+}
+
+.btn.btn-outline-2_1,
+.btn.btn-outline-2_2{
+    border-color: #008613;
+    color: #008613;
+    background-color: transparent;
+
+}
+.btn-outline-2_1:hover,
+.btn-outline-2_2:hover {
+    color: #ffffff ;
+    background-color: #008613;
+
+
+}
