@@ -1,6 +1,33 @@
 body {
     font: 12px Arial;
-    text-align: center;
+    height: 100%;
+}
+
+.container{
+
+
+
+    margin-top: 10%;
+    margin-left: auto;
+    width: 50%;
+    padding: 2%;
+
+
+
+
+
+}
+
+.Boxes{
+
+    margin-top: auto;
+
+
+
+
+
+
+
 }
 
 path {
@@ -21,11 +48,6 @@ path {
 }
 
 
-#Boxes {
-    margin: auto;
-    padding: 20px;
-
-}
 
 svg {
     margin: auto;
@@ -37,6 +59,7 @@ svg {
     border-color: #0d3a86;
     color: #0d3a86;
     background-color: transparent;
+
 
 }
 

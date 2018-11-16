@@ -32,10 +32,11 @@
     div {
 
         color: #445588;
-        margin-right: 0;
-        padding: 0 auto;
+        margin-right: auto;
+        padding: auto;
         width: 300px;
         height: 150px;
+        background-color: aquamarine;
     }
 
     .focus circle {
@@ -99,7 +100,9 @@
 
                     var div = d3.select("body")
                         .append("div")
-                        .attr("class", id);
+                        .attr("class", id)
+                        .attr("viewBox","0 0 100 100" )
+                        .attr("preserveAspectRatio","none");
 
                     var width = parseInt($("." + id).css("width"), 10);
                     var height = parseInt($("." + id).css("height"), 10);
@@ -154,8 +157,9 @@
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .call(responsivefy)
+            .append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
 
         //Label X-Axis
@@ -183,6 +187,30 @@
             .style("font-size", "10px")
             .style("text-decoration", "underline")
             .text(spec + " - " + comp);
+
+
+
+        responsivefy(svg, id);
+
+
+
+        $("div").mouseenter(function () {
+
+            $(this).css({width: '600px', height: '300px'});
+
+      responsivefy(svg, id);
+
+
+
+        });
+
+        $("div").mouseleave(function () {
+
+            $(this).css({width: '300px', height: '150px'});
+
+
+            responsivefy(svg, id);
+        });
 
         // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
         // Bei den Select Items mit beachten
@@ -220,52 +248,38 @@
             })));
 
 
-        $("div").mouseenter(function () {
-
-
-            $(this).css({width: '600px', height: '300px'});
-            width = parseInt($("." + id).css("width"), 10);
-            height = parseInt($("." + id).css("height"), 10);
-
-            x = d3.scale.linear().range([0, width]);
-            y0 = d3.scale.linear().range([height, 0]);
-
-            var svg = d3.select("body").transition();
-
-            svg.select("svg")
-                .attr("width", 600 + margin.left + margin.right)
-                .attr("height", 300 + margin.top + margin.bottom)
-                .select("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-            svg.select(".x.axis")
-                .attr("transform", "translate(0," + 150 + ")")
-                .call(xAxis);
-
-
-
-        });
-
-        $("div").mouseleave(function () {
-
-
-            $(this).css({width: '300px', height: '150px'});
-            width = parseInt($("." + id).css("width"), 10);
-            height = parseInt($("." + id).css("height"), 10);
-
-            d3.select("body")
-                .select("svg")
-                .attr("width", 300 + margin.left + margin.right)
-                .attr("height", 150 + margin.top + margin.bottom)
-                .select("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-        });
 
 
     }
+
+
+    function responsivefy(svg, id) {
+        // get container + svg aspect ratio
+        var container = d3.select(svg.node().parentNode),
+            width = parseInt(svg.style("width")),
+            height = parseInt(svg.style("height")),
+            aspect = width / height;
+
+        // add viewBox and preserveAspectRatio properties,
+        // and call resize so that svg resizes on inital page load
+         svg.attr("viewBox", "0 0 " + width + " " + height)
+            .attr("preserveAspectRatio", "xMinYMid")
+            .call(resize);
+
+        // to register multiple listeners for same event type,
+        // you need to add namespace, i.e., 'click.foo'
+        // necessary if you call invoke this function for multiple svgs
+        // api docs: https://github.com/mbostock/d3/wiki/Selections#on
+        d3.select("."+id).on("resize." + container.attr("id"), resize);
+
+        // get width of container and resize svg to fit it
+        function resize() {
+            var targetWidth = parseInt(container.style("width"));
+            svg.attr("width", targetWidth);
+            svg.attr("height", Math.round(targetWidth / aspect));
+        }
+    }
+
 
 
     /*
