@@ -4,8 +4,56 @@
     <meta charset="UTF-8">
     <title>Title</title>
 
+    <style> /* set the CSS */
 
-    <link rel="stylesheet" type="text/css" href="Style.css" media="screen">
+    body {
+        font: 12px Arial;
+        text-align: center;
+    }
+
+    path {
+
+        stroke-width: 2;
+        fill: none;
+    }
+
+
+
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    .focus circle {
+        fill: none;
+        stroke: steelblue;
+    }
+
+    #Boxes {
+        margin: auto;
+        padding: 20px;
+
+    }
+
+    svg {
+        margin: auto;
+        padding: 0px;
+
+    }
+
+
+    </style>
+
+
     <script src="https://d3js.org/d3.v3.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -19,7 +67,6 @@
             crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
@@ -27,17 +74,19 @@
 </head>
 <body>
 
-    <div class="container">
+<div id="main">
 
 
-    </div>
+</div>
 
-    <div class=" container Boxes">
-
-    </div>
+<div id="svg">
 
 
+</div>
 
+<div id="Boxes">
+
+</div>
 
 
 <script>
@@ -68,7 +117,7 @@
 
 
     // Define the lines
-    var valueline1 = d3.svg.line()
+    var valueline = d3.svg.line()
         .x(function (d) {
             return x(d.elapsed_time);
         })
@@ -85,16 +134,14 @@
             return y1(d.concentration);
         });
 
-
     // Adds the svg canvas
-    var svg = d3.select(".container")
-        .attr("id", "chart")
+    var svg = d3.select("#svg")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .call(responsivefy)
-        .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .style("float", "left");
 
     //Label X-Axis
     svg.append("text")
@@ -113,9 +160,6 @@
         .attr("dy", ".75em")
         .attr("transform", "rotate(-90)")
         .text("Concentration [nmol/l]");
-
-
-    responsivefy(svg);
 
 
     // _________________Get the data_____________________________________________________
@@ -151,8 +195,6 @@
 
             .entries(data);
 
-        console.log(nested_data);
-
         console.log(nested_data[11].values[0].values.scalemax);
 
 
@@ -183,22 +225,24 @@
         // Add Coiceboxes-------------------------------------------------------------------------------------------------
 
 
-        addChoiceBox(compartmentSelection, "1_1", "Compartment");
-        addChoiceBox(speciesSelection, "1_2", "Species");
+        addChoiceBox(compartmentSelection,  "warning", "1", "Compartment");
+        addChoiceBox(speciesSelection,  "warning", "2", "Species");
+        addChoiceBox(compartmentSelection,  "info", "3", "Compartment");
+        addChoiceBox(speciesSelection, "info", "4", "Species");
 
 
-        addChoiceBox(compartmentSelection, "2_1", "Compartment");
-        addChoiceBox(speciesSelection, "2_2", "Species");
 
 
-        selectedCompartment = $("#btn-d1_1").text();
-        selectedSpecies = $("#btn-d1_2").text();
+        selectedCompartment = $("#btn-d1").text();
+        selectedSpecies = $("#btn-d2").text();
 
-        // The Second Box-----------------------------------------------------------------
+            // The Second Box-----------------------------------------------------------------
 
 
-        selectedCompartment2 = $("#btn-d2_1").text();
-        selectedSpecies2 = $("#btn-d2_2").text();
+
+        selectedCompartment2 = $("#btn-d3").text();
+
+        selectedSpecies2 = $("#btn-d4").text();
 
         //The maximum of the Dataset------------------------------------------------------------
 
@@ -214,7 +258,7 @@
         setXAxis(svg, xAxis);
 
         // Define the Y Axis and the valuelines. If statement for matching datarange-------------------------------------
-        if (compareRange(scalemax, scalemax2)) {
+        if (Math.abs(Math.log10(Math.max(scalemax, scalemax2))) - Math.abs(Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
 
             // Add the Y Axis
             y0.domain([0, Math.max(scalemax, scalemax2)]);
@@ -222,9 +266,25 @@
             setOneYAxis(svg, yAxisLeft, "y axis left");
 
 
-            addLine(svg, data, "1", selectedSpecies, selectedCompartment, valueline1);
+            // Add the lines
+            svg.append("path")
+                .data([data])
+                .attr("id", "line")
+                .style("stroke", "#ffc107")
+                .attr("d", valueline(data.filter(function (d) {
+                    return d.species == selectedSpecies && d.compartment == selectedCompartment
 
-            addLine(svg, data, "2", selectedSpecies2, selectedCompartment2, valueline1);
+                })));
+
+
+            svg.append("path")
+                .data([data])
+                .attr("id", "line2")
+                .style("stroke", "#17a2b8")
+                .attr("d", valueline2(data.filter(function (d) {
+                    return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
+
+                })));
 
         } else {
 
@@ -245,16 +305,29 @@
                 return d.concentration
             })]);
 
-            setOneYAxis(svg, yAxisLeft, "y axis left", "1");
-            setOneYAxis(svg, yAxisRight, "y axis right", "2");
+            setOneYAxis(svg, yAxisLeft, "y axis left", "#ffc107");
+            setOneYAxis(svg, yAxisRight, "y axis right", "#17a2b8");
 
 
+            //Add the lines---------------------------------------------------------
+            svg.append("path")
+                .data([data])
+                .attr("id", "line")
+                .style("stroke", "#ffc107")
+                .attr("d", valueline(data.filter(function (d) {
+                    return d.species == selectedSpecies && d.compartment == selectedCompartment
+
+                })));
 
 
+            svg.append("path")
+                .data([data])
+                .attr("id", "line2")
+                .style("stroke", "#17a2b8")
+                .attr("d", valueline2(data.filter(function (d) {
+                    return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
 
-
-            addLine(svg, data, "1", selectedSpecies, selectedCompartment, valueline1);
-            addLine(svg, data, "2", selectedSpecies2, selectedCompartment2, valueline2);
+                })));
 
 
         }
@@ -264,81 +337,6 @@
 
 
     //Functions
-
-
-    //Function onChange ____________________________________________________________________________________________________
-    function onchange() {
-        // Add the valueline path.
-
-        d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
-            data.forEach(function (d) {
-                d.species = d.species
-                d.elapsed_time = +d.elapsed_time;
-                d.concentration = +d.concentration;
-                d.compartment = d.compartment;
-            });
-
-
-            selectedCompartment = $("#btn-d1_1").text();
-            selectedSpecies = $("#btn-d1_2").text();
-
-            selectedCompartment2 = $("#btn-d2_1").text();
-            selectedSpecies2 = $("#btn-d2_2").text();
-
-
-            // Select the section we want to apply our changes to
-
-
-            x.domain(d3.extent(data, function (d) {
-                return d.elapsed_time;
-            }));
-
-            var scalemax = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[0];
-            var scalemax2 = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[1];
-
-            console.log(scalemax);
-            if (compareRange(scalemax, scalemax2)) {
-
-                y0.domain([0, Math.max(scalemax, scalemax2)]);
-                y1.domain([0, 0]);
-
-                // Make the changes
-
-                changeline("1", selectedSpecies, selectedCompartment, valueline1, data);
-                changeline("2", selectedSpecies2, selectedCompartment2, valueline1, data);
-                changeaxis("1", yAxisLeft);
-                changeaxis("2", yAxisRight);
-
-
-            } else {
-
-
-                y0.domain([0, d3.max(data.filter(function (d) {
-                    return d.species === selectedSpecies && d.compartment === selectedCompartment
-                }), function (d) {
-                    return d.concentration
-                })]);
-
-
-                y1.domain([0, d3.max(data.filter(function (d) {
-                    return d.species === selectedSpecies2 && d.compartment === selectedCompartment2
-                }), function (d) {
-                    return d.concentration
-                })]);
-
-
-                changeline("1", selectedSpecies, selectedCompartment, valueline1, data);
-                changeline("2", selectedSpecies2, selectedCompartment2, valueline2, data);
-                changeaxis("1", yAxisLeft);
-                changeaxis("2", yAxisRight);
-
-
-            }
-
-        });
-
-
-    }
 
 
     //Get the maximum value of a dataset____________________________________________________________________________________
@@ -377,30 +375,32 @@
     }
 
     //Add choicebox for compartment_________________________________________________________________________________________
-    function addChoiceBox(selection, id, category) {
+    function addChoiceBox(selection, bootCl, id, category) {
         //Dropdown Box 1 Compartment
 
 
-        var dropOneComp = d3.select(".container.Boxes")
-            .append("div").attr("class", "selection" + id).style("position", "relative").style("float", "left") //position: relative; margin-right: 240px
-            .append("div").attr("id", "Tablediv" + id).attr("class", "dropdown")
-            .append("button").attr("id", "btn-d" + id).attr("class", "btn btn-outline-" + id ).attr("type", "button").attr("data-toggle", "dropdown").text(category)
+        var dropOneComp = d3.select("#Boxes")
+           .append("div").attr("class", "selection" + id).style("position", "relative").style("float", "left") //position: relative; margin-right: 240px
+            .append("div").attr("id","Tablediv" + id).attr("class", "dropdown")
+            .append("button").attr("id","btn-d"+id).attr("class", "btn btn-outline-" + bootCl + " dropdown-toggle").attr("type", "button").attr("data-toggle", "dropdown").text(category)
             .append("span").attr("class", "caret");
-        var UlHelp = d3.select("#Tablediv" + id).append("ul").attr("id", "TableMenu" + id).attr("class", "dropdown-menu");
+           var UlHelp= d3.select("#Tablediv" + id).append("ul").attr("id","TableMenu" + id).attr("class", "dropdown-menu");
         for (var i = 0; i < selection.length; i++) {
-            UlHelp.append("li").append("a").attr("href", "#").text(selection[i].key).on("click", function () {
-                onchange()
-            });
+            UlHelp.append("li").append("a").attr("href", "#").text(selection[i].key).style("color",bootCl).on("click",function(){onchange()});
         }
         getTextFromBoxes("#TableMenu" + id, "#btn-d" + id);
+
 
     }
 
 
-    function getTextFromBoxes(tabMenu, ButtonName) {
 
 
-        $(tabMenu + " a").click(function (e) {
+
+    function getTextFromBoxes(tabMenu, ButtonName){
+
+
+        $ ( tabMenu + " a").click(function (e) {
             e.preventDefault();
             var selText = $(this).text();
             $(ButtonName).text(selText);
@@ -424,111 +424,132 @@
 
     }
 
-    function setOneYAxis(svg, call, name, fill, id) {
+    function setOneYAxis(svg, call, name, fill) {
 
-        if (call === yAxisRight) {
+        if (call === yAxisRight){
             svg.append("g")
                 .attr("class", name)
                 .attr("transform", "translate(" + width + " ,0)")
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
-        } else {
-
-            svg.append("g")
-                .attr("class", name)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
+                .style("fill", fill)
                 .call(call);
         }
+
+        svg.append("g")
+            .attr("class", name)
+            .style("fill", fill)
+            .call(call);
     }
 
-    function compareRange(scalemax, scalemax2) {
+    //Function onChange ____________________________________________________________________________________________________
+    function onchange() {
+        // Add the valueline path.
+
+        d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
+            data.forEach(function (d) {
+                d.species = d.species
+                d.elapsed_time = +d.elapsed_time;
+                d.concentration = +d.concentration;
+                d.compartment = d.compartment;
+            });
 
 
-        if (Math.abs(Math.log10(Math.max(scalemax, scalemax2)) - Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
-            return true;
-        }
+            selectedCompartment = $("#btn-d1").text();
+            selectedSpecies = $("#btn-d2").text();
+
+            selectedCompartment2 = $("#btn-d3").text();
+
+            selectedSpecies2 = $("#btn-d4").text();
+
+
+            // Select the section we want to apply our changes to
+            var svg = d3.select("body").transition();
+
+            x.domain(d3.extent(data, function (d) {
+                return d.elapsed_time;
+            }));
+
+            var scalemax = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[0];
+            var scalemax2 = getTheRange(nested_data, selectedSpecies, selectedCompartment, selectedSpecies2, selectedCompartment2)[1];
+
+
+            if (Math.abs(Math.log10(Math.max(scalemax, scalemax2))) - Math.abs(Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
+
+                y0.domain([0, Math.max(scalemax, scalemax2)]);
+                y1.domain([0, 0]);
+
+                // Make the changes
+                svg.select("#line")   // change the line
+                    .duration(750)
+                    .attr("d", valueline(data.filter(function (d) {
+                        return d.species === selectedSpecies && d.compartment === selectedCompartment
+                    })));
+
+                svg.select("#line2")   // change the line
+                    .duration(750)
+                    .attr("d", valueline(data.filter(function (d) {
+                        return d.species === selectedSpecies2 && d.compartment === selectedCompartment2
+                    })));
+
+
+                svg.select(".y.axis.left") // change the y axis
+                    .duration(750)
+                    .style("fill","grey")
+                    .call(yAxisLeft);
+
+
+                svg.select(".y.axis.right") // change the y axis
+                    .duration(750)
+                    .call(yAxisRight);
+
+
+            } else {
+
+                y0.domain([0, d3.max(data.filter(function (d) {
+                    return d.species == selectedSpecies && d.compartment == selectedCompartment
+
+                }), function (d) {
+                    return d.concentration
+                })]);
+
+
+                // Make the changes
+                svg.select("#line")   // change the line
+                    .duration(750)
+                    .attr("d", valueline(data.filter(function (d) {
+                        return d.species == selectedSpecies && d.compartment == selectedCompartment
+                    })));
+
+
+                svg.select(".y.axis.left") // change the y axis
+                    .duration(750)
+                    .style("fill", "#ffc107")
+                    .call(yAxisLeft);
+
+
+                y1.domain([0, d3.max(data.filter(function (d) {
+                    return d.species === selectedSpecies2 && d.compartment === selectedCompartment2
+
+                }), function (d) {
+                    return d.concentration
+                })]);
+
+                svg.select("#line2")   // change the line
+                    .duration(750)
+                    .attr("d", valueline2(data.filter(function (d) {
+                        return d.species === selectedSpecies2 && d.compartment === selectedCompartment2
+                    })));
+
+                svg.select(".y.axis.right") // change the y axis
+                    .duration(750)
+                    .call(yAxisRight);
+
+
+            }
+
+        });
+
+
     }
-
-
-    function responsivefy(svg) {
-        // get container + svg aspect ratio
-        var container = d3.select(svg.node().parentNode),
-            width = parseInt(svg.style("width")),
-            height = parseInt(svg.style("height")),
-            aspect = width / height;
-
-        // add viewBox and preserveAspectRatio properties,
-        // and call resize so that svg resizes on inital page load
-        svg.attr("viewBox", "0 0 " + width + " " + height)
-            .attr("preserveAspectRatio", "xMinYMid")
-            .call(resize);
-
-        // to register multiple listeners for same event type,
-        // you need to add namespace, i.e., 'click.foo'
-        // necessary if you call invoke this function for multiple svgs
-        // api docs: https://github.com/mbostock/d3/wiki/Selections#on
-        d3.select(window).on("resize." + container.attr("id"), resize);
-
-        // get width of container and resize svg to fit it
-        function resize() {
-            var targetWidth = parseInt(container.style("width"));
-            svg.attr("width", targetWidth);
-            svg.attr("height", Math.round(targetWidth / aspect));
-        }
-    }
-
-
-    function addLine(svg, data, id, spec, comp, val) {
-        svg.append("path")
-            .data([data])
-            .attr("id", "line" + id)
-            .style("stroke", $(".btn-outline-" + id + "_1").css("color"))
-            .attr("d", val(data.filter(function (d) {
-                return d.species === spec && d.compartment === comp
-            })));
-
-    }
-
-    function changeline(id, spec, comp, val, data) {
-
-
-        var svg = d3.select("body").transition();
-        svg.select("#line" + id)   // change the line
-            .duration(750)
-            .attr("d", val(data.filter(function (d) {
-                return d.species === spec && d.compartment === comp
-            })));
-
-
-    }
-
-    function changeaxis(id, call) {
-
-        var svg = d3.select("body").transition();
-
-        if (call === yAxisRight) {
-            svg.select(".y.axis.right") // change the y axis
-                .duration(750)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
-
-
-        } else {
-
-            svg.select(".y.axis.left") // change the y axis
-                .duration(750)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
-
-
-        }
-
-
-    }
-
-
-
-
 
 </script>
 </body>
