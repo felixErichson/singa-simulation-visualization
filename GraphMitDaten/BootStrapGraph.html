@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <title>Title</title>
 
 
     <link rel="stylesheet" type="text/css" href="Style.css" media="screen">
-    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -46,29 +50,21 @@
     //Settings of the graph
 
     // Set the dimensions of the canvas / graph
-    var margin = {top: 30, right: 50, bottom: 30, left: 50},
+    var margin = {top: 30, right: 50, bottom: 40, left: 50},
         width = 700 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
 
     // Set the ranges
-    var x = d3.scale.linear().range([0, width]);
-    var y0 = d3.scale.linear().range([height, 0]);
-    var y1 = d3.scale.linear().range([height, 0]);
+    var x = d3.scaleLinear().range([0, width]);
+    var y0 = d3.scaleLinear().range([height, 0]);
+    var y1 = d3.scaleLinear().range([height, 0]);
 
     // Define the axes
-    var xAxis = d3.svg.axis().scale(x)
-        .orient("bottom").ticks(5);
-
-    var yAxisLeft = d3.svg.axis().scale(y0)
-        .orient("left").ticks(5);
-
-    var yAxisRight = d3.svg.axis().scale(y1)
-        .orient("right").ticks(5);
 
 
     // Define the lines
-    var valueline1 = d3.svg.line()
+    var valueline1 = d3.line()
         .x(function (d) {
             return x(d.elapsed_time);
         })
@@ -77,7 +73,7 @@
         });
 
 
-    var valueline2 = d3.svg.line()
+    var valueline2 = d3.line()
         .x(function (d) {
             return x(d.elapsed_time);
         })
@@ -101,7 +97,7 @@
         .attr("class", "x label")
         .attr("text-anchor", "end")
         .attr("x", width)
-        .attr("y", height + 20)
+        .attr("y", height + 30)
         .text("Elapsed time [ms]");
 
     //Label Y-Axis
@@ -109,8 +105,8 @@
         .attr("class", "y label")
         .attr("text-anchor", "end")
         .attr("y", -50)
-        .attr("x", -70)
-        .attr("dy", ".75em")
+        .attr("x", -30)
+        .attr("dy", ".95em")
         .attr("transform", "rotate(-90)")
         .text("Concentration [nmol/l]");
 
@@ -120,7 +116,9 @@
 
     // _________________Get the data_____________________________________________________
     d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
-        data.forEach(function (d) {
+            if (error) throw error;
+
+            data.forEach(function (d) {
             d.species = d.species
             d.elapsed_time = +d.elapsed_time;
             d.concentration = +d.concentration;
@@ -152,8 +150,8 @@
             .entries(data);
 
         console.log(nested_data);
+console.log(nested_data[1].values[1].value.scalemax);
 
-        console.log(nested_data[11].values[0].values.scalemax);
 
 
         //-----------Key the data for drop down---------------------------------------------------------------------------
@@ -211,7 +209,7 @@
             return d.elapsed_time;
         }));
 
-        setXAxis(svg, xAxis);
+        setXAxis(svg);
 
         // Define the Y Axis and the valuelines. If statement for matching datarange-------------------------------------
         if (compareRange(scalemax, scalemax2)) {
@@ -219,7 +217,7 @@
             // Add the Y Axis
             y0.domain([0, Math.max(scalemax, scalemax2)]);
 
-            setOneYAxis(svg, yAxisLeft, "y axis left");
+            setOneYAxis(svg, "y axis left");
 
 
             addLine(svg, data, "1", selectedSpecies, selectedCompartment, valueline1);
@@ -245,8 +243,8 @@
                 return d.concentration
             })]);
 
-            setOneYAxis(svg, yAxisLeft, "y axis left", "1");
-            setOneYAxis(svg, yAxisRight, "y axis right", "2");
+            setOneYAxis(svg,  "y axis left", "1");
+            setOneYAxis(svg,  "y axis right", "2");
 
 
 
@@ -306,8 +304,8 @@
 
                 changeline("1", selectedSpecies, selectedCompartment, valueline1, data);
                 changeline("2", selectedSpecies2, selectedCompartment2, valueline1, data);
-                changeaxis("1", yAxisLeft);
-                changeaxis("2", yAxisRight);
+                changeaxis("1", "y axis left");
+                changeaxis("2", "y axis right");
 
 
             } else {
@@ -329,8 +327,8 @@
 
                 changeline("1", selectedSpecies, selectedCompartment, valueline1, data);
                 changeline("2", selectedSpecies2, selectedCompartment2, valueline2, data);
-                changeaxis("1", yAxisLeft);
-                changeaxis("2", yAxisRight);
+                changeaxis("1", "y axis left");
+                changeaxis("2", "y axis right");
 
 
             }
@@ -350,7 +348,7 @@
             if (nested_data[zzz].key === spec1) {
                 for (var xxx = 0; xxx < nested_data[zzz].values.length; xxx++) {
                     if (nested_data[zzz].values[xxx].key === comp1) {
-                        scalemax = nested_data[zzz].values[xxx].values.scalemax;
+                        scalemax = nested_data[zzz].values[xxx].value.scalemax;
 
                     }
                 }
@@ -365,7 +363,7 @@
             if (nested_data[zzz].key === spec2) {
                 for (var xxx = 0; xxx < nested_data[zzz].values.length; xxx++) {
                     if (nested_data[zzz].values[xxx].key === comp2) {
-                        scalemax2 = nested_data[zzz].values[xxx].values.scalemax;
+                        scalemax2 = nested_data[zzz].values[xxx].value.scalemax;
 
                     }
                 }
@@ -414,31 +412,31 @@
     }
 
     //Set the Axis__________________________________________________________________________________________________________
-    function setXAxis(svg, XA) {
+    function setXAxis(svg) {
 
         svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
-            .call(XA);
+            .call(d3.axisBottom(x));
 
 
     }
 
-    function setOneYAxis(svg, call, name, fill, id) {
+    function setOneYAxis(svg, name, id) {
 
-        if (call === yAxisRight) {
-            svg.append("g")
-                .attr("class", name)
-                .attr("transform", "translate(" + width + " ,0)")
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
-        } else {
+if(name === "y axis right") {
+    svg.append("g")
+        .attr("class", name)
+        .attr("transform", "translate(" + width + " ,0)")
+        .styles({fill: "none", stroke: $(".btn-outline-" + id + "_1").css("color"), "stroke-width": "0.5"})
+        .call(d3.axisRight(y0));
+}else {
 
-            svg.append("g")
-                .attr("class", name)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
-        }
+    svg.append("g")
+        .attr("class", name)
+        .styles({fill: "none", stroke: $(".btn-outline-" + id + "_1").css("color"), "stroke-width": "0.5"})
+        .call(d3.axisLeft(y1));
+}
     }
 
     function compareRange(scalemax, scalemax2) {
@@ -502,26 +500,25 @@
 
     }
 
-    function changeaxis(id, call) {
+    function changeaxis(id, name) {
 
         var svg = d3.select("body").transition();
 
-        if (call === yAxisRight) {
-            svg.select(".y.axis.right") // change the y axis
-                .duration(750)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
+if (name === "y axis left") {
+    svg.select(".y.axis.left") // change the y axis
+        .duration(750)
+        .styles({fill: "none", stroke: $(".btn-outline-" + id + "_1").css("color"), "stroke-width": "0.5"})
+        .call(d3.axisLeft(y0));
+}else {
 
 
-        } else {
+    svg.select(".y.axis.right") // change the y axis
+        .duration(750)
+        .styles({fill: "none", stroke: $(".btn-outline-" + id + "_1").css("color"), "stroke-width": "0.5"})
+        .call(d3.axisRight(y1));
 
-            svg.select(".y.axis.left") // change the y axis
-                .duration(750)
-                .style("fill", $(".btn-outline-" + id + "_1").css("color"))
-                .call(call);
+}
 
-
-        }
 
 
     }
