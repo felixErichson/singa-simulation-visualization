@@ -5,15 +5,10 @@ body {
 
 .container{
 
-
-
     margin-top: 10%;
     margin-left: auto;
     width: 50%;
     padding: 2%;
-
-
-
 
 
 }
@@ -21,12 +16,6 @@ body {
 .Boxes{
 
     margin-top: auto;
-
-
-
-
-
-
 
 }
 
@@ -38,13 +27,13 @@ path {
 
 
 
-
 .axis path,
 .axis line {
     fill: none;
     stroke: grey;
     stroke-width: 1;
     shape-rendering: crispEdges;
+
 }
 
 
@@ -71,10 +60,6 @@ svg {
 
 }
 
-.btn-outline-1:active{
-
-
-}
 
 .btn.btn-outline-2_1,
 .btn.btn-outline-2_2{
