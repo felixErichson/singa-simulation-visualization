@@ -442,7 +442,7 @@ if(name === "y axis right") {
     function compareRange(scalemax, scalemax2) {
 
 
-        if (Math.abs(Math.log10(Math.max(scalemax, scalemax2)) - Math.log10(Math.min(scalemax, scalemax2))) < 0.7) {
+        if (Math.abs(Math.log10(scalemax) - Math.log10(scalemax2)) < 0.6) {
             return true;
         }
     }
