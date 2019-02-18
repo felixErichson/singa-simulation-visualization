@@ -42,12 +42,12 @@
 
 <script>
 
-
+// set canvas of the graph
     const margin = {top: 40, right: 50, bottom: 40, left: 50},
         width = 700 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
-
+// scale the data to dimension of the graph
     const x = d3.scaleLinear().range([0, width]);
     var y0 = d3.scaleLinear().range([height, 0]);
     var y1 = d3.scaleLinear().range([height, 0]);
@@ -55,7 +55,7 @@
 
 
 
-
+// define the trajectories
     const valueline1 =
         d3.line()
             .x(function (d) {
@@ -75,8 +75,8 @@
                 return y1(d.concentration);
             });
 
-console.log(valueline2);
 
+    // define the svg element
     const svg = d3.select(".container")
         .attr("id", "chart")
         .append("svg")
@@ -86,7 +86,7 @@ console.log(valueline2);
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    //Label X-Axis
+    //label X-Axis
     svg.append("text")
         .attr("class", "x label")
         .attr("text-anchor", "end")
@@ -94,7 +94,7 @@ console.log(valueline2);
         .attr("y", height + 30)
         .text("Elapsed time [ms]");
 
-    //Label Y-Axis
+    //label Y-Axis
     svg.append("text")
         .attr("class", "y label")
         .attr("text-anchor", "end")
@@ -104,7 +104,7 @@ console.log(valueline2);
         .attr("transform", "rotate(-90)")
         .text("Conctration [nmol/l");
 
-
+    //define attributes of title
     svg.append("text")
         .attr("id", "titleOne")
         .attr("x", (width / 2))
@@ -126,7 +126,7 @@ console.log(valueline2);
 
 
 
-
+    //read the data from a CSV file to work with them
     d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
         if (error) throw error;
 
@@ -137,7 +137,7 @@ console.log(valueline2);
         });
 
 
-        // Nest the Data
+        // Nest the Data to get a better overview and rearrange the data
         nested_data = d3.nest()
             .key(function (d) {
                 return d.species;
@@ -175,7 +175,7 @@ console.log(valueline2);
 
         setXAxis(svg);
 
-        // Define the Y Axis and the valuelines. If statement for matching datarange-------------------------------------
+        // Define the Y Axis and the valuelines. If statement for matching datarange
         if (compareRange(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))) {
 
             // Add the Y Axis
@@ -342,7 +342,7 @@ console.log(valueline2);
 
     /**
      *
-     * Function to add the choice boxes. At first the data were nested to realise the selection of species and compartment.
+     * Function to add the choice boxes. At first the data were nested to realize the selection of species and compartment.
      * Then the select items were created in bootstraps style for species and compartment
      * At least the data which can be selected were added.
      *
