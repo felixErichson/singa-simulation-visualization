@@ -3,12 +3,132 @@ body {
     height: 100%;
 }
 
+#main{
+
+    min-height: 100%;
+
+}
+
+#header{
+    width: 100%;
+    background-color: #f5f5f5;
+}
+
+#nav {
+
+    width: 100%;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    z-index: 1;
+    position: relative;
+}
+
+.graph{
+    width: 1000px;
+    margin: 25px auto 25px auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: justify;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    }
+
+.title{
+
+    text-align: center;
+    color: #333;
+    background-color: #F5F5F5;
+    border-color: #DDD;
+    padding: 10px 15px;
+    border-bottom: 1px solid #DDD;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.trajectory {
+
+    height: 500px;
+
+
+}
+
+
+.box{
+
+    padding: 30px;
+    /*background-color: bisque ;*/
+
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
 .container{
 
     margin-top: 10%;
     margin-left: auto;
     width: 50%;
     padding: 2%;
+    background-color: #999999;
+
+
+}
+
+.list p{
+
+color: #ffffff;
+
+text-align: center;
+
+}
+
+.list.basolateral_membrane{
+float: left;
+   width: 30%;
+    height: 200px;
+    margin-left: auto;
+
+    background-color: #7f7100;
+
+}
+
+.list.interstitum{
+    float: left;
+    width: 30%;
+    height: 200px;
+    margin-left: auto;
+
+
+    background-color: #317d7f;
+
+}
+
+.list.cytoplasm{
+    float: left;
+    width: 30%;
+    height: 200px;
+    margin-left: auto;
+    background-color: #7f3a4e;
 
 
 }
@@ -16,6 +136,7 @@ body {
 .Boxes{
 
     margin-top: auto;
+    background-color: #777f5d;
 
 }
 
@@ -39,8 +160,9 @@ path {
 
 
 svg {
-    margin: auto;
-    padding: 0;
+    position:absolute;
+
+    /*background: yellow;*/
 
 }
 .btn.btn-outline-1_2,
