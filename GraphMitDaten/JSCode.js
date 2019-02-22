@@ -1,3 +1,5 @@
+//Global variables
+
 // set canvas of the graph
 const margin = {top: 40, right: 50, bottom: 40, left: 50},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
@@ -7,6 +9,9 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
 const x = d3.scaleLinear().range([0, width]);
 var y0 = d3.scaleLinear().range([height, 0]);
 var y1 = d3.scaleLinear().range([height, 0]);
+
+
+const time = [];
 
 
 // define the trajectories
@@ -41,9 +46,9 @@ let svg = d3.select(".trajectory")
     .attr("id", "chart")
     .append("svg")
     // .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("width", width  )//+ margin.left + margin.right
+    .attr("width", width)//+ margin.left + margin.right
     .attr("height", height + margin.top + margin.bottom)
-    .attr("viewBox", "-80 0 " + (100 +parseInt(d3.select(".trajectory").style("width")) ) + " " + parseInt(d3.select(".trajectory").style("height")))
+    .attr("viewBox", "-80 0 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
     .attr("preserveAspectRatio", "xMidYMid meet")
     .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -62,7 +67,7 @@ svg.append("text")
     .attr("text-anchor", "end")
     .attr("y", -10)
     .attr("x", 130)
-   // .attr("dy", ".95em")
+    // .attr("dy", ".95em")
     //.attr("transform", "rotate(-90)")
     .text("Concentration [nmol/l]");
 
@@ -102,14 +107,12 @@ svgTitle.append("text")
     .text();
 
 
-//read the data from a CSV file to work with them
-
 //Functions
 
 function loadFile() {
     var file = document.querySelector('input[type=file]').files[0];
     console.log(file);
-    reader = new  FileReader();
+    reader = new FileReader();
     if (file.name.endsWith(".json")) {
         reader.addEventListener("load", readDataFromJson, false);
     } else if (file.name.endsWith(".csv")) {
@@ -133,7 +136,7 @@ function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);
 
     globalData.forEach(function (d) {
-        d.elapsed_time = +d["elapsed time"];
+        d.elapsed_time = +d.elapsed_time;
         d.concentration = +d.concentration;
     });
 
@@ -153,6 +156,35 @@ function readDataFromJson() {
  * @param data Data which were read out
  */
 function prepareNestedData(data) {
+
+    newNestedData =
+
+        d3.nest()
+            .key(function (d) {
+                return d.elapsed_time;
+            })
+            .key(function (d) {
+                return d.compartment;
+            })
+            .key(function (d) {
+                return d.species;
+            })
+            // .key(function (d) {
+            //     return d.concentration;
+            // })
+            .rollup(function (v) {
+                return d3.sum(v, function (d) {
+                    return d.concentration;
+                });
+            })
+            .map(data);
+
+    //console.log(newNestedData);
+
+
+    // time.forEach(function (time) {
+    //     console.log(parseFloat(time))
+    // });
 
 
     nested_data = d3.nest()
@@ -174,6 +206,39 @@ function prepareNestedData(data) {
         })
         .entries(data);
 
+    //console.log(nested_data);
+
+}
+
+
+/**
+ * parse the time if the newNestedData as String
+ */
+function getTime() {
+
+    for (let i of newNestedData.keys()) {
+        time.push(i);
+    }
+
+}
+
+/**
+ *
+ * @param compartment String which compartment should be selected
+ * @param species String which species should be selected
+ */
+
+function filterConcentration(compartment, species) {
+    let concentration = [];
+
+
+    for (let i of newNestedData.keys()) {
+
+        concentration.push(newNestedData.get(i).get(compartment).get(species));
+
+    }
+
+    console.log(concentration);
 }
 
 /**
@@ -191,9 +256,7 @@ function prepareGraph() {
 
 
 // Add the X Axis
-    x.domain(d3.extent(globalData, function (d) {
-        return d.elapsed_time;
-    }));
+    x.domain(d3.extent(time));
 
     setXAxis(svg);
 
@@ -254,9 +317,7 @@ function onChange() {
     // Select the section we want to apply our changes to
 
 
-    x.domain(d3.extent(globalData, function (d) {
-        return d.elapsed_time;
-    }));
+    x.domain(d3.extent(time));
 
 
     console.log(getTheRange(nested_data, "1"));
