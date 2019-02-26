@@ -158,7 +158,7 @@ function readDataFromJson() {
     globalData = JSON.parse(reader.result);
 
 
-    nested_data = new Map();
+    nested_data = d3.map();
 
     let atTime = false;
     let atCompartment = false;
@@ -182,30 +182,21 @@ function readDataFromJson() {
                         currentTime = currentKey;
                         if (!times.includes(currentKey)) {
                             times.push(currentKey)
-                            //TODO Hier am Montag die Map generieren (an dieser Stelle die Zeit rein ballern)
+                            nested_data.set(currentKey, d3.map())
                         }
-                        nested_data.set(currentTime, new Map())
                     }
 
                     if (parent === "concentrations") {
                         currentCompartment = currentKey;
                         if (!compartments.includes(currentKey)) {
                             compartments.push(currentKey);
-                            //TODO Hier am Montag unbedingt die Compartments in die Map feuern
                         }
-                        nested_data.get(currentTime).set(currentCompartment, new Map())
+                        nested_data.get(currentTime).set(currentCompartment, d3.map())
                     }
-
                     const grandparent = parent;
                     parent = currentKey;
-                    // enterTime(currentKey);
-                    // enterCompartment(currentKey);
-
                     traverse(data[currentKey]);
                     parent = grandparent;
-                    // leaveTime(currentKey);
-                    // leaveCompartment(currentKey);
-
 
                 } else {
 
@@ -221,8 +212,6 @@ function readDataFromJson() {
                             species.push(currentKey);
                         }
                         nested_data.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-                        // console.log(currentKey, ":", data[currentKey]);
-                        //TODO Speicher hier die Daten der untersten Ebene für deine Map. Einfach hier Species in die Map ballern
                     }
 
                 }
