@@ -3,6 +3,7 @@ body {
     height: 100%;
 }
 
+
 #main{
 
     min-height: 100%;
@@ -17,11 +18,19 @@ body {
 #nav {
 
     width: 100%;
-    padding: 10px 15px;
+    height: 60px;
+    padding: 10px 10px;
     border-bottom: 1px solid #ddd;
     z-index: 1;
     position: relative;
+    text-align: center;
 }
+img{
+    margin-left: 10px;
+    width: auto;
+    height: 45px;
+}
+
 
 .graph{
     width: 1000px;
@@ -165,6 +174,34 @@ svg {
     /*background: yellow;*/
 
 }
+
+
+.btn.btn-primary{
+    border-color: #0cac79ff;
+    background-color: #1dd398ff ;
+    color: #ffffff;
+
+
+
+}
+
+
+.btn.btn-primary:hover {
+    border-color:  #1dd398ff;
+    background-color:#0cac79ff;
+    color: #ffffff;
+
+}
+
+
+
+.btn.btn-primary:focus {
+   box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63);;
+}
+
+
+
+
 .btn.btn-outline-1_2,
 .btn.btn-outline-1_1{
     border-color: #0d3a86;

@@ -12,6 +12,8 @@ var y1 = d3.scaleLinear().range([height, 0]);
 
 
 const time = [];
+let timeUnit = null;
+let concentrationUnit = null;
 
 
 // define the trajectories
@@ -45,20 +47,20 @@ var globalData = null;
 let svg = d3.select(".trajectory")
     .attr("id", "chart")
     .append("svg")
-    // .attr("xmlns", "http://www.w3.org/2000/svg")
     .attr("width", width)//+ margin.left + margin.right
     .attr("height", height + margin.top + margin.bottom)
-    .attr("viewBox", "-80 0 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
-    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("viewBox", "-80 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
+    .attr("preserveAspectRatio", "xMidYMax meet")
     .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
-responsivefy(svg);
+//responsivefy(svg);
 //label X-Axis
 svg.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("x", width)
-    .attr("y", height + 30)
+    .attr("y", height + 50)
+    .attr("font-size", 20)
     .text("Elapsed time [ms]");
 
 //label Y-Axis
@@ -67,6 +69,7 @@ svg.append("text")
     .attr("text-anchor", "end")
     .attr("y", -10)
     .attr("x", 130)
+    .attr("font-size", 20)
     // .attr("dy", ".95em")
     //.attr("transform", "rotate(-90)")
     .text("Concentration [nmol/l]");
@@ -136,17 +139,110 @@ function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);
 
     globalData.forEach(function (d) {
-        d.elapsed_time = +d.elapsed_time;
+        d.elapsed_time = +d["elapsed time"];
         d.concentration = +d.concentration;
     });
+
+    console.log(globalData);
 
     // globalData = data;
     prepareNestedData(globalData);
     prepareGraph();
+
+
 }
 
 function readDataFromJson() {
-    console.log("json!")
+    console.log("json!");
+    // d3.parseJSON(reader.result);
+    globalData = JSON.parse(reader.result);
+
+
+    nested_data = new Map();
+
+    let atTime = false;
+    let atCompartment = false;
+
+    let times = [];
+    let compartments = [];
+    let species = [];
+
+    let currentTime;
+    let currentCompartment;
+
+    let parent;
+
+    function traverse(data) {
+        for (let currentKey in data) {
+
+            if (data[currentKey] !== null) {
+                if (typeof(data[currentKey]) === "object") {
+
+                    if (parent === "trajectory-data") {
+                        currentTime = currentKey;
+                        if (!times.includes(currentKey)) {
+                            times.push(currentKey)
+                            //TODO Hier am Montag die Map generieren (an dieser Stelle die Zeit rein ballern)
+                        }
+                        nested_data.set(currentTime, new Map())
+                    }
+
+                    if (parent === "concentrations") {
+                        currentCompartment = currentKey;
+                        if (!compartments.includes(currentKey)) {
+                            compartments.push(currentKey);
+                            //TODO Hier am Montag unbedingt die Compartments in die Map feuern
+                        }
+                        nested_data.get(currentTime).set(currentCompartment, new Map())
+                    }
+
+                    const grandparent = parent;
+                    parent = currentKey;
+                    // enterTime(currentKey);
+                    // enterCompartment(currentKey);
+
+                    traverse(data[currentKey]);
+                    parent = grandparent;
+                    // leaveTime(currentKey);
+                    // leaveCompartment(currentKey);
+
+
+                } else {
+
+                    if (currentKey === "time-unit") {
+
+                        timeUnit = data[currentKey];
+
+                    } else if (currentKey === "concentration-unit") {
+
+                        concentrationUnit = data[currentKey]
+                    } else {
+                        if (!species.includes(currentKey)) {
+                            species.push(currentKey);
+                        }
+                        nested_data.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                        // console.log(currentKey, ":", data[currentKey]);
+                        //TODO Speicher hier die Daten der untersten Ebene für deine Map. Einfach hier Species in die Map ballern
+                    }
+
+                }
+
+
+            }
+            // console.log(currentKey)
+        }
+
+
+    }
+
+
+    traverse(globalData);
+    console.log(times);
+    console.log(compartments);
+    console.log(species)
+    console.log(nested_data)
+
+
 }
 
 /**
@@ -179,7 +275,7 @@ function prepareNestedData(data) {
             })
             .map(data);
 
-    //console.log(newNestedData);
+    console.log(newNestedData);
 
 
     // time.forEach(function (time) {
@@ -256,7 +352,9 @@ function prepareGraph() {
 
 
 // Add the X Axis
-    x.domain(d3.extent(time));
+    x.domain(d3.extent(globalData, function (d) {
+        return d.elapsed_time;
+    }));
 
     setXAxis(svg);
 
@@ -317,7 +415,9 @@ function onChange() {
     // Select the section we want to apply our changes to
 
 
-    x.domain(d3.extent(time));
+    x.domain(d3.extent(globalData, function (d) {
+        return d.elapsed_time;
+    }));
 
 
     console.log(getTheRange(nested_data, "1"));
@@ -557,7 +657,8 @@ function setXAxis(svg) {
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(x))
+        .attr("font-size", 15);
 }
 
 
@@ -576,20 +677,23 @@ function setOneYAxis(svg, name, id) {
         svg.append("g")
             .attr("class", name)
             .attr("transform", "translate(" + width + " ,0)")
+            .attr("font-size", "20")
             .styles({
                 fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"), "stroke-width": "0.5"
+                    .css("color"),
             })
-            .call(d3.axisRight(y0));
+            .call(d3.axisRight(y0))
+            .attr("font-size", 17);
     } else {
 
         svg.append("g")
             .attr("class", name)
             .styles({
                 fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"), "stroke-width": "0.5"
+                    .css("color"),
             })
-            .call(d3.axisLeft(y1));
+            .call(d3.axisLeft(y1))
+            .attr("font-size", 17);
     }
 }
 
@@ -621,7 +725,7 @@ function responsivefy(svg) {
     // add viewBox and preserveAspectRatio properties,
     // and call resize so that svg resizes on inital page load
     svg.attr("viewBox", "0 0 " + width + " " + height)
-        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("preserveAspectRatio", "xMidYMax meet")
         .call(resize);
 
     // to register multiple listeners for same event type,
@@ -715,67 +819,4 @@ function changeAxis(id, name) {
 
 }
 
-// function handleFileSelect(evt) {
-//     var files = evt.target.files; // FileList object
-//
-//     // files is a FileList of File objects. List some properties.
-//     var output = [];
-//     for (var i = 0, f; f = files[i]; i++) {
-//         output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-//             f.size, ' bytes, last modified: ',
-//             f.lastModifiedDate.toLocaleDateString(), '</li>');
-//     }
-//     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-// }
-//
-// document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
-
-//Handle file selection bar
-
-
-// We can watch for our custom `fileselect` event like this
-
-
-// $(function() {
-//
-//     // We can attach the `fileselect` event to all file inputs on the page
-//     $(document).on('change', ':file', function() {
-//         var input = $(this),
-//             numFiles = input.get(0).files ? input.get(0).files.length : 1,
-//             label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-//         input.trigger('fileselect', [numFiles, label]);
-//
-//         $('input[type=file]').change(function () {
-//             console.log(this.files[0].mozFullPath);
-//         });
-//
-//
-//
-//
-//       // console.log($("file-upload").attr("src"));
-//
-//
-//          //   $(".box").empty();
-//
-//
-//
-//
-//     });
-//     $(document).ready( function() {
-//
-//         $(':file').on('fileselect', function(event, numFiles, label) {
-//
-//             var input = $(this).parents('.input-group').find(':text'),
-//                 log = numFiles > 1 ? numFiles + ' files selected' : label;
-//             if( input.length ) {
-//                 input.val(log);
-//
-//             } else {
-//                 if( log ) alert(log);
-//             }
-//
-//         });
-//     });
-//
-// });
