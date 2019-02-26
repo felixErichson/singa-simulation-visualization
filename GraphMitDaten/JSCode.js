@@ -1,3 +1,5 @@
+//Global variables
+
 // set canvas of the graph
 const margin = {top: 40, right: 50, bottom: 40, left: 50},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
@@ -7,6 +9,11 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
 const x = d3.scaleLinear().range([0, width]);
 var y0 = d3.scaleLinear().range([height, 0]);
 var y1 = d3.scaleLinear().range([height, 0]);
+
+
+const time = [];
+let timeUnit = null;
+let concentrationUnit = null;
 
 
 // define the trajectories
@@ -40,20 +47,20 @@ var globalData = null;
 let svg = d3.select(".trajectory")
     .attr("id", "chart")
     .append("svg")
-    // .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("width", width  )//+ margin.left + margin.right
+    .attr("width", width)//+ margin.left + margin.right
     .attr("height", height + margin.top + margin.bottom)
-    .attr("viewBox", "-80 0 " + (100 +parseInt(d3.select(".trajectory").style("width")) ) + " " + parseInt(d3.select(".trajectory").style("height")))
-    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("viewBox", "-80 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
+    .attr("preserveAspectRatio", "xMidYMax meet")
     .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
-responsivefy(svg);
+//responsivefy(svg);
 //label X-Axis
 svg.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("x", width)
-    .attr("y", height + 30)
+    .attr("y", height + 50)
+    .attr("font-size", 20)
     .text("Elapsed time [ms]");
 
 //label Y-Axis
@@ -62,7 +69,8 @@ svg.append("text")
     .attr("text-anchor", "end")
     .attr("y", -10)
     .attr("x", 130)
-   // .attr("dy", ".95em")
+    .attr("font-size", 20)
+    // .attr("dy", ".95em")
     //.attr("transform", "rotate(-90)")
     .text("Concentration [nmol/l]");
 
@@ -102,14 +110,12 @@ svgTitle.append("text")
     .text();
 
 
-//read the data from a CSV file to work with them
-
 //Functions
 
 function loadFile() {
     var file = document.querySelector('input[type=file]').files[0];
     console.log(file);
-    reader = new  FileReader();
+    reader = new FileReader();
     if (file.name.endsWith(".json")) {
         reader.addEventListener("load", readDataFromJson, false);
     } else if (file.name.endsWith(".csv")) {
@@ -137,13 +143,95 @@ function readDataFromCsv() {
         d.concentration = +d.concentration;
     });
 
+    console.log(globalData);
+
     // globalData = data;
     prepareNestedData(globalData);
     prepareGraph();
+
+
 }
 
 function readDataFromJson() {
-    console.log("json!")
+    console.log("json!");
+    // d3.parseJSON(reader.result);
+    globalData = JSON.parse(reader.result);
+
+
+    nested_data = d3.map();
+
+    let atTime = false;
+    let atCompartment = false;
+
+    let times = [];
+    let compartments = [];
+    let species = [];
+
+    let currentTime;
+    let currentCompartment;
+
+    let parent;
+
+    function traverse(data) {
+        for (let currentKey in data) {
+
+            if (data[currentKey] !== null) {
+                if (typeof(data[currentKey]) === "object") {
+
+                    if (parent === "trajectory-data") {
+                        currentTime = currentKey;
+                        if (!times.includes(currentKey)) {
+                            times.push(currentKey)
+                            nested_data.set(currentKey, d3.map())
+                        }
+                    }
+
+                    if (parent === "concentrations") {
+                        currentCompartment = currentKey;
+                        if (!compartments.includes(currentKey)) {
+                            compartments.push(currentKey);
+                        }
+                        nested_data.get(currentTime).set(currentCompartment, d3.map())
+                    }
+                    const grandparent = parent;
+                    parent = currentKey;
+                    traverse(data[currentKey]);
+                    parent = grandparent;
+
+                } else {
+
+                    if (currentKey === "time-unit") {
+
+                        timeUnit = data[currentKey];
+
+                    } else if (currentKey === "concentration-unit") {
+
+                        concentrationUnit = data[currentKey]
+                    } else {
+                        if (!species.includes(currentKey)) {
+                            species.push(currentKey);
+                        }
+                        nested_data.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                    }
+
+                }
+
+
+            }
+            // console.log(currentKey)
+        }
+
+
+    }
+
+
+    traverse(globalData);
+    console.log(times);
+    console.log(compartments);
+    console.log(species)
+    console.log(nested_data)
+
+
 }
 
 /**
@@ -153,6 +241,35 @@ function readDataFromJson() {
  * @param data Data which were read out
  */
 function prepareNestedData(data) {
+
+    newNestedData =
+
+        d3.nest()
+            .key(function (d) {
+                return d.elapsed_time;
+            })
+            .key(function (d) {
+                return d.compartment;
+            })
+            .key(function (d) {
+                return d.species;
+            })
+            // .key(function (d) {
+            //     return d.concentration;
+            // })
+            .rollup(function (v) {
+                return d3.sum(v, function (d) {
+                    return d.concentration;
+                });
+            })
+            .map(data);
+
+    console.log(newNestedData);
+
+
+    // time.forEach(function (time) {
+    //     console.log(parseFloat(time))
+    // });
 
 
     nested_data = d3.nest()
@@ -174,6 +291,39 @@ function prepareNestedData(data) {
         })
         .entries(data);
 
+    //console.log(nested_data);
+
+}
+
+
+/**
+ * parse the time if the newNestedData as String
+ */
+function getTime() {
+
+    for (let i of newNestedData.keys()) {
+        time.push(i);
+    }
+
+}
+
+/**
+ *
+ * @param compartment String which compartment should be selected
+ * @param species String which species should be selected
+ */
+
+function filterConcentration(compartment, species) {
+    let concentration = [];
+
+
+    for (let i of newNestedData.keys()) {
+
+        concentration.push(newNestedData.get(i).get(compartment).get(species));
+
+    }
+
+    console.log(concentration);
 }
 
 /**
@@ -496,7 +646,8 @@ function setXAxis(svg) {
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(x))
+        .attr("font-size", 15);
 }
 
 
@@ -515,20 +666,23 @@ function setOneYAxis(svg, name, id) {
         svg.append("g")
             .attr("class", name)
             .attr("transform", "translate(" + width + " ,0)")
+            .attr("font-size", "20")
             .styles({
                 fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"), "stroke-width": "0.5"
+                    .css("color"),
             })
-            .call(d3.axisRight(y0));
+            .call(d3.axisRight(y0))
+            .attr("font-size", 17);
     } else {
 
         svg.append("g")
             .attr("class", name)
             .styles({
                 fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"), "stroke-width": "0.5"
+                    .css("color"),
             })
-            .call(d3.axisLeft(y1));
+            .call(d3.axisLeft(y1))
+            .attr("font-size", 17);
     }
 }
 
@@ -560,7 +714,7 @@ function responsivefy(svg) {
     // add viewBox and preserveAspectRatio properties,
     // and call resize so that svg resizes on inital page load
     svg.attr("viewBox", "0 0 " + width + " " + height)
-        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("preserveAspectRatio", "xMidYMax meet")
         .call(resize);
 
     // to register multiple listeners for same event type,
@@ -654,67 +808,4 @@ function changeAxis(id, name) {
 
 }
 
-// function handleFileSelect(evt) {
-//     var files = evt.target.files; // FileList object
-//
-//     // files is a FileList of File objects. List some properties.
-//     var output = [];
-//     for (var i = 0, f; f = files[i]; i++) {
-//         output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-//             f.size, ' bytes, last modified: ',
-//             f.lastModifiedDate.toLocaleDateString(), '</li>');
-//     }
-//     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-// }
-//
-// document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
-
-//Handle file selection bar
-
-
-// We can watch for our custom `fileselect` event like this
-
-
-// $(function() {
-//
-//     // We can attach the `fileselect` event to all file inputs on the page
-//     $(document).on('change', ':file', function() {
-//         var input = $(this),
-//             numFiles = input.get(0).files ? input.get(0).files.length : 1,
-//             label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-//         input.trigger('fileselect', [numFiles, label]);
-//
-//         $('input[type=file]').change(function () {
-//             console.log(this.files[0].mozFullPath);
-//         });
-//
-//
-//
-//
-//       // console.log($("file-upload").attr("src"));
-//
-//
-//          //   $(".box").empty();
-//
-//
-//
-//
-//     });
-//     $(document).ready( function() {
-//
-//         $(':file').on('fileselect', function(event, numFiles, label) {
-//
-//             var input = $(this).parents('.input-group').find(':text'),
-//                 log = numFiles > 1 ? numFiles + ' files selected' : label;
-//             if( input.length ) {
-//                 input.val(log);
-//
-//             } else {
-//                 if( log ) alert(log);
-//             }
-//
-//         });
-//     });
-//
-// });

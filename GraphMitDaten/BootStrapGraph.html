@@ -52,11 +52,12 @@
         <div id="nav">
             <ul class="nav nav-pills">
                 <li class="nav-item">
-                    <a class="collapsed nav-link" data-toggle="collapse" href="#upload">upload file</a>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#upload" role="button" aria-expanded="false" aria-controls="collapseExample: center">upload file</a>
 
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/singa-bio" target="_blank">SiNGA</a>
+
+                    <a class="link" href="https://github.com/singa-bio" target="_blank"><img src="Singa.png"> </a>
                 </li>
             </ul>
 
@@ -129,33 +130,33 @@
 <script src="JSCode.js"></script>
 <!--Script to manage filebrowser-->
 <script>
-    // $(function() {
-    //
-    //     // We can attach the `fileselect` event to all file inputs on the page
-    //     $(document).on('change', ':file', function() {
-    //         var input = $(this),
-    //             numFiles = input.get(0).files ? input.get(0).files.length : 1,
-    //             label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    //         input.trigger('fileselect', [numFiles, label]);
-    //     });
-    //
-    //     // We can watch for our custom `fileselect` event like this
-    //     $(document).ready( function() {
-    //         $(':file').on('fileselect', function(event, numFiles, label) {
-    //
-    //             var input = $(this).parents('.input-group').find(':text'),
-    //                 log = numFiles > 1 ? numFiles + ' files selected' : label;
-    //
-    //             if( input.length ) {
-    //                 input.val(log);
-    //             } else {
-    //                 if( log ) alert(log);
-    //             }
-    //
-    //         });
-    //     });
-    //
-    // });
+    $(function() {
+
+        // We can attach the `fileselect` event to all file inputs on the page
+        $(document).on('change', ':file', function() {
+            var input = $(this),
+                numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+            input.trigger('fileselect', [numFiles, label]);
+        });
+
+        // We can watch for our custom `fileselect` event like this
+        $(document).ready( function() {
+            $(':file').on('fileselect', function(event, numFiles, label) {
+
+                var input = $(this).parents('.input-group').find(':text'),
+                    log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+                if( input.length ) {
+                    input.val(log);
+                } else {
+                    if( log ) alert(log);
+                }
+
+            });
+        });
+
+    });
 
 
 
