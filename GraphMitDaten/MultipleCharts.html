@@ -56,36 +56,85 @@
 
 <script>
 
+    let time=[];
+    let compartments=[];
+    let species=[];
 
     // Get the data
     d3.csv("node_(0, 0)_concentrations.csv", function (error, data) {
         data.forEach(function (d) {
             d.species = d.species
-            d.elapsed_time = +d.elapsed_time;
+            d.elapsed_time = +d["elapsed time"];
             d.concentration = +d.concentration;
             d.compartment = d.compartment;
 
+
+            if (!time.includes(d.elapsed_time)) {
+                time.push(d.elapsed_time)
+            }
+
+
+            if (!compartments.includes(d.compartment)) {
+                compartments.push(d.compartment)
+            }
+
+
+            if (!species.includes(d.species)) {
+                species.push(d.species)
+            }
+
         });
 
-        var nested_data = d3.nest()
-            .key(function (d) {
-                return d.species;
-            })
-            .key(function (d) {
-                return d.compartment;
-            })
-            .rollup(function (d) {
-                d.scalemin = d3.min(d, function (d) {
-                    return d.concentration
-                });
+        nestedData =
 
-                d.scalemax = d3.max(d, function (d) {
-                    return d.concentration;
-                });
-                return d;
-            })
-            //.map(data, d3.map);
-            .entries(data);
+            d3.nest()
+                .key(function (d) {
+                    return d.elapsed_time;
+                })
+                .key(function (d) {
+                    return d.compartment;
+                })
+                .key(function (d) {
+                    return d.species;
+                })
+                .rollup(function (v) {
+                    return d3.sum(v, function (d) {
+                        return d.concentration;
+                    });
+                })
+                .map(data);
+
+
+        console.log(nestedData);
+
+
+        let rememberSpecies= [];
+
+        compartments.forEach(function (comp) {
+            nestedData.keys().forEach(function (element) {
+
+                nestedData.get(element).get(comp).keys().forEach(function (species) {
+
+                    if (!rememberSpecies.includes(species) && nestedData.get(element).get(comp).get(species) > 0) {
+
+                        rememberSpecies.push(species);
+
+                        var id = "k" + i.toString();
+
+
+                        var div = d3.select("body")
+                            .append("div")
+                            .attr("class", id);
+
+
+
+                        createchart(species, comp, width, height, id);
+
+
+                    }
+                }
+                )}
+            )})
 
 
         var i;
@@ -100,12 +149,9 @@
 
                     var div = d3.select("body")
                         .append("div")
-                        .attr("class", id)
-                        .attr("viewBox","0 0 600 300" )
-                        .attr("preserveAspectRatio","none");
+                        .attr("class", id);
 
-                    var width = parseInt($("." + id).css("width"), 10);
-                    var height = parseInt($("." + id).css("height"), 10);
+
 
                     createchart(hlp1, hlp2, data, width, height, id);
 
@@ -119,10 +165,10 @@
 
 
     //-------------------------------------------------------------------------------------------------------------------------
-    function createchart(spec, comp, ttt, w, h, id) {
+    function createchart(spec, comp, w, h, id) {
 
         // Set the dimensions of the canvas / graph
-
+let data = filterData(spec, comp);
 
         var margin = {top: 30, right: 50, bottom: 35, left: 50},
             width = w - margin.left - margin.right,
@@ -143,13 +189,8 @@
 
 
         // Define the line
-        var valueline = d3.svg.line()
-            .x(function (d) {
-                return x(d.elapsed_time);
-            })
-            .y(function (d) {
-                return y0(d.concentration);
-            });
+        var valueline = d3.line();
+
 
 
         // Adds the svg canvas
@@ -157,7 +198,6 @@
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .call(responsivefy)
             .append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
@@ -190,27 +230,6 @@
 
 
 
-        responsivefy(svg, id);
-
-
-
-        $("div").mouseenter(function () {
-
-            $(this).css({width: '600px', height: '300px'});
-
-      responsivefy(svg, id);
-
-
-
-        });
-
-        $("div").mouseleave(function () {
-
-            $(this).css({width: '300px', height: '150px'});
-
-
-            responsivefy(svg, id);
-        });
 
         // Die Länge der X und Y Achsen bestimmten (Bei Y über das Maximum der gefilterten Daten
         // Bei den Select Items mit beachten
@@ -239,46 +258,61 @@
 
 
         svg.append("path")
-            .data([ttt])
-            .attr("id", "line")
-            .style("stroke", "#d95f02")
-            .attr("d", valueline(ttt.filter(function (d) {
-                return d.species === spec && d.compartment === comp
+            .datum(data)
+            .attr("id", "line_first")
+            .style("stroke", "red") //$(".btn-outline-" + id + "_1").css("color")
+            .attr("d", valueline
+                .x(function (d) {
 
-            })));
+                    return x(d.x);
+                })
+                .y(function (d) {
+                    return y0(d.y);
+                }));
 
 
 
 
     }
 
+    function filterData(compartment, species) {
 
-    function responsivefy(svg, id) {
-        // get container + svg aspect ratio
-        var container = d3.select(svg.node().parentNode),
-            width = parseInt(svg.style("width")),
-            height = parseInt(svg.style("height")),
-            aspect = width / height;
+        let trajektoryData = [];
 
-        // add viewBox and preserveAspectRatio properties,
-        // and call resize so that svg resizes on inital page load
-         svg.attr("viewBox", "0 0 " + width + " " + height)
-            .attr("preserveAspectRatio", "xMinYMid")
-            .call(resize);
+        let obj = {};
 
-        // to register multiple listeners for same event type,
-        // you need to add namespace, i.e., 'click.foo'
-        // necessary if you call invoke this function for multiple svgs
-        // api docs: https://github.com/mbostock/d3/wiki/Selections#on
-        d3.select("."+id).on("resize." + container.attr("id"), resize);
 
-        // get width of container and resize svg to fit it
-        function resize() {
-            var targetWidth = parseInt(container.style("width"));
-            svg.attr("width", targetWidth);
-            svg.attr("height", Math.round(targetWidth / aspect));
-        }
+        nestedData.keys().forEach(function (element) {
+
+            if (nestedData.get(element).get(compartment).get(species) === undefined) {
+
+                obj = {
+                    x: parseFloat(element),
+                    y: 0
+                };
+
+                trajektoryData.push(obj);
+
+
+            } else {
+                obj = {
+                    x: parseFloat(element),
+                    y: nestedData.get(element).get(compartment).get(species)
+                };
+
+                trajektoryData.push(obj);
+
+            }
+        });
+        // console.log(trajektoryData);
+
+        console.log(trajektoryData);
+        return trajektoryData;
+
+
     }
+
+
 
 
 

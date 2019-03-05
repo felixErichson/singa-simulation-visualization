@@ -1,5 +1,12 @@
 //Global variables
 
+//TODO globale Variablen überarbeiten!!
+
+   const modalMargin = {top: 40, right: 20, bottom: 40, left: 100},
+    modalWidth = 400 - modalMargin.left - modalMargin.right,
+    modalHeight = 300 - modalMargin.top - modalMargin.bottom;
+
+
 // set canvas of the graph
 const margin = {top: 40, right: 50, bottom: 40, left: 50},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
@@ -10,39 +17,31 @@ const x = d3.scaleLinear().range([0, width]);
 var y0 = d3.scaleLinear().range([height, 0]);
 var y1 = d3.scaleLinear().range([height, 0]);
 
-
-const time = [];
+const color = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
+let color1 ="#4daf4a";
+let color2 = "#a65628";
+let summedData = [];
+let activeTrajectories = [];
+let time = [];
+let compartments = [];
+let species = [];
+//let concentration = [];
 let timeUnit = null;
 let concentrationUnit = null;
 
 
-// define the trajectories
-const valueline1 =
-    d3.line()
-        .x(function (d) {
-            // console.log(x(d.elapsed_time));
-            return x(d.elapsed_time);
-        })
-        .y(function (d) {
-            return y0(d.concentration);
-        });
+let valueline1 =
+    d3.line();
 
-const valueline2 =
-    d3.line()
-        .x(function (d) {
-            return x(d.elapsed_time);
-        })
-        .y(function (d) {
-            return y1(d.concentration);
-        });
+let valueline2 = d3.line();
+
 
 let reader = new FileReader();
 
 var globalData = null;
 
 //read in the data from csv file
-// define the svg element
-
+// define the svg element#
 
 let svg = d3.select(".trajectory")
     .attr("id", "chart")
@@ -112,6 +111,7 @@ svgTitle.append("text")
 
 //Functions
 
+
 function loadFile() {
     var file = document.querySelector('input[type=file]').files[0];
     console.log(file);
@@ -129,7 +129,6 @@ function loadFile() {
 }
 
 /**
- *
  * Can read csv files and convert time and concentration into integer.
  *
  * @param file file to be read out
@@ -141,31 +140,49 @@ function readDataFromCsv() {
     globalData.forEach(function (d) {
         d.elapsed_time = +d["elapsed time"];
         d.concentration = +d.concentration;
+
+
+        if (!time.includes(d.elapsed_time)) {
+            time.push(d.elapsed_time)
+        }
+
+
+        if (!compartments.includes(d.compartment)) {
+            compartments.push(d.compartment)
+        }
+
+
+        if (!species.includes(d.species)) {
+            species.push(d.species)
+        }
     });
 
-    console.log(globalData);
 
-    // globalData = data;
+
+
     prepareNestedData(globalData);
-    prepareGraph();
+    prepareModal();
+    addSelectionButtons();
 
 
 }
 
+
+/**
+ *
+ * travers over json file to nest the data.
+ * recursive function
+ *
+ *
+ *
+ */
 function readDataFromJson() {
+
     console.log("json!");
-    // d3.parseJSON(reader.result);
     globalData = JSON.parse(reader.result);
 
 
-    nested_data = d3.map();
-
-    let atTime = false;
-    let atCompartment = false;
-
-    let times = [];
-    let compartments = [];
-    let species = [];
+    nestedData = d3.map();
 
     let currentTime;
     let currentCompartment;
@@ -180,9 +197,9 @@ function readDataFromJson() {
 
                     if (parent === "trajectory-data") {
                         currentTime = currentKey;
-                        if (!times.includes(currentKey)) {
-                            times.push(currentKey)
-                            nested_data.set(currentKey, d3.map())
+                        if (!time.includes(currentKey)) {
+                            time.push(parseFloat(currentKey));
+                            nestedData.set(currentKey, d3.map())
                         }
                     }
 
@@ -191,7 +208,7 @@ function readDataFromJson() {
                         if (!compartments.includes(currentKey)) {
                             compartments.push(currentKey);
                         }
-                        nested_data.get(currentTime).set(currentCompartment, d3.map())
+                        nestedData.get(currentTime).set(currentCompartment, d3.map())
                     }
                     const grandparent = parent;
                     parent = currentKey;
@@ -211,14 +228,14 @@ function readDataFromJson() {
                         if (!species.includes(currentKey)) {
                             species.push(currentKey);
                         }
-                        nested_data.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                        nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
                     }
 
                 }
 
 
             }
-            // console.log(currentKey)
+
         }
 
 
@@ -226,23 +243,24 @@ function readDataFromJson() {
 
 
     traverse(globalData);
-    console.log(times);
-    console.log(compartments);
-    console.log(species)
-    console.log(nested_data)
+    addSelectionButtons();
+    prepareModal();
+
+
 
 
 }
 
+
 /**
  *
- * Nest the data into a hierarchic structure.
+ * Nest the data into a hierarchic structure. Only for csv files
  *
- * @param data Data which were read out
+ * @param data Data from csv file
  */
 function prepareNestedData(data) {
 
-    newNestedData =
+    nestedData =
 
         d3.nest()
             .key(function (d) {
@@ -254,9 +272,6 @@ function prepareNestedData(data) {
             .key(function (d) {
                 return d.species;
             })
-            // .key(function (d) {
-            //     return d.concentration;
-            // })
             .rollup(function (v) {
                 return d3.sum(v, function (d) {
                     return d.concentration;
@@ -264,128 +279,328 @@ function prepareNestedData(data) {
             })
             .map(data);
 
-    console.log(newNestedData);
 
-
-    // time.forEach(function (time) {
-    //     console.log(parseFloat(time))
-    // });
-
-
-    nested_data = d3.nest()
-        .key(function (d) {
-            return d.species;
-        })
-        .key(function (d) {
-            return d.compartment;
-        })
-        .rollup(function (d) {
-            d.scalemin = d3.min(d, function (d) {
-                return d.concentration
-            });
-
-            d.scalemax = d3.max(d, function (d) {
-                return d.concentration;
-            });
-            return d;
-        })
-        .entries(data);
-
-    //console.log(nested_data);
+    console.log(nestedData);
 
 }
 
 
-/**
- * parse the time if the newNestedData as String
- */
-function getTime() {
 
-    for (let i of newNestedData.keys()) {
-        time.push(i);
-    }
+/**
+ * returns a array of objects with x (time) and y(conventration) data to create the Graph or filter concentration
+ * @param compartment
+ * @param species
+ * @return {Array}
+ */
+
+
+
+
+function sumData (){
+
+
+
+    let rememberSpecies = [];
+    compartments.forEach(function (comp) {
+
+        nestedData.keys().forEach(function (element) {
+
+            nestedData.get(element).get(comp).keys().forEach(function (species) {
+
+
+                if (!rememberSpecies.includes(species) && nestedData.get(element).get(comp).get(species) > 0) {
+
+                    rememberSpecies.push(species);
+
+
+                    //summedData.push(comp + "_" + species);
+
+                    summedData[comp+"_"+species] = filterData(comp, species)
+
+                    ;
+
+                }
+
+            })
+        })
+    })
 
 }
 
-/**
- *
- * @param compartment String which compartment should be selected
- * @param species String which species should be selected
- */
+
+
+function filterData(compartment, species) {
+
+    let trajektoryData = [];
+
+    let obj = {};
+
+
+    nestedData.keys().forEach(function (element) {
+
+        if (nestedData.get(element).get(compartment).get(species) === undefined) {
+
+            obj = {
+              //  name: compartment+ "_" + species,
+                x: parseFloat(element),
+                y: 0
+            };
+
+            trajektoryData.push(obj);
+
+
+        } else {
+            obj = {
+               // name: compartment+ "_" + species,
+                x: parseFloat(element),
+                y: nestedData.get(element).get(compartment).get(species)
+            };
+
+            trajektoryData.push(obj);
+
+        }
+    });
+    // console.log(trajektoryData);
+
+    return trajektoryData;
+
+
+}
+
 
 function filterConcentration(compartment, species) {
     let concentration = [];
 
 
-    for (let i of newNestedData.keys()) {
+    if (compartment !== "Compartment" && species !== "Species") {
 
-        concentration.push(newNestedData.get(i).get(compartment).get(species));
+        nestedData.keys().forEach(function (element) {
 
+            concentration.push(nestedData.get(element).get(compartment).get(species));
+        });
+
+        // console.log(concentration);
+        return concentration;
+
+    } else {
+        concentration.push(0);
+        return concentration;
     }
 
-    console.log(concentration);
+}
+
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+
+function prepareModal(){
+
+
+
+    sumData();
+    let iterator = 0;
+
+
+console.log(summedData);
+
+compartments.forEach(function (data) {
+    let modDiv = d3.select("#modal_body")
+        .append("div")
+        .attr("id", "modal_body_" + data.split(" ").join("_"))
+        .append("h2")
+        .text(data);
+
+
+});
+for (let i in summedData){
+
+
+
+
+let hlp = "";
+
+console.log();
+
+hlp = i.substr(0,i.indexOf("_"));
+console.log(hlp);
+
+
+    let modalSvg = d3.select("#modal_body_" + hlp.split(" ").join("_"))
+        .append("svg")
+        .attr("float", "left")
+        .attr("width", modalWidth + modalMargin.left + modalMargin.right)
+        .attr("height", modalHeight + modalMargin.top + modalMargin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + modalMargin.left + "," + modalMargin.top + ")");
+
+    modalSvg.append("text")
+        .attr("x", (modalWidth / 2))
+        .attr("y", 0 - (modalMargin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text(i.substr(i.indexOf("_")+1));
+
+    modalSvg.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", (modalWidth/2)+20)
+        .attr("y", modalHeight+30)
+        .attr("font-size", 15)
+        .text("[ms]");
+
+//label Y-Axis
+    modalSvg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", -10)
+        .attr("x", 30)
+        .attr("font-size", 15)
+        // .attr("dy", ".95em")
+        //.attr("transform", "rotate(-90)")
+        .text("[nmol/l]");
+
+
+    var modalX = d3.scaleLinear()
+        .domain(d3.extent(summedData[i], function(d) { return d.x; }))
+        .range([ 0, modalWidth ]);
+
+    modalSvg.append("g")
+        .attr("transform", "translate(0," + modalHeight + ")")
+        .call(d3.axisBottom(modalX).ticks(4));
+
+//Add Y axis
+    var modalY = d3.scaleLinear()
+        .domain([0, d3.max(summedData[i], function(d) { return d.y; })])
+        .range([ modalHeight, 0 ]);
+    modalSvg.append("g")
+        .call(d3.axisLeft(modalY).ticks(5));
+
+    modalSvg.append("path")
+        .datum(summedData[i])
+        .attr("id", "line_" + iterator)
+        .style("stroke", getRandomColor()) //$(".btn-outline-" + id + "_1").css("color")
+        .attr("d", d3.line()
+            .x(function (d) {
+
+                return modalX(d.x);
+            })
+            .y(function (d) {
+                return modalY(d.y);
+            }));
+
+
+iterator++;
+
+}
+
 }
 
 /**
  *
  * Creates all elements required by the graph.
  *
- * @param globalData Data which were read out
  */
 
 function prepareGraph() {
 
-//Add choice boxes
-    addChoiceBox("1", globalData);
-    addChoiceBox("2", globalData);
+d3.selectAll("#line").remove();
+d3.selectAll(".x.axis").remove();
+
+    d3.selectAll(".y.axis.left").remove();
+    d3.selectAll(".y.axis.right").remove();
 
 
-// Add the X Axis
-    x.domain(d3.extent(globalData, function (d) {
-        return d.elapsed_time;
-    }));
+    x.domain(d3.extent(time));
+        setXAxis(svg);
+        let iterator = 0;
 
-    setXAxis(svg);
+        let data1= null;
+        let data2 = null;
 
-// Define the Y Axis and the valuelines. If statement for matching datarange
-    if (compareRange(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))) {
-
-        // Add the Y Axis
-        y0.domain([0, Math.max(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))]);
-
-        setOneYAxis(svg, "y axis left");
-
-
-        addLine(svg, globalData, "1", valueline1);
-        addLine(svg, globalData, "2", valueline1);
-
-    } else {
-
-
-// Else Statement when the ranges are different--------------------------------------------------
-
-        // Add the Y Axis
-        y0.domain([0, d3.max(globalData.filter(function (d) {
-            return d.species === getTextOfBox("1_2") && d.compartment === getTextOfBox("1_1")
-        }), function (d) {
-            return d.concentration
-        })]);
+// console.log(activeTrajectories);
+//
+// if (activeTrajectories.length === 1
+// ) {
+//     let comp = activeTrajectories[0].split("_")[0];
+//
+//     let spec = activeTrajectories[0].split("_")[1];
+//
+//     y0.domain([0, d3.max(filterData(comp, spec), function (d) {
+//
+//         return d.y;
+//     })]);
+//
+//     setOneYAxis(svg, "y axis right", color[1], filterData(comp, spec));
+//
+//     addLine(svg, filterData(comp, spec), color[1], "valueline1");
+//
+// }
 
 
-        y1.domain([0, d3.max(globalData.filter(function (d) {
-            return d.species === getTextOfBox("2_2") && d.compartment === getTextOfBox("2_1")
-        }), function (d) {
-            return d.concentration
-        })]);
-
-        setOneYAxis(svg, "y axis left", "1");
-        setOneYAxis(svg, "y axis right", "2");
-
-        addLine(svg, globalData, "1", valueline1);
-        addLine(svg, globalData, "2", valueline2);
+    activeTrajectories.forEach(function (trajectory) {
 
 
-    }
+
+        if (iterator === 0) {
+
+            let comp = activeTrajectories[iterator].split("_")[0];
+
+            let spec = activeTrajectories[iterator].split("_")[1];
+
+
+            let data = filterData(comp, spec);
+
+            d3.selectAll(".y.axis.left").remove();
+
+
+            y0.domain([0, d3.max(data, function (d) {
+                return d.y;
+            })]);
+
+            setOneYAxis(svg, "y axis left", color[iterator]);
+            addLine(svg, data, color[iterator], "valueline1");
+            title("#titleOne", trajectory, color[iterator])
+
+
+        } else if (iterator === 1) {
+
+            let comp = activeTrajectories[iterator].split("_")[0];
+
+            let spec = activeTrajectories[iterator].split("_")[1];
+
+
+            let data = filterData(comp, spec);
+
+            d3.selectAll(".y.axis.right").remove();
+
+
+
+            y1.domain([0, d3.max(data, function (d) {
+                return d.y;
+            })])
+                .range([height, 0]);
+            setOneYAxis(svg, "y axis right", color[iterator]);
+
+            title("#titleTwo", trajectory, color[iterator]);
+
+            addLine(svg, data, color[iterator]);
+        }
+
+
+iterator++
+    })
+
+
+
 }
 
 
@@ -393,6 +608,8 @@ function prepareGraph() {
  *
  * Change the essential elements to plot the new data.
  * Data is read out again and then processed with various functions
+ *
+ * Dead at this moment
  */
 function onChange() {
     // Add the valueline path.
@@ -404,45 +621,37 @@ function onChange() {
     // Select the section we want to apply our changes to
 
 
-    x.domain(d3.extent(globalData, function (d) {
-        return d.elapsed_time;
-    }));
+    x.domain(d3.extent(time));
 
 
-    console.log(getTheRange(nested_data, "1"));
+    //console.log(getTheRange("1"));
 
-    if (compareRange(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))) {
+    if (compareRange(getTheRange("1"), getTheRange("2"))) {
         console.log("same axis");
-        y0.domain([0, Math.max(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))]);
+        y0.domain([0, Math.max(getTheRange("1"), getTheRange("2"))]);
         // y.domain([0, 0]);
 
         // Make the changes
 
-        changeLine("1", valueline1, globalData);
-        changeLine("2", valueline1, globalData);
+        changeLine("1", valueline1);
+        changeLine("2", valueline1);
         changeAxis("1", "y axis left");
         changeAxis("2", "y axis right");
 
 
     } else {
+
+
         console.log("different axis");
 
-        y0.domain([0, d3.max(globalData.filter(function (d) {
-            return d.species === getTextOfBox("1_2") && d.compartment === getTextOfBox("1_1")
-        }), function (d) {
-            return d.concentration
-        })]);
+        y0.domain([0, d3.max(filterConcentration(getTextOfBox("1_1"), getTextOfBox("1_2")))]);
 
 
-        y1.domain([0, d3.max(globalData.filter(function (d) {
-            return d.species === getTextOfBox("2_2") && d.compartment === getTextOfBox("2_1")
-        }), function (d) {
-            return d.concentration
-        })]);
+        y1.domain([0, d3.max(filterConcentration(getTextOfBox("2_1"), getTextOfBox("2_2")))]);
 
 
-        changeLine("1", valueline1, globalData);
-        changeLine("2", valueline2, globalData);
+        changeLine("1", valueline1);
+        changeLine("2", valueline2);
         changeAxis("1", "y axis left");
         changeAxis("2", "y axis right");
 
@@ -459,142 +668,135 @@ function onChange() {
  *@param nested_data nested data
  *@param id first number of id (1 or 2 instead of 1_1)
  *@returns scalemax
+ *
+ *
+ * dead at this moment
  */
-function getTheRange(nested_data, id) {
+function getTheRange(id) {
     // determine text of selections
+
     const selectionSpecies = getTextOfBox(id + "_2");
     const selectionCompartment = getTextOfBox(id + "_1");
+
     // get maximal value of the data
-    for (let zzz = 0; zzz < nested_data.length; zzz++) {
-        if (nested_data[zzz].key === selectionSpecies) {
-            for (let xxx = 0; xxx < nested_data[zzz].values.length; xxx++) {
-                if (nested_data[zzz].values[xxx].key === selectionCompartment) {
-                    return nested_data[zzz].values[xxx].value.scalemax;
-                }
-            }
-        }
-    }
+    let data = filterData(selectionCompartment, selectionSpecies);
+    return d3.max(data, function (d) {
+        return d.y;
+    });
+
+//
+//     for (let zzz = 0; zzz < nested_data.length; zzz++) {
+//         if (nested_data[zzz].key === selectionSpecies) {
+//             for (let xxx = 0; xxx < nested_data[zzz].values.length; xxx++) {
+//                 if (nested_data[zzz].values[xxx].key === selectionCompartment) {
+//                     return nested_data[zzz].values[xxx].value.scalemax;
+//                 }
+//             }
+//         }
+//     }
 }
 
 
+//TODO Speichern und löschen der Auswahl in einem Objekt. Linien imer anhand des Objekts erzeugen. Einfach immer neue Linien zeichnen
 /**
  *
- * Function to add the choice boxes. At first the data were nested to realize the selection of species and compartment.
- * Then the select items were created in bootstraps style for species and compartment
- * At least the data which can be selected were added.
+ *Creates Buttons to select Species in an Compartment.
  *
- *@param id first number of id (1 or 2 instead of 1_1)
- *@param data data from file
  */
-function addChoiceBox(id, data) {
+function addSelectionButtons() {
     //Dropdown Box 1 Compartment
+    //
+    // let category = null;
+    // let selection = null;
+    let rememberSpecies = [];
+    let iterator = 0;
+    let colorIterator = 0;
 
-    let category = null;
-    let selection = null;
+    // console.log(nestedData);
 
-
-    // Nest the data to select species or compartment
-    const compartmentSelection = d3.nest()
-        .key(function (d) {
-            return d.compartment;
-        })
-        .rollup(function (v) {
-            return v.length;
-        })
-        .entries(data);
+//console.log(compartments);
 
 
-    const speciesSelection = d3.nest()
-        .key(function (d) {
-            return d.species;
-        })
-        .rollup(function (v) {
-            return v.length;
-        })
-        .entries(data);
 
 
-// for loop to create choiceboxes
-
-    for (let i = 1; i < 3; i++) {
-
-        if (i === 1) {
-            category = "Compartment"
-        } else if (i === 2) {
-            category = "Species"
-        }
-
-        if (i === 1) {
-            selection = compartmentSelection;
-        } else if (i === 2) {
-            selection = speciesSelection;
-        }
-
+    compartments.forEach(function (comp) {
         d3.select(".box")
             .append("div")
-            .attr("class", "selection" + id + "_" + i)
-            .style("position", "relative")
-            .style("align", "center")
-            .style("float", "center")
-            .append("div")
-            .attr("id", "Tablediv" + id + "_" + i)
-            .attr("class", "dropdown")
-            .append("button")
-            .attr("id", "btn-d" + id + "_" + i)
-            .attr("class", "btn btn-outline-" + id + "_" + i)
-            .attr("type", "button")
-            .attr("data-toggle", "dropdown")
-            .text(category)
-            .append("span")
-            .attr("class", "caret");
+            .attr("id", comp.split(' ').join('_'))
+            .attr("class", "list " + comp)
+            .text(comp);
 
-        realizeList(selection, id, i);
+        nestedData.keys().forEach(function (element) {
+
+            nestedData.get(element).get(comp).keys().forEach(function (species) {
 
 
-        updateGraph("#TableMenu" + id + "_" + i, "#btn-d" + id + "_" + i);
-    }
+                if (!rememberSpecies.includes(species) && nestedData.get(element).get(comp).get(species) > 0) {
+
+                    rememberSpecies.push(species);
 
 
-}
-
-function realizeList(selection, firstId, secondId) {
-
-    let ulHelp =
-        d3.select("#Tablediv" + firstId + "_" + secondId)
-            .append("ul")
-            .attr("id", "TableMenu" + firstId + "_" + secondId)
-            .attr("class", "dropdown-menu");
-
-
-    for (let j = 0; j < selection.length; j++) {
-
-        ulHelp
-            .append("li")
-            .append("a")
-            .attr("href", "#")
-            .text(selection[j].key)
-    }
+                    d3.select("#" + comp.split(' ').join('_'))
+                        .append("div")
+                        .attr("class", "col-md-4 center-block")
+                        .append("button")
+                        .attr("id", comp + "-" + species)
+                        .attr("class", "btn btn-outline-secondary")
+                        .attr("type", "button")
+                        .text(species)
+                        .on("click", function () {
 
 
-}
 
-/**
- *
- *update the text of boxes and perform onChange
- *
- *@param tabMenu id (#) of TableMenu
- *@param buttonName id (#) of the button which should read out
- *@returns selTex the selection as string
- *
- */
-function updateGraph(tabMenu, buttonName) {
 
-    $(tabMenu + " a").click(function (e) {
-        e.preventDefault();
-        let selText = $(this).text();
-        $(buttonName).text(selText);
-        onChange();
-        //console.log(selText);
+                            let comp = this.id.split("-")[0];
+                            let spec = this.id.split("-")[1];
+
+                            if (activeTrajectories.length < 2 && $(this).attr("class") === "btn btn-outline-secondary"){
+
+
+
+                                    activeTrajectories.push(comp + "_" + spec);
+
+                                    $(this).toggleClass("active");
+
+                                    prepareGraph();
+
+
+                                    // $(this).css("background-color", color[colorIterator]);
+
+                                    colorIterator++;
+
+                                } else if ($(this).attr("class") === "btn btn-outline-secondary active") {
+
+
+                                    // $(this).css("background-color", "#ffffff");
+
+                                    $(this).removeClass('active');
+
+                                    var index = activeTrajectories.indexOf(comp + "_" + spec);
+                                    if (index > -1) {
+                                        activeTrajectories.splice(index, 1);
+                                    }
+                                    colorIterator--;
+                                    prepareGraph();
+                                }
+
+
+                                console.log(activeTrajectories);
+
+
+                        });
+
+                }
+
+                iterator++;
+            })
+
+
+        })
+
+
     })
 
 }
@@ -614,26 +816,25 @@ function getTextOfBox(id) {
 }
 
 
+
+//TODO title Funktion überarbeiten (Titelbox vielleicht collapse machen)
 /**
  *
  * change titles of the graphs
  *
  */
-function title() {
+function title(name, data, color) {
 
     let svg = d3.select(".title").transition();
 
     svg
-        .select("#titleOne")
-        .styles({color: $(".btn-outline-1_1").css("color")})
-        .text(getTextOfBox("1_1") + ":" + getTextOfBox("1_2"));
+        .select(name)
+        .styles({color: color})
+        .text(data);
 
-    svg
-        .select("#titleTwo")
-        .styles({color: $(".btn-outline-2_1").css("color")})
-        .text(getTextOfBox("2_1") + ":" + getTextOfBox("2_2"));
 
 }
+
 
 /**
  *
@@ -651,6 +852,9 @@ function setXAxis(svg) {
 }
 
 
+
+
+//TODO Y-Achsen management auf neuen Datenauswahl anpassen unbedingt. Funktion und Paramenter überarbeiten
 /**
  *
  * creates one y axis based on the class name.
@@ -660,29 +864,34 @@ function setXAxis(svg) {
  * @param name class name of y axis
  * @param id first number of id (1 or 2 instead of 1_1)
  */
-function setOneYAxis(svg, name, id) {
+function setOneYAxis(svg, name, color, data) {
 
     if (name === "y axis right") {
+
         svg.append("g")
             .attr("class", name)
             .attr("transform", "translate(" + width + " ,0)")
             .attr("font-size", "20")
             .styles({
-                fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"),
+                fill: "none", stroke: color
+                    ,
             })
-            .call(d3.axisRight(y0))
+            .call(d3.axisRight(y1))
             .attr("font-size", 17);
-    } else {
+
+
+    } else if (name === "y axis left"){
 
         svg.append("g")
             .attr("class", name)
             .styles({
-                fill: "none", stroke: $(".btn-outline-" + id + "_1")
-                    .css("color"),
+                fill: "none", stroke: color
+                    ,
             })
-            .call(d3.axisLeft(y1))
+            .call(d3.axisLeft(y0))
             .attr("font-size", 17);
+
+
     }
 }
 
@@ -700,37 +909,8 @@ function compareRange(scalemax, scalemax2) {
     }
 }
 
-/**
- * fits the coordinate system to the screen
- *
- */
-function responsivefy(svg) {
-    // get container + svg aspect ratio
-    let container = d3.select(".trajectory"),
-        width = parseInt(container.style("width")),
-        height = parseInt(container.style("height")),
-        aspect = width / height;
 
-    // add viewBox and preserveAspectRatio properties,
-    // and call resize so that svg resizes on inital page load
-    svg.attr("viewBox", "0 0 " + width + " " + height)
-        .attr("preserveAspectRatio", "xMidYMax meet")
-        .call(resize);
-
-    // to register multiple listeners for same event type,
-    // you need to add namespace, i.e., 'click.foo'
-    // necessary if you call invoke this function for multiple svgs
-    // api docs: https://github.com/mbostock/d3/wiki/Selections#on
-    // d3.select(window).on("resize." + container.attr("id"), resize);
-
-    // get width of container and resize svg to fit it
-    function resize() {
-        let targetWidth = parseInt(container.style("width"));
-        svg.attr("width", targetWidth);
-        svg.attr("height", Math.round(targetWidth / aspect));
-    }
-}
-
+//TODO Linien auf Object auswahl anpassen (Montag)
 /**
  *
  * adds the svg element "line"
@@ -740,17 +920,51 @@ function responsivefy(svg) {
  * @param id first number of id (1 or 2 instead of 1_1)
  * @param val valueline which should be added
  */
-function addLine(svg, data, id, val) {
-    svg.append("path")
-        .data([data])
-        .attr("id", "line" + id)
-        .style("stroke", $(".btn-outline-" + id + "_1").css("color"))
-        .attr("d", val(data.filter(function (d) {
-            return d.species === getTextOfBox(id + "_2") && d.compartment === getTextOfBox(id + "_1")
-        })));
+function addLine(svg, data, color, name) {
+
+//console.log(data);
+
+    if (name === "valueline1") {
+        svg.append("path")
+            .datum(data)
+            .attr("id", "line")
+            .style("stroke", color)
+            .attr("d", valueline1
+                .x(function (d) {
+
+                    return x(d.x);
+                })
+                .y(function (d) {
+                    return y0(d.y);
+                }));
+    }else {
+
+        svg.append("path")
+            .datum(data)
+            .attr("id", "line")
+            .style("stroke", color)
+            .attr("d", valueline2
+                .x(function (d) {
+
+                    return x(d.x);
+                })
+                .y(function (d) {
+                    return y1(d.y);
+                }));
+
+    }
+
+// var y = d3.scaleLinear()
+//     .domain([0, d3.max(data, function(d) { return d.y; })])
+//     .range([ height, 0 ]);
+// svg.append("g")
+//     .call(d3.axisLeft(y));
 
 }
 
+
+
+//TODO Klar werden ob man diese Methode noch braucht
 /**
  *
  * change the data of a selected valueline
@@ -759,20 +973,19 @@ function addLine(svg, data, id, val) {
  * @param val valueline which schould be changed
  * @param data data from file
  */
-function changeLine(id, val, data) {
+function changeLine(id, val) {
 
+    let data = filterConcentration(getTextOfBox(id + "_1"), getTextOfBox(id + "_2"));
 
     let svg = d3.select("body").transition();
     svg.select("#line" + id)   // change the line
         .duration(750)
-        .attr("d", val(data.filter(function (d) {
-            return d.species === getTextOfBox(id + "_2") && d.compartment === getTextOfBox(id + "_1")
-        })));
+        .attr("d", val(data));
 
 
 }
 
-
+//TODO anpassen auf neue Datenstruktur
 /**
  *
  * rearrange the values for the y axis
@@ -807,5 +1020,16 @@ function changeAxis(id, name) {
 
 
 }
+
+
+//TODO Automatische Farbzuweisung (außer gelb)
+
+//TODO alle Graphen die nicht 0 sind anzeigen lassen (Wie in R)
+
+//TODO Reguläre ausdrücke durch Eingabe realisieren
+
+//TODO Auswahl durch regüläre ausdrücke. Summierung von trajektiren. Vielleicht mit D3?
+
+//TODO Konfidenzintervalle
 
 
