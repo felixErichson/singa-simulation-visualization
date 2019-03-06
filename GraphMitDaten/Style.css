@@ -1,12 +1,57 @@
 body {
     font: 12px Arial;
-    height: 100%;
+    height: 2000px;
+
+}
+
+
+/*Modal for multiple chart view*/
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    max-width: 1000000px;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    /*margin: auto;*/
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 1000000px;
+}
+
+/* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 
 #main{
 
     min-height: 100%;
+    background-color: #ffffff;
 
 }
 
@@ -14,6 +59,13 @@ body {
     width: 100%;
     background-color: #f5f5f5;
 }
+#contents{
+
+    margin-top: 60px;
+
+}
+
+
 
 #nav {
 
@@ -65,13 +117,6 @@ img{
 }
 
 
-.box{
-
-    padding: 30px;
-    /*background-color: bisque ;*/
-
-}
-
 .btn-file {
     position: relative;
     overflow: hidden;
@@ -103,44 +148,23 @@ img{
 
 }
 
-.list p{
+.list{
+/*margin-top: 10px;*/
+    /*height : 100%;*/
+    float: left;
+    width: 33%;
+    /*height: 200px;*/
+    margin-left: auto;
+    padding: 20px;
+    /*border-right-style: solid;*/
 
-color: #ffffff;
+}
+.list p{
 
 text-align: center;
 
 }
 
-.list.basolateral_membrane{
-float: left;
-   width: 30%;
-    height: 200px;
-    margin-left: auto;
-
-    background-color: #7f7100;
-
-}
-
-.list.interstitum{
-    float: left;
-    width: 30%;
-    height: 200px;
-    margin-left: auto;
-
-
-    background-color: #317d7f;
-
-}
-
-.list.cytoplasm{
-    float: left;
-    width: 30%;
-    height: 200px;
-    margin-left: auto;
-    background-color: #7f3a4e;
-
-
-}
 
 .Boxes{
 
@@ -168,35 +192,37 @@ path {
 
 
 
-svg {
-    position:absolute;
-
-    /*background: yellow;*/
-
-}
-
-
-.btn.btn-primary{
-    border-color: #0cac79ff;
-    background-color: #1dd398ff ;
-    color: #ffffff;
-
-
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited , .btn-primary:focus{
+    background-color: #1de2a3 !important;
+    border-color: #1dd398ff !important;
+    margin-left: 5px;
 
 }
 
 
-.btn.btn-primary:hover {
-    border-color:  #1dd398ff;
-    background-color:#0cac79ff;
-    color: #ffffff;
+.btn-outline-cool, .btn-outline-cool:hover, .btn-outline-cool:active, .btn-outline-cool:visited , .btn-outline-cool:focus{
+    background-color: #c734d3 ;
+    border-color: #c734d3 ;
+
 
 }
+/*.btn.btn-primary{*/
+  /**/
 
+
+
+/*}*/
+
+
+/*.btn.btn-primary:hover {*/
+
+    /*color: #ffffff;*/
+
+/*}*/
 
 
 .btn.btn-primary:focus {
-   box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63);;
+     box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63) !important;
 }
 
 
@@ -232,5 +258,8 @@ svg {
     color: #ffffff ;
     background-color: #008613;
 
-
 }
+
+
+
+

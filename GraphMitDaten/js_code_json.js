@@ -141,10 +141,10 @@ d3.json("trajectory.json", function (data) {
     setXAxis(svg);
 
     // Define the Y Axis and the valuelines. If statement for matching datarange
-    if (compareRange(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))) {
+    if (compareRange(getTheRange("1"), getTheRange("2"))) {
 
         // Add the Y Axis
-        y0.domain([0, Math.max(getTheRange(nested_data, "1"), getTheRange(nested_data, "2"))]);
+        y0.domain([0, Math.max(getTheRange("1"), getTheRange("2"))]);
 
         setOneYAxis(svg, "y axis left");
 
@@ -158,18 +158,10 @@ d3.json("trajectory.json", function (data) {
 // Else Statement when the ranges are different--------------------------------------------------
 
         // Add the Y Axis
-        y0.domain([0, d3.max(data.filter(function (d) {
-            return d.species === getSelection("1_2") && d.compartment === getSelection("1_1")
-        }), function (d) {
-            return d.concentration
-        })]);
+        y0.domain([0, 0]);
 
 
-        y1.domain([0, d3.max(data.filter(function (d) {
-            return d.species === getSelection("2_2") && d.compartment === getSelection("2_1")
-        }), function (d) {
-            return d.concentration
-        })]);
+        y1.domain([0, 0]);
 
         setOneYAxis(svg, "y axis left", "1");
         setOneYAxis(svg, "y axis right", "2");
