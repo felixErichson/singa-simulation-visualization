@@ -192,29 +192,37 @@ path {
 
 
 
-
-.btn.btn-primary{
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited , .btn-primary:focus{
+    background-color: #1de2a3 !important;
+    border-color: #1dd398ff !important;
     margin-left: 5px;
-    border-color: #0cac79ff;
-    background-color: #1dd398ff ;
-    color: #ffffff;
-
-
 
 }
 
 
-.btn.btn-primary:hover {
-    border-color:  #1dd398ff;
-    background-color:#0cac79ff;
-    color: #ffffff;
+.btn-outline-cool, .btn-outline-cool:hover, .btn-outline-cool:active, .btn-outline-cool:visited , .btn-outline-cool:focus{
+    background-color: #c734d3 ;
+    border-color: #c734d3 ;
+
 
 }
+/*.btn.btn-primary{*/
+  /**/
 
+
+
+/*}*/
+
+
+/*.btn.btn-primary:hover {*/
+
+    /*color: #ffffff;*/
+
+/*}*/
 
 
 .btn.btn-primary:focus {
-   box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63);;
+     box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63) !important;
 }
 
 
