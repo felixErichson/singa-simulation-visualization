@@ -76,10 +76,10 @@
         });
 
 
-    // Adds the svg canvas
+    // Adds the svgMain canvas
     var svg = d3.select(".container")
         .attr("id", "chart")
-        .append("svg")
+        .append("svgMain")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .call(responsivefy)
@@ -415,14 +415,14 @@
 
 
     function responsivefy(svg) {
-        // get container + svg aspect ratio
+        // get container + svgMain aspect ratio
         var container = d3.select(svg.node().parentNode),
             width = parseInt(svg.style("width")),
             height = parseInt(svg.style("height")),
             aspect = width / height;
 
         // add viewBox and preserveAspectRatio properties,
-        // and call resize so that svg resizes on inital page load
+        // and call resize so that svgMain resizes on inital page load
         svg.attr("viewBox", "0 0 " + width + " " + height)
             .attr("preserveAspectRatio", "xMinYMid")
             .call(resize);
@@ -433,7 +433,7 @@
         // api docs: https://github.com/mbostock/d3/wiki/Selections#on
         d3.select(window).on("resize." + container.attr("id"), resize);
 
-        // get width of container and resize svg to fit it
+        // get width of container and resize svgMain to fit it
         function resize() {
             var targetWidth = parseInt(container.style("width"));
             svg.attr("width", targetWidth);

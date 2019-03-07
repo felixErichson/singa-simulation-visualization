@@ -33,7 +33,7 @@ const valueline2 =
         });
 
 
-// define the svg element
+// define the svgMain element
 const svg = d3.select(".test")
     .attr("id", "chart")
     .append("svg")
@@ -445,7 +445,7 @@ function title() {
  *
  * creates the x axis
  *
- *@param svg svg element
+ *@param svg svgMain element
  */
 function setXAxis(svg) {
 
@@ -461,7 +461,7 @@ function setXAxis(svg) {
  * creates one y axis based on the class name.
  * color and font are defined
  *
- * @param svg svg element
+ * @param svg svgMain element
  * @param name class name of y axis
  * @param id first number of id (1 or 2 instead of 1_1)
  */
@@ -505,17 +505,17 @@ function compareRange(scalemax, scalemax2) {
 /**
  * fits the coordinate system to the screen
  *
- * @param svg svg element to edit it
+ * @param svg svgMain element to edit it
  */
 function responsivefy(svg) {
-    // get container + svg aspect ratio
+    // get container + svgMain aspect ratio
     let container = d3.select(svg.node().parentNode),
         width = parseInt(svg.style("width")),
         height = parseInt(svg.style("height")),
         aspect = width / height;
 
     // add viewBox and preserveAspectRatio properties,
-    // and call resize so that svg resizes on inital page load
+    // and call resize so that svgMain resizes on inital page load
     svg.attr("viewBox", "0 0 " + width + " " + height)
         .attr("preserveAspectRatio", "xMinYMid")
         .call(resize);
@@ -526,7 +526,7 @@ function responsivefy(svg) {
     // api docs: https://github.com/mbostock/d3/wiki/Selections#on
     d3.select(window).on("resize." + container.attr("id"), resize);
 
-    // get width of container and resize svg to fit it
+    // get width of container and resize svgMain to fit it
     function resize() {
         let targetWidth = parseInt(container.style("width"));
         svg.attr("width", targetWidth);
@@ -536,9 +536,9 @@ function responsivefy(svg) {
 
 /**
  *
- * adds the svg element "line"
+ * adds the svgMain element "line"
  *
- * @param svg svg element
+ * @param svg svgMain element
  * @param data data from file
  * @param id first number of id (1 or 2 instead of 1_1)
  * @param val valueline which should be added

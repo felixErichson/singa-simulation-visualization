@@ -1,4 +1,4 @@
-elapsed time,species,compartment,concentration
+elapsed time,species,compartment,concentration,
 0.0010,G(ABG):GDP,Basolateral membrane,0.0000E00
 0.0010,G(ABG):GDP,Cytoplasm,5.2000E02
 0.0010,G(ABG):GDP,Interstitium,0.0000E00

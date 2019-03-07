@@ -87,7 +87,7 @@ img{
 .graph{
     width: 1000px;
     margin: 25px auto 25px auto;
-    background-color: #fff;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 4px;
     text-align: justify;
@@ -97,13 +97,13 @@ img{
 
     }
 
-.title{
+.titleDiv{
 
     text-align: center;
     color: #333;
     background-color: #F5F5F5;
     border-color: #DDD;
-    padding: 10px 15px;
+    /*padding: 10px 15px;*/
     border-bottom: 1px solid #DDD;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
@@ -230,8 +230,8 @@ path {
 
 .btn.btn-outline-1_2,
 .btn.btn-outline-1_1{
-    border-color: #0d3a86;
-    color: #0d3a86;
+    border-color: #013fb3;
+    color: #013fb3;
     background-color: transparent;
 
 
@@ -240,7 +240,7 @@ path {
 .btn-outline-1_2:hover,
 .btn-outline-1_1:hover {
     color: #ffffff ;
-    background-color: #0d3a86;
+    background-color: #013fb3;
 
 
 }

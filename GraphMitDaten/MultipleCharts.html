@@ -193,9 +193,9 @@ let data = filterData(spec, comp);
 
 
 
-        // Adds the svg canvas
+        // Adds the svgMain canvas
         var svg = d3.select("." + id)
-            .append("svg")
+            .append("svgMain")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append('g')
@@ -334,7 +334,7 @@ let data = filterData(spec, comp);
                 selectedSpecies = d3.select("#SpeciesList").property("value");
 
                 // Select the section we want to apply our changes to
-                var svg = d3.select("body").transition();
+                var svgMain = d3.select("body").transition();
 
                 x.domain(d3.extent(data, function (d) {
                     return d.elapsed_time;
@@ -349,14 +349,14 @@ let data = filterData(spec, comp);
 
 
                 // Make the changes
-                svg.select("#line")   // change the line
+                svgMain.select("#line")   // change the line
                     .duration(750)
                     .attr("d", valueline(data.filter(function (d) {
                         return d.species == selectedSpecies && d.compartment == selectedCompartment
                     })));
 
 
-                svg.select(".y.axis.left") // change the y axis
+                svgMain.select(".y.axis.left") // change the y axis
                     .duration(750)
                     .call(yAxisLeft);
 
@@ -376,13 +376,13 @@ let data = filterData(spec, comp);
                     return d.concentration
                 })]);
 
-                svg.select("#line2")   // change the line
+                svgMain.select("#line2")   // change the line
                     .duration(750)
                     .attr("d", valueline2(data.filter(function (d) {
                         return d.species == selectedSpecies2 && d.compartment == selectedCompartment2
                     })));
 
-                svg.select(".y.axis.right") // change the y axis
+                svgMain.select(".y.axis.right") // change the y axis
                     .duration(750)
                     .call(yAxisRight);
 
