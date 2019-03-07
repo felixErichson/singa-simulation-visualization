@@ -1,7 +1,4 @@
 //Global variables
-//TODO globale Variablen überarbeiten!!
-// TODO Code in Funktionen auslagern
-
 const modalMargin = {top: 40, right: 20, bottom: 40, left: 100},
     modalWidth = 400 - modalMargin.left - modalMargin.right,
     modalHeight = 300 - modalMargin.top - modalMargin.bottom;
@@ -13,33 +10,30 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
 const boxDivWidth = parseInt(d3.select(".titleDiv").style("width")),
       boxDivHeight = parseInt(d3.select(".trajectory").style("height"));
 
-//Defined array of colors
 const color = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e'];
 
-// Scaling the Graph
 const x = d3.scaleLinear().range([0, width]);
 let y0 = d3.scaleLinear().range([height, 0]),
     y1 = d3.scaleLinear().range([height, 0]);
 
-let summedData = [];
-let activeTrajectories = [];
-let time = [];
-let compartments = [];
-let species = [];
-let timeUnit = null;
-let concentrationUnit = null;
-let reader = new FileReader();
-let globalData = null;
-let valueline1 = d3.line();
-let svgMain;
-let svgTitle;
-let modalSvg;
+let summedData = [],
+ activeTrajectories = [],
+ time = [],
+ compartments = [],
+ species = [],
+ timeUnit = null,
+ concentrationUnit = null,
+ reader = new FileReader(),
+ globalData = null,
+ valueline1 = d3.line(),
+ svgMain,
+ svgTitle,
+ modalSvg;
 
-//Functions
+//Functions to read and structure the data into a uniform data format (nestedData)
 
 function loadFile() {
-    var file = document.querySelector('input[type=file]').files[0];
-    console.log(file);
+    let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
     if (file.name.endsWith(".json")) {
         reader.addEventListener("load", readDataFromJson, false);
@@ -53,14 +47,15 @@ function loadFile() {
     }
 }
 
-/**
- * Can read csv files and convert time and concentration into integer.
- *
- * @param file file to be read out
- */
 function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);
 
+    prepareDataFromCsv();
+    prepareNestedDataFromCsv(globalData);
+    initializeMainContent();
+}
+
+function prepareDataFromCsv(){
     globalData.forEach(function (d) {
         d.elapsed_time = +d["elapsed time"];
         d.concentration = +d.concentration;
@@ -77,82 +72,9 @@ function readDataFromCsv() {
             species.push(d.species)
         }
     });
-    prepareNestedData(globalData);
-    prepareModal();
-    initialMainSvg();
-    addSelectionButtons();
 }
 
-/**
- *
- * travers over json file to nest the data.
- * recursive function
- */
-function readDataFromJson() {
-
-    let currentTime;
-    let currentCompartment;
-    let parent;
-
-    globalData = JSON.parse(reader.result);
-    nestedData = d3.map();
-
-    function traverse(data) {
-        for (let currentKey in data) {
-
-            if (data[currentKey] !== null) {
-                if (typeof(data[currentKey]) === "object") {
-
-                    if (parent === "trajectory-data") {
-                        currentTime = currentKey;
-                        if (!time.includes(currentKey)) {
-                            time.push(parseFloat(currentKey));
-                            nestedData.set(currentKey, d3.map())
-                        }
-                    }
-
-                    if (parent === "concentrations") {
-                        currentCompartment = currentKey;
-                        if (!compartments.includes(currentKey)) {
-                            compartments.push(currentKey);
-                        }
-                        nestedData.get(currentTime).set(currentCompartment, d3.map())
-                    }
-                    const grandparent = parent;
-                    parent = currentKey;
-                    traverse(data[currentKey]);
-                    parent = grandparent;
-
-                } else {
-
-                    if (currentKey === "time-unit") {
-
-                        timeUnit = data[currentKey];
-
-                    } else if (currentKey === "concentration-unit") {
-
-                        concentrationUnit = data[currentKey]
-                    } else {
-                        if (!species.includes(currentKey)) {
-                            species.push(currentKey);
-                        }
-                        nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
-    traverse(globalData);
-    addSelectionButtons();
-    initialMainSvg();
-    prepareModal();
-}
-
-function prepareNestedData(data) {
+function prepareNestedDataFromCsv(data) {
 
     nestedData =
         d3.nest()
@@ -171,6 +93,69 @@ function prepareNestedData(data) {
                 });
             })
             .map(data);
+}
+
+function readDataFromJson() {
+
+    globalData = JSON.parse(reader.result);
+
+    prepareDataFromJson(globalData);
+    initializeMainContent();
+    }
+
+function prepareDataFromJson(data) {
+
+    nestedData = d3.map();
+    let currentTime;
+    let currentCompartment;
+    let parent;
+
+    for (let currentKey in data) {
+        if (data[currentKey] !== null) {
+            if (typeof(data[currentKey]) === "object") {
+                if (parent === "trajectory-data") {
+                    currentTime = currentKey;
+                    if (!time.includes(currentKey)) {
+                        time.push(parseFloat(currentKey));
+                        nestedData.set(currentKey, d3.map())
+                    }
+                }
+                if (parent === "concentrations") {
+                    currentCompartment = currentKey;
+                    if (!compartments.includes(currentKey)) {
+                        compartments.push(currentKey);
+                    }
+                    nestedData.get(currentTime).set(currentCompartment, d3.map())
+                }
+                const grandparent = parent;
+                parent = currentKey;
+                traverse(data[currentKey]);
+                parent = grandparent;
+
+            } else {
+                if (currentKey === "time-unit") {
+                    timeUnit = data[currentKey];
+                } else if (currentKey === "concentration-unit") {
+                    concentrationUnit = data[currentKey]
+                } else {
+                    if (!species.includes(currentKey)) {
+                        species.push(currentKey);
+                    }
+                    nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
+function initializeMainContent(){
+    addSelectionButtons();
+    initialMainSvg();
+    prepareModal()
 }
 
 function sumData() {
@@ -218,14 +203,7 @@ function filterData(compartment, species) {
     return trajektoryData;
 }
 
-function getRandomColor() {
-    let letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
+// Functions to display all trajectories in a modal
 
 function prepareModal() {
 
@@ -251,6 +229,44 @@ function prepareModal() {
         defineModalAxes(i, modalIterator);
         modalIterator++;
     }
+}
+
+function defineModalSvg(selector, text) {
+
+    modalSvg = d3.select(selector)
+        .append("svg")
+        .attr("float", "left")
+        .attr("width", modalWidth + modalMargin.left + modalMargin.right)
+        .attr("height", modalHeight + modalMargin.top + modalMargin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + modalMargin.left + "," + modalMargin.top + ")");
+
+    modalSvg.append("text")
+        .attr("x", (modalWidth / 2))
+        .attr("y", 0 - (modalMargin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text(text);
+
+    modalSvg.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", (modalWidth / 2) + 20)
+        .attr("y", modalHeight + 30)
+        .attr("font-size", 15)
+        .text("[ms]");
+
+//label Y-Axis
+    modalSvg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", -10)
+        .attr("x", 30)
+        .attr("font-size", 15)
+        .text("[nmol/l]");
+
 }
 
 function defineModalAxes(i, modalIterator){
@@ -289,122 +305,7 @@ function defineModalAxes(i, modalIterator){
             }));
 }
 
-function defineModalSvg(selector, text) {
-
-   modalSvg = d3.select(selector)
-        .append("svg")
-        .attr("float", "left")
-        .attr("width", modalWidth + modalMargin.left + modalMargin.right)
-        .attr("height", modalHeight + modalMargin.top + modalMargin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + modalMargin.left + "," + modalMargin.top + ")");
-
-    modalSvg.append("text")
-        .attr("x", (modalWidth / 2))
-        .attr("y", 0 - (modalMargin.top / 2))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text(text);
-
-    modalSvg.append("text")
-        .attr("class", "x label")
-        .attr("text-anchor", "end")
-        .attr("x", (modalWidth / 2) + 20)
-        .attr("y", modalHeight + 30)
-        .attr("font-size", 15)
-        .text("[ms]");
-
-//label Y-Axis
-    modalSvg.append("text")
-        .attr("class", "y label")
-        .attr("text-anchor", "end")
-        .attr("y", -10)
-        .attr("x", 30)
-        .attr("font-size", 15)
-        .text("[nmol/l]");
-
-}
-
-function prepareGraph() {
-    let iterator = 0;
-
-    removeElementsOfSvg();
-    labelAxis();
-    setTitleBox();
-
-    x.domain(d3.extent(time));
-    setXAxis();
-
-    activeTrajectories.forEach(function () {
-
-        let comp = activeTrajectories[iterator].split("_")[0];
-        let spec = activeTrajectories[iterator].split("_")[1];
-        let data = filterData(comp, spec);
-        let id   = getId(comp,spec);
-        if (iterator === 0) {
-            y0.domain([0, d3.max(data, function (d) {
-                return d.y;
-            })]);
-            setOneYAxis("y axis left", color[iterator]);
-            addLine(data, color[iterator], "valueline1");
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
-
-        } else if (iterator === 1) {
-            y1.domain([0, d3.max(data, function (d) {
-                return d.y;
-            })])
-                .range([height, 0]);
-            setOneYAxis("y axis right", color[iterator]);
-            addLine(data, color[iterator]);
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
-        }
-        iterator++
-    })
-}
-
-function removeElementsOfSvg() {
-    d3.selectAll("#line").remove();
-    d3.selectAll("#titleOne").remove();
-    d3.selectAll("#titleTwo").remove();
-    d3.selectAll(".x.axis").remove();
-    d3.selectAll(".y.axis.left").remove();
-    d3.selectAll(".y.axis.right").remove();
-    d3.selectAll(".label").remove();
-}
-
-function initialMainSvg() {
-    svgMain = d3.select(".trajectory")
-        .attr("id", "chart")
-        .append("svg")
-        .attr("width", width)//+ margin.left + margin.right
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("viewBox", "-80 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
-        .attr("preserveAspectRatio", "xMidYMax meet")
-        .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`)
-}
-
-function labelAxis(){
-    //label X-Axis
-    svgMain.append("text")
-        .attr("class", "x label")
-        .attr("text-anchor", "end")
-        .attr("x", width)
-        .attr("y", height + 50)
-        .attr("font-size", 20)
-        .text("Elapsed time [ms]");
-
-//label Y-Axis
-    svgMain.append("text")
-        .attr("class", "y label")
-        .attr("text-anchor", "end")
-        .attr("y", -10)
-        .attr("x", 130)
-        .attr("font-size", 20)
-        .text("Concentration [nmol/l]");
-}
+// Functions to create elements that display the title of the trajectories.
 
 function setTitleBox() {
     svgTitle=  d3.select(".titleDiv")
@@ -416,10 +317,10 @@ function setTitleBox() {
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    setTitleText();
+    defineTitleElement();
 }
 
-function setTitleText(){
+function defineTitleElement(){
 
     svgTitle.append("text")
         .attr("class","label title one")
@@ -461,21 +362,7 @@ function setTitle(){
 
 }
 
-function getSpeciesFromId(id) {
-
-    return species[parseInt(id.split("_")[1])]
-
-}
-
-function getCompartmentFromId(id) {
-
-    return compartments[parseInt(id.split("_")[0])]
-
-}
-
-function getId(selectedComp, selectedSpecies) {
-    return  compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
-}
+// Functions to create buttons and their click events and how to create the ID and get data from the ID
 
 function addSelectionButtons() {
 
@@ -528,13 +415,110 @@ function addLineOnClick(id){
 function removeLineOnClick(id) {
     $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
     $("#"+ id).removeClass('active');
-  //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
+    //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
     let index = activeTrajectories.indexOf(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
     if (index > -1) {
         activeTrajectories.splice(index, 1);
     }
     // $("#" + id));
     prepareGraph();
+}
+
+function getSpeciesFromId(id) {
+
+    return species[parseInt(id.split("_")[1])]
+
+}
+
+function getCompartmentFromId(id) {
+
+    return compartments[parseInt(id.split("_")[0])]
+
+}
+
+function getId(selectedComp, selectedSpecies) {
+    return  compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
+}
+
+//Functions that organize the main window. Create coordinate system and draw the trajectories.
+
+function initialMainSvg() {
+    svgMain = d3.select(".trajectory")
+        .attr("id", "chart")
+        .append("svg")
+        .attr("width", width)//+ margin.left + margin.right
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox", "-80 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
+        .attr("preserveAspectRatio", "xMidYMax meet")
+        .append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`)
+}
+
+function removeElementsOfSvg() {
+    d3.selectAll("#line").remove();
+    d3.selectAll("#titleOne").remove();
+    d3.selectAll("#titleTwo").remove();
+    d3.selectAll(".x.axis").remove();
+    d3.selectAll(".y.axis.left").remove();
+    d3.selectAll(".y.axis.right").remove();
+    d3.selectAll(".label").remove();
+}
+
+function prepareGraph() {
+    let iterator = 0;
+
+    removeElementsOfSvg();
+    labelAxis();
+    setTitleBox();
+
+    x.domain(d3.extent(time));
+    setXAxis();
+
+    activeTrajectories.forEach(function () {
+
+        let comp = activeTrajectories[iterator].split("_")[0];
+        let spec = activeTrajectories[iterator].split("_")[1];
+        let data = filterData(comp, spec);
+        let id   = getId(comp,spec);
+        if (iterator === 0) {
+            y0.domain([0, d3.max(data, function (d) {
+                return d.y;
+            })]);
+            setYAxis("y axis left", color[iterator]);
+            addLine(data, color[iterator], "valueline1");
+            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
+
+        } else if (iterator === 1) {
+            y1.domain([0, d3.max(data, function (d) {
+                return d.y;
+            })])
+                .range([height, 0]);
+            setYAxis("y axis right", color[iterator]);
+            addLine(data, color[iterator]);
+            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
+        }
+        iterator++
+    })
+}
+
+function labelAxis(){
+    //label X-Axis
+    svgMain.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", width)
+        .attr("y", height + 50)
+        .attr("font-size", 20)
+        .text("Elapsed time [ms]");
+
+//label Y-Axis
+    svgMain.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", -10)
+        .attr("x", 130)
+        .attr("font-size", 20)
+        .text("Concentration [nmol/l]");
 }
 
 function setXAxis() {
@@ -546,7 +530,7 @@ function setXAxis() {
         .attr("font-size", 15);
 }
 
-function setOneYAxis(name, color) {
+function setYAxis(name, color) {
 
     svgMain.append("g")
         .attr("class", name)
@@ -590,10 +574,16 @@ function addLine(data, color, name) {
                 }));
 }
 
-//TODO Reguläre ausdrücke durch Eingabe realisieren
+// Other
 
-//TODO Auswahl durch regüläre ausdrücke. Summierung von trajektiren. Vielleicht mit D3?
+function getRandomColor() {
+    let letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
 
-//TODO Konfidenzintervalle
 
 
