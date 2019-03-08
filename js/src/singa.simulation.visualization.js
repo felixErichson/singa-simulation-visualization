@@ -33,7 +33,123 @@ let summedData = [],
 
 //Functions to read and structure the data into a uniform data format (nestedData)
 
+
+
+function resetGlobalArrays(){
+    activeTrajectories.length = 0;
+    time.length = 0;
+    compartments.length = 0;
+    species.length = 0;
+}
+
+function btnAllTrajectoriesVisible() {
+    $("#multiCharts").removeClass("invisible");
+    $("#multiCharts").toggleClass("visible");
+}
+
+function clearHtmlTags(){
+    d3.select("#modal_body").html("");
+    d3.select("#modal_body").selectAll("*").remove();
+    d3.select(".titleDiv").html("");
+    d3.select(".trajectory").html("");
+    d3.select(".box").html("");
+}
+
+function loadExampleCsv(){
+
+    resetGlobalArrays();
+    btnAllTrajectoriesVisible();
+    clearHtmlTags();
+
+    d3.csv("js/src/example_trajectories.csv", function(data){
+        globalData=data;
+    });
+    setTimeout(function(){
+        console.log(globalData);
+        prepareDataFromCsv();
+        prepareNestedDataFromCsv(globalData);
+        initializeMainContent();
+    },200);
+}
+
+function loadExampleJson(){
+
+    resetGlobalArrays();
+    btnAllTrajectoriesVisible();
+    clearHtmlTags();
+
+    // d3.json("/data/employees.json").then(function(data) {
+    //     console.log(data[0]);
+    // });
+
+    d3.json("js/src/example_trajectories.json", function(data){
+        globalData=data;
+    });
+    setTimeout(function(){
+        nestedData = d3.map();
+
+        let currentTime;
+        let currentCompartment;
+        let parent;
+
+        function traverse(data) {
+            for (let currentKey in data) {
+
+                if (data[currentKey] !== null) {
+                    if (typeof(data[currentKey]) === "object") {
+
+                        if (parent === "trajectory-data") {
+                            currentTime = currentKey;
+                            if (!time.includes(currentKey)) {
+                                time.push(parseFloat(currentKey));
+                                nestedData.set(currentKey, d3.map())
+                            }
+                        }
+
+                        if (parent === "concentrations") {
+                            currentCompartment = currentKey;
+                            if (!compartments.includes(currentKey)) {
+                                compartments.push(currentKey);
+                            }
+                            nestedData.get(currentTime).set(currentCompartment, d3.map())
+                        }
+                        const grandparent = parent;
+                        parent = currentKey;
+                        traverse(data[currentKey]);
+                        parent = grandparent;
+
+                    } else {
+
+                        if (currentKey === "time-unit") {
+
+                            timeUnit = data[currentKey];
+
+                        } else if (currentKey === "concentration-unit") {
+
+                            concentrationUnit = data[currentKey]
+                        } else {
+                            if (!species.includes(currentKey)) {
+                                species.push(currentKey);
+                            }
+                            nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                        }
+                    }
+                }
+            }
+        }
+
+        traverse(globalData);
+        initializeMainContent();
+
+    },200);
+}
+
 function loadFile() {
+
+resetGlobalArrays();
+btnAllTrajectoriesVisible();
+clearHtmlTags();
+
     let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
     if (file.name.endsWith(".json")) {
@@ -50,7 +166,7 @@ function loadFile() {
 
 function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);
-
+console.log(globalData);
     prepareDataFromCsv();
     prepareNestedDataFromCsv(globalData);
     initializeMainContent();
@@ -226,17 +342,19 @@ function prepareModal() {
     let selector;
     sumData();
 
-    compartments.forEach(function (data) {
+    compartments.forEach(function (comp) {
         let modDiv = d3.select("#modal_body")
             .append("div")
-            .attr("id", "modal_body_" + data.split(" ").join("_"))
+            .attr("id", "modal_body_" + compartments.indexOf(comp))
             .append("h2")
-            .text(data);
+            .text(comp);
+
+
     });
 
     for (let i in summedData) {
         compart = i.substr(0, i.indexOf("_"));
-        selector= "#modal_body_" + compart.split(" ").join("_");
+        selector= "#modal_body_" + compartments.indexOf(compart);
         title= i.substr(i.indexOf("_") + 1);
         defineModalSvg(selector,title);
         defineModalAxes(i, modalIterator);
@@ -257,7 +375,7 @@ function defineModalSvg(selector, text) {
 
     modalSvg.append("text")
         .attr("x", (modalWidth / 2))
-        .attr("y", 0 - (modalMargin.top / 2))
+        .attr("y", 0 - (modalMargin.top/ 1.5))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("text-decoration", "underline")
@@ -384,16 +502,17 @@ function addSelectionButtons() {
     compartments.forEach(function (comp) {
         d3.select(".box")
             .append("div")
-            .attr("id", comp.split(' ').join('_'))
+            .attr("id", "compartment_" + compartments.indexOf(comp))
             .attr("class", "list " + comp)
-            .text(comp);
+            .append("h4")
+            .text (comp);
 
         nestedData.keys().forEach(function (element) {
             nestedData.get(element).get(comp).keys().forEach(function (buttonSpecies) {
                 if (!rememberSpecies.includes(buttonSpecies) && nestedData.get(element).get(comp).get(buttonSpecies) > 0) {
                     rememberSpecies.push(buttonSpecies);
 
-                    d3.select("#" + comp.split(' ').join('_'))
+                    d3.select("#compartment_" + compartments.indexOf((comp)))
                         .append("div")
                         .attr("class", "col-md-4 center-block")
                         .append("button")
