@@ -1,4 +1,5 @@
 //Global variables
+
 const modalMargin = {top: 40, right: 20, bottom: 40, left: 100},
     modalWidth = 400 - modalMargin.left - modalMargin.right,
     modalHeight = 300 - modalMargin.top - modalMargin.bottom;
@@ -98,64 +99,77 @@ function prepareNestedDataFromCsv(data) {
 function readDataFromJson() {
 
     globalData = JSON.parse(reader.result);
-
-    prepareDataFromJson(globalData);
-    initializeMainContent();
-    }
-
-function prepareDataFromJson(data) {
-
     nestedData = d3.map();
+
     let currentTime;
     let currentCompartment;
     let parent;
 
-    for (let currentKey in data) {
-        if (data[currentKey] !== null) {
-            if (typeof(data[currentKey]) === "object") {
-                if (parent === "trajectory-data") {
-                    currentTime = currentKey;
-                    if (!time.includes(currentKey)) {
-                        time.push(parseFloat(currentKey));
-                        nestedData.set(currentKey, d3.map())
-                    }
-                }
-                if (parent === "concentrations") {
-                    currentCompartment = currentKey;
-                    if (!compartments.includes(currentKey)) {
-                        compartments.push(currentKey);
-                    }
-                    nestedData.get(currentTime).set(currentCompartment, d3.map())
-                }
-                const grandparent = parent;
-                parent = currentKey;
-                traverse(data[currentKey]);
-                parent = grandparent;
+    function traverse(data) {
+        for (let currentKey in data) {
 
-            } else {
-                if (currentKey === "time-unit") {
-                    timeUnit = data[currentKey];
-                } else if (currentKey === "concentration-unit") {
-                    concentrationUnit = data[currentKey]
-                } else {
-                    if (!species.includes(currentKey)) {
-                        species.push(currentKey);
+            if (data[currentKey] !== null) {
+                if (typeof(data[currentKey]) === "object") {
+
+                    if (parent === "trajectory-data") {
+                        currentTime = currentKey;
+                        if (!time.includes(currentKey)) {
+                            time.push(parseFloat(currentKey));
+                            nestedData.set(currentKey, d3.map())
+                        }
                     }
-                    nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+
+                    if (parent === "concentrations") {
+                        currentCompartment = currentKey;
+                        if (!compartments.includes(currentKey)) {
+                            compartments.push(currentKey);
+                        }
+                        nestedData.get(currentTime).set(currentCompartment, d3.map())
+                    }
+                    const grandparent = parent;
+                    parent = currentKey;
+                    traverse(data[currentKey]);
+                    parent = grandparent;
+
+                } else {
+
+                    if (currentKey === "time-unit") {
+
+                        timeUnit = data[currentKey];
+
+                    } else if (currentKey === "concentration-unit") {
+
+                        concentrationUnit = data[currentKey]
+                    } else {
+                        if (!species.includes(currentKey)) {
+                            species.push(currentKey);
+                        }
+                        nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                    }
+
                 }
+
 
             }
 
         }
 
+
     }
+
+    traverse(globalData);
+    initializeMainContent();
+ prepareModal()
+
 
 }
 
-function initializeMainContent(){
+function initializeMainContent() {
+
     addSelectionButtons();
     initialMainSvg();
     prepareModal()
+
 }
 
 function sumData() {
