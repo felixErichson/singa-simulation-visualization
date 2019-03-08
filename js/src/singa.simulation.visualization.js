@@ -159,7 +159,6 @@ function readDataFromJson() {
 
     traverse(globalData);
     initializeMainContent();
- prepareModal()
 
 
 }
