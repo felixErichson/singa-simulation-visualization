@@ -29,11 +29,41 @@ let summedData = [],
  valueline1 = d3.line(),
  svgMain,
  svgTitle,
- modalSvg;
+ modalSvg,
+ currentTime,
+ currentCompartment,
+ parent;
 
 //Functions to read and structure the data into a uniform data format (nestedData)
 
+$(function() {
 
+    // We can attach the `fileselect` event to all file inputs on the page
+    $(document).on('change', ':file', function() {
+        var input = $(this),
+            numFiles = input.get(0).files ? input.get(0).files.length : 1,
+            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+        input.trigger('fileselect', [numFiles, label]);
+
+    });
+
+    // We can watch for our custom `fileselect` event like this
+    $(document).ready( function() {
+        $(':file').on('fileselect', function(event, numFiles, label) {
+
+            var input = $(this).parents('.input-group').find(':text'),
+                log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+            if( input.length ) {
+                input.val(log);
+            } else {
+                if( log ) alert(log);
+            }
+
+        });
+    });
+
+});
 
 function resetGlobalArrays(){
     activeTrajectories.length = 0;
@@ -45,6 +75,9 @@ function resetGlobalArrays(){
 function btnAllTrajectoriesVisible() {
     $("#multiCharts").removeClass("invisible");
     $("#multiCharts").toggleClass("visible");
+
+    $(".input-group.mb-3").removeClass("invisible");
+    $(".input-group.mb-3").toggleClass("visible");
 }
 
 function clearHtmlTags(){
@@ -78,9 +111,6 @@ function loadExampleJson(){
     btnAllTrajectoriesVisible();
     clearHtmlTags();
 
-    // d3.json("/data/employees.json").then(function(data) {
-    //     console.log(data[0]);
-    // });
 
     d3.json("js/src/example_trajectories.json", function(data){
         globalData=data;
@@ -88,57 +118,7 @@ function loadExampleJson(){
     setTimeout(function(){
         nestedData = d3.map();
 
-        let currentTime;
-        let currentCompartment;
-        let parent;
-
-        function traverse(data) {
-            for (let currentKey in data) {
-
-                if (data[currentKey] !== null) {
-                    if (typeof(data[currentKey]) === "object") {
-
-                        if (parent === "trajectory-data") {
-                            currentTime = currentKey;
-                            if (!time.includes(currentKey)) {
-                                time.push(parseFloat(currentKey));
-                                nestedData.set(currentKey, d3.map())
-                            }
-                        }
-
-                        if (parent === "concentrations") {
-                            currentCompartment = currentKey;
-                            if (!compartments.includes(currentKey)) {
-                                compartments.push(currentKey);
-                            }
-                            nestedData.get(currentTime).set(currentCompartment, d3.map())
-                        }
-                        const grandparent = parent;
-                        parent = currentKey;
-                        traverse(data[currentKey]);
-                        parent = grandparent;
-
-                    } else {
-
-                        if (currentKey === "time-unit") {
-
-                            timeUnit = data[currentKey];
-
-                        } else if (currentKey === "concentration-unit") {
-
-                            concentrationUnit = data[currentKey]
-                        } else {
-                            if (!species.includes(currentKey)) {
-                                species.push(currentKey);
-                            }
-                            nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-                        }
-                    }
-                }
-            }
-        }
-
-        traverse(globalData);
+        prepareDataFromJson(globalData);
         initializeMainContent();
 
     },200);
@@ -162,6 +142,7 @@ clearHtmlTags();
     if (file) {
         reader.readAsText(file);
     }
+
 }
 
 function readDataFromCsv() {
@@ -217,66 +198,54 @@ function readDataFromJson() {
     globalData = JSON.parse(reader.result);
     nestedData = d3.map();
 
-    let currentTime;
-    let currentCompartment;
-    let parent;
+    prepareDataFromJson(globalData);
+    initializeMainContent();
+}
 
-    function traverse(data) {
-        for (let currentKey in data) {
+function prepareDataFromJson(data) {
+    for (let currentKey in data) {
 
-            if (data[currentKey] !== null) {
-                if (typeof(data[currentKey]) === "object") {
+        if (data[currentKey] !== null) {
+            if (typeof(data[currentKey]) === "object") {
 
-                    if (parent === "trajectory-data") {
-                        currentTime = currentKey;
-                        if (!time.includes(currentKey)) {
-                            time.push(parseFloat(currentKey));
-                            nestedData.set(currentKey, d3.map())
-                        }
+                if (parent === "trajectory-data") {
+                    currentTime = currentKey;
+                    if (!time.includes(currentKey)) {
+                        time.push(parseFloat(currentKey));
+                        nestedData.set(currentKey, d3.map())
                     }
-
-                    if (parent === "concentrations") {
-                        currentCompartment = currentKey;
-                        if (!compartments.includes(currentKey)) {
-                            compartments.push(currentKey);
-                        }
-                        nestedData.get(currentTime).set(currentCompartment, d3.map())
-                    }
-                    const grandparent = parent;
-                    parent = currentKey;
-                    traverse(data[currentKey]);
-                    parent = grandparent;
-
-                } else {
-
-                    if (currentKey === "time-unit") {
-
-                        timeUnit = data[currentKey];
-
-                    } else if (currentKey === "concentration-unit") {
-
-                        concentrationUnit = data[currentKey]
-                    } else {
-                        if (!species.includes(currentKey)) {
-                            species.push(currentKey);
-                        }
-                        nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-                    }
-
                 }
 
+                if (parent === "concentrations") {
+                    currentCompartment = currentKey;
+                    if (!compartments.includes(currentKey)) {
+                        compartments.push(currentKey);
+                    }
+                    nestedData.get(currentTime).set(currentCompartment, d3.map())
+                }
+                const grandparent = parent;
+                parent = currentKey;
+                prepareDataFromJson(data[currentKey]);
+                parent = grandparent;
 
+            } else {
+
+                if (currentKey === "time-unit") {
+
+                    timeUnit = data[currentKey];
+
+                } else if (currentKey === "concentration-unit") {
+
+                    concentrationUnit = data[currentKey]
+                } else {
+                    if (!species.includes(currentKey)) {
+                        species.push(currentKey);
+                    }
+                    nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+                }
             }
-
         }
-
-
     }
-
-    traverse(globalData);
-    initializeMainContent();
-
-
 }
 
 function initializeMainContent() {
@@ -499,6 +468,8 @@ function addSelectionButtons() {
 
     let rememberSpecies = [];
 
+    console.log(nestedData);
+
     compartments.forEach(function (comp) {
         d3.select(".box")
             .append("div")
@@ -524,7 +495,9 @@ function addSelectionButtons() {
                 }
             })
         })
-    })
+    });
+
+    checkEmptyCompartment();
 }
 
 function clickButton(id){
@@ -545,7 +518,7 @@ function addLineOnClick(id){
 }
 
 function removeLineOnClick(id) {
-    $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
+    $("#" + id + ".btn-outline-secondary.active").css("style");
     $("#"+ id).removeClass('active');
     //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
     let index = activeTrajectories.indexOf(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
@@ -570,6 +543,28 @@ function getCompartmentFromId(id) {
 
 function getId(selectedComp, selectedSpecies) {
     return  compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
+}
+
+function checkEmptyCompartment(){
+
+    compartments.forEach(function (comp) {
+
+        console.log('#compartment_' + compartments.indexOf(comp));
+
+        if ( $(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1 ) {
+
+            console.log( "YES, the child element is inside the parent")
+
+        } else {
+
+            console.log("NO, it is not inside");
+            d3.select('#compartment_' + compartments.indexOf(comp))
+                .append("h5")
+                .text("[Empty]")
+
+        }
+    })
+
 }
 
 //Functions that organize the main window. Create coordinate system and draw the trajectories.
@@ -618,7 +613,7 @@ function prepareGraph() {
             })]);
             setYAxis("y axis left", color[iterator]);
             addLine(data, color[iterator], "valueline1");
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
+            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]  , "!important" );
 
         } else if (iterator === 1) {
             y1.domain([0, d3.max(data, function (d) {
@@ -627,7 +622,7 @@ function prepareGraph() {
                 .range([height, 0]);
             setYAxis("y axis right", color[iterator]);
             addLine(data, color[iterator]);
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]);
+            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator] , "!important" );
         }
         iterator++
     })
@@ -706,6 +701,37 @@ function addLine(data, color, name) {
                 }));
 }
 
+// Functions that realize data selection from input
+
+function highlightButton(){
+    let array = new Array();
+
+    let regex = getRegex();
+
+    species.forEach(function (spec) {
+        if (spec.match(regex) !== null){
+            $("button[id$=_" + species.indexOf(spec) + "]").css("border-left-width" ,"10px ");
+
+        }
+    });
+
+    console.log(array);
+}
+
+function getRegex(){
+
+     RegExp.quote = function(str) {
+         return str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+     };
+
+    return new RegExp(RegExp.quote($("#input_0").val(), "i"));
+}
+
+function sumSelectedData() {
+
+
+
+}
 // Other
 
 function getRandomColor() {

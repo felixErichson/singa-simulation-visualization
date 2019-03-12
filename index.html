@@ -73,8 +73,8 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <button type="button" class="btn btn-primary" id="exC" onclick="loadExampleCsv()">example_trajectories.cvs</button>
-                        <button type="button" class="btn btn-primary" id="exJ" onclick="loadExampleJson()">example_trajectories.json</button>
+                        <button type="button" class="btn btn-primary" id="exC" onclick="loadExampleCsv()" data-dismiss="modal">example_trajectories.cvs</button>
+                        <button type="button" class="btn btn-primary" id="exJ" onclick="loadExampleJson()" data-dismiss="modal">example_trajectories.json</button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -103,11 +103,17 @@
             </div>
         </div>
 
-        <div class=" graph">
+        <div class="graph">
                 <div class="titleDiv">
                 </div>
                 <div class="trajectory">
                 </div>
+                    <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-primary" type="button" id="button-addon1" onclick="highlightButton()">...</button>
+                        </div>
+                        <input id="input_0" type="text" class="form-control" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1" onkeyup="highlightButton()">
+                    </div>
                 <div class="box">
                 </div>
         </div>
@@ -115,40 +121,6 @@
 </div>
 
 <script src="js/src/singa.simulation.visualization.js"></script>
-<!--Script to manage filebrowser-->
-<script>
-    $(function() {
-
-        // We can attach the `fileselect` event to all file inputs on the page
-        $(document).on('change', ':file', function() {
-            var input = $(this),
-                numFiles = input.get(0).files ? input.get(0).files.length : 1,
-                label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-            input.trigger('fileselect', [numFiles, label]);
-
-        });
-
-        // We can watch for our custom `fileselect` event like this
-        $(document).ready( function() {
-            $(':file').on('fileselect', function(event, numFiles, label) {
-
-                var input = $(this).parents('.input-group').find(':text'),
-                    log = numFiles > 1 ? numFiles + ' files selected' : label;
-
-                if( input.length ) {
-                    input.val(log);
-                } else {
-                    if( log ) alert(log);
-                }
-
-            });
-        });
-
-    });
-
-</script>
-
-
 </body>
 </html>
 
