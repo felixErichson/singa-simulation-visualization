@@ -32,8 +32,9 @@ let summedData = [],
  modalSvg,
  currentTime,
  currentCompartment,
- parent;
-
+ parent,
+ summedY = [],
+ highlightedSpecies = [];
 //Functions to read and structure the data into a uniform data format (nestedData)
 
 $(function() {
@@ -518,7 +519,7 @@ function addLineOnClick(id){
 }
 
 function removeLineOnClick(id) {
-    $("#" + id + ".btn-outline-secondary.active").css("style");
+    $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
     $("#"+ id).removeClass('active');
     //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
     let index = activeTrajectories.indexOf(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
@@ -704,18 +705,19 @@ function addLine(data, color, name) {
 // Functions that realize data selection from input
 
 function highlightButton(){
-    let array = new Array();
 
+highlightedSpecies.length = 0;
+    $(".btn.btn-outline-secondary").css('border-left-width', "1px");
     let regex = getRegex();
+
 
     species.forEach(function (spec) {
         if (spec.match(regex) !== null){
-            $("button[id$=_" + species.indexOf(spec) + "]").css("border-left-width" ,"10px ");
+            $("button[id$=_" + species.indexOf(spec) + "]").css("border-left-width" ,"10px");
+            highlightedSpecies.push(spec);
 
         }
     });
-
-    console.log(array);
 }
 
 function getRegex(){
@@ -729,9 +731,70 @@ function getRegex(){
 
 function sumSelectedData() {
 
+    nestedData.keys().forEach(function (timestep) {
+        let sum = 0;
+        compartments.forEach(function (comp) {
+            highlightedSpecies.forEach(function (spec) {
+
+                if (nestedData.get(timestep).get(comp).get(spec) !== undefined) {
+
+                    sum += nestedData.get(timestep).get(comp).get(spec);
+
+                }
+
+            })
+        });
+        summedY.push(sum);
+        console.log(sum);
+    });
+
+    getLineObjectFromSummedY();
+
+}
+
+function getLineObjectFromSummedY (){
+
+    let summedLineObject;
+    let summedLineArray = [];
+
+    for (let i = 0; i < time.length; i++ ) {
+        summedLineObject = {
+            x: time[i],
+            y: summedY[i]
+        };
+
+        summedLineArray.push(summedLineObject);
+    }
+
+    d3.select(".box")
+        .append("div")
+        .attr("id", "summedDataArea")
+        .append("button")
+        .attr("id", "nice")
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .text("Hello")
+        .on("click", function(){
+
+            x.domain(d3.extent(time));
+            setXAxis();
+
+            y0.domain([0, d3.max(summedLineArray, function (d) {
+                return d.y;})]);
+            setYAxis("y axis left", "#219c68");
+
+            addLine(summedLineArray, "#219c68", "valueline1")
+
+
+
+        });
+
+
 
 
 }
+
+
 // Other
 
 function getRandomColor() {
