@@ -74,16 +74,13 @@ function resetGlobalArrays(){
 }
 
 function btnAllTrajectoriesVisible() {
-    $("#multiCharts").removeClass("invisible");
-    $("#multiCharts").toggleClass("visible");
-
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
 }
 
 function clearHtmlTags(){
-    d3.select("#modal_body").html("");
-    d3.select("#modal_body").selectAll("*").remove();
+    d3.select("#allTrajectories").html("");
+    d3.select("#allTrajectories").selectAll("*").remove();
     d3.select(".titleDiv").html("");
     d3.select(".trajectory").html("");
     d3.select(".box").html("");
@@ -313,9 +310,9 @@ function prepareModal() {
     sumData();
 
     compartments.forEach(function (comp) {
-        let modDiv = d3.select("#modal_body")
+        let modDiv = d3.select("#allTrajectories")
             .append("div")
-            .attr("id", "modal_body_" + compartments.indexOf(comp))
+            .attr("id", "allTraj" + compartments.indexOf(comp))
             .append("h2")
             .text(comp);
 
@@ -324,7 +321,7 @@ function prepareModal() {
 
     for (let i in summedData) {
         compart = i.substr(0, i.indexOf("_"));
-        selector= "#modal_body_" + compartments.indexOf(compart);
+        selector= "#allTraj" + compartments.indexOf(compart);
         title= i.substr(i.indexOf("_") + 1);
         defineModalSvg(selector,title);
         defineModalAxes(i, modalIterator);
