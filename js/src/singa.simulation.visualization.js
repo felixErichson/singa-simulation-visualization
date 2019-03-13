@@ -11,11 +11,12 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
 const boxDivWidth = parseInt(d3.select(".titleDiv").style("width")),
       boxDivHeight = parseInt(d3.select(".trajectory").style("height"));
 
-const color = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e'];
+const color = ['#66a61e','#d95f02','#7570b3','#e7298a',];
 
 const x = d3.scaleLinear().range([0, width]);
 let y0 = d3.scaleLinear().range([height, 0]),
-    y1 = d3.scaleLinear().range([height, 0]);
+    y1 = d3.scaleLinear().range([height, 0]),
+    y2 = d3.scaleLinear().range([height, 0]);
 
 let summedData = [],
  activeTrajectories = [],
@@ -84,6 +85,7 @@ function clearHtmlTags(){
     d3.select(".titleDiv").html("");
     d3.select(".trajectory").html("");
     d3.select(".box").html("");
+    d3.select('#list').html('')
 }
 
 function loadExampleCsv(){
@@ -96,7 +98,6 @@ function loadExampleCsv(){
         globalData=data;
     });
     setTimeout(function(){
-        console.log(globalData);
         prepareDataFromCsv();
         prepareNestedDataFromCsv(globalData);
         initializeMainContent();
@@ -145,7 +146,7 @@ clearHtmlTags();
 
 function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);
-console.log(globalData);
+
     prepareDataFromCsv();
     prepareNestedDataFromCsv(globalData);
     initializeMainContent();
@@ -247,10 +248,11 @@ function prepareDataFromJson(data) {
 }
 
 function initializeMainContent() {
-
+    sumData();
     addSelectionButtons();
     initialMainSvg();
-    prepareModal()
+    prepareModal();
+    addListOfSpecies()
 
 }
 
@@ -303,12 +305,12 @@ function filterData(compartment, species) {
 
 function prepareModal() {
 
+
     let modalIterator = 0;
     let compart;
     let title;
     let selector;
-    sumData();
-
+    console.log (summedData);
     compartments.forEach(function (comp) {
         let modDiv = d3.select("#allTrajectories")
             .append("div")
@@ -466,8 +468,6 @@ function addSelectionButtons() {
 
     let rememberSpecies = [];
 
-    console.log(nestedData);
-
     compartments.forEach(function (comp) {
         d3.select(".box")
             .append("div")
@@ -547,15 +547,15 @@ function checkEmptyCompartment(){
 
     compartments.forEach(function (comp) {
 
-        console.log('#compartment_' + compartments.indexOf(comp));
+       // console.log('#compartment_' + compartments.indexOf(comp));
 
         if ( $(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1 ) {
 
-            console.log( "YES, the child element is inside the parent")
+         //   console.log( "YES, the child element is inside the parent")
 
         } else {
 
-            console.log("NO, it is not inside");
+           // console.log("NO, it is not inside");
             d3.select('#compartment_' + compartments.indexOf(comp))
                 .append("h5")
                 .text("[Empty]")
@@ -568,6 +568,8 @@ function checkEmptyCompartment(){
 //Functions that organize the main window. Create coordinate system and draw the trajectories.
 
 function initialMainSvg() {
+
+
     svgMain = d3.select(".trajectory")
         .attr("id", "chart")
         .append("svg")
@@ -595,6 +597,7 @@ function prepareGraph() {
     removeElementsOfSvg();
     labelAxis();
     setTitleBox();
+    getLineObjectFromSummedY();
 
     x.domain(d3.extent(time));
     setXAxis();
@@ -609,7 +612,7 @@ function prepareGraph() {
             y0.domain([0, d3.max(data, function (d) {
                 return d.y;
             })]);
-            setYAxis("y axis left", color[iterator]);
+            setYAxis("y axis left outer", color[iterator]);
             addLine(data, color[iterator], "valueline1");
             $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]  , "!important" );
 
@@ -658,7 +661,7 @@ function setXAxis() {
 function setYAxis(name, color) {
 
     svgMain.append("g")
-        .attr("class", name)
+        .attr("class", name);
 
     if (name === "y axis right") {
 
@@ -669,14 +672,22 @@ function setYAxis(name, color) {
         })
             .attr("font-size", 17);
 
-    } else if (name === "y axis left") {
+    } else if (name === "y axis left outer") {
 
-         d3.select(".y.axis.left")
+         d3.select(".y.axis.left.outer")
             .call(d3.axisLeft(y0))
              .styles({
              fill: "none", stroke: color
          })
             .attr("font-size", 17);
+    } else if (name === "y axis left inner"){
+
+        d3.select(".y.axis.left.inner")
+            .call(d3.axisRight(y2))
+            .styles({
+                fill: "none", stroke: color
+            })
+            .attr("font-size", 17)
     }
 }
 
@@ -693,6 +704,8 @@ function addLine(data, color, name) {
                 .y(function (d) {
                     if (name === "valueline1"){
                     return y0(d.y);
+                    }else if (name === "valueline3") {
+                        return y2(d.y)
                     }else{
                         return y1(d.y)
                     }
@@ -704,23 +717,25 @@ function addLine(data, color, name) {
 function highlightButton(){
 
 highlightedSpecies.length = 0;
-    $(".btn.btn-outline-secondary").css('border-left-width', "1px");
+    $(".list-group-item").removeClass("list-group-item-info");
     let regex = getRegex();
 
-
+if (regex.toString() !== "/(?:)/") {
     species.forEach(function (spec) {
-        if (spec.match(regex) !== null){
-            $("button[id$=_" + species.indexOf(spec) + "]").css("border-left-width" ,"10px");
+        console.log(spec.match(regex));
+        if (spec.match(regex) !== null) {
+            $("li[id$=_" + species.indexOf(spec) + "]").toggleClass("list-group-item-info");
             highlightedSpecies.push(spec);
 
         }
-    });
+    })
+}
 }
 
 function getRegex(){
 
      RegExp.quote = function(str) {
-         return str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+         return str.replace(/([.?*+^$[\]\\(){}|-])/gi, "\\$1");
      };
 
     return new RegExp(RegExp.quote($("#input_0").val(), "i"));
@@ -742,7 +757,7 @@ function sumSelectedData() {
             })
         });
         summedY.push(sum);
-        console.log(sum);
+
     });
 
     getLineObjectFromSummedY();
@@ -763,31 +778,45 @@ function getLineObjectFromSummedY (){
         summedLineArray.push(summedLineObject);
     }
 
-    d3.select(".box")
-        .append("div")
-        .attr("id", "summedDataArea")
-        .append("button")
-        .attr("id", "nice")
-        .attr("class", "btn btn-outline-secondary")
-        .attr("type", "button")
-        .text("Hello")
-        .on("click", function(){
-
-            x.domain(d3.extent(time));
+    x.domain(d3.extent(time));
             setXAxis();
 
-            y0.domain([0, d3.max(summedLineArray, function (d) {
+            y2.domain([0, d3.max(summedLineArray, function (d) {
                 return d.y;})]);
-            setYAxis("y axis left", "#219c68");
+            setYAxis("y axis left inner", "#208357");
 
-            addLine(summedLineArray, "#219c68", "valueline1")
-
-
-
-        });
+            addLine(summedLineArray, "#208357", "valueline3")
 
 
 
+
+
+}
+
+function addListOfSpecies(){
+    d3.select("#list")
+        .append("ul")
+        .attr("class", "list-group")
+        .attr("id", "search_list");
+
+    compartments.forEach(function (compartment) {
+        d3.select("#search_list")
+            .append("li")
+            .attr("class", "list-group-item list-group-item-success")
+            .text(compartment);
+
+        for (let i in summedData ){
+            if(i.substr(0, i.indexOf("_"))=== compartment){
+
+                let id = getId(i.substr(0, i.indexOf("_")), i.substr(i.indexOf("_")+1) )
+                d3.select("#search_list")
+                    .append("li")
+                    .attr("class","list-group-item")
+                    .attr("id", "listItem" + id)
+                    .text(i.substr(i.indexOf("_")+1))
+            }
+        }
+    })
 
 }
 
