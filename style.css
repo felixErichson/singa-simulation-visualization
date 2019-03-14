@@ -177,9 +177,26 @@ path {
      box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63) !important;
 }
 
-a.nav-link, a.nav-link:hover{
+a.nav-link, a.nav-link:hover {
     color: #1e7e34;
     font-size: 1.3rem;
+}
+
+.col-md-4{
+    width: unset !important;
+    padding: 0 !important;
+
+}
+
+.card{
+    margin: 15px !important;
+    border: 2px solid #1f7634 !important;
+    border-radius: .50rem !important;
+
+}
+
+.search_div{
+    margin: 10px;
 }
 
 

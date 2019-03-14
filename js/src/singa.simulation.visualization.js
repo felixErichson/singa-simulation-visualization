@@ -35,7 +35,8 @@ let summedData = [],
  currentCompartment,
  parent,
  summedY = [],
- highlightedSpecies = [];
+ highlightedSpecies = [],
+globalSearchIterator;
 //Functions to read and structure the data into a uniform data format (nestedData)
 
 $(function() {
@@ -247,12 +248,18 @@ function prepareDataFromJson(data) {
     }
 }
 
+
+
 function initializeMainContent() {
     sumData();
     addSelectionButtons();
     initialMainSvg();
     prepareModal();
-    addListOfSpecies()
+    addListOfSpecies();
+    globalSearchIterator = 0;
+    addAppendButton();
+    addCompartmentSelection();
+
 
 }
 
@@ -718,11 +725,12 @@ function highlightButton(){
 
 highlightedSpecies.length = 0;
     $(".list-group-item").removeClass("list-group-item-info");
-    let regex = getRegex();
 
+    let regex = getRegex();
+console.log(regex);
 if (regex.toString() !== "/(?:)/") {
     species.forEach(function (spec) {
-        console.log(spec.match(regex));
+       // console.log(spec.match(regex));
         if (spec.match(regex) !== null) {
             $("li[id$=_" + species.indexOf(spec) + "]").toggleClass("list-group-item-info");
             highlightedSpecies.push(spec);
@@ -808,7 +816,7 @@ function addListOfSpecies(){
         for (let i in summedData ){
             if(i.substr(0, i.indexOf("_"))=== compartment){
 
-                let id = getId(i.substr(0, i.indexOf("_")), i.substr(i.indexOf("_")+1) )
+                let id = getId(i.substr(0, i.indexOf("_")), i.substr(i.indexOf("_")+1) );
                 d3.select("#search_list")
                     .append("li")
                     .attr("class","list-group-item")
@@ -819,6 +827,105 @@ function addListOfSpecies(){
     })
 
 }
+
+//advanced search area
+
+function addCompartmentSelection() {
+
+    d3.select("#advanced_search_area")
+        .append("div")
+        .attr("class", "search_div")
+        .attr("id", "container_" + globalSearchIterator);
+
+    d3.select("#container_" + globalSearchIterator)
+        .append("div")
+        .attr("class", "form-group col-md-4")
+        .attr("id", "initial_selection")
+        .append("select")
+        .attr("id", "input_first_" + globalSearchIterator)
+        .attr("class", "form-control");
+
+    d3.select("#input_first_" + globalSearchIterator)
+        .append("option")
+        .text("species");
+
+    d3.select("#input_first_" + globalSearchIterator)
+        .append("option")
+        .text("compartment");
+
+    d3.select("#container_" + globalSearchIterator)
+        .append("div")
+        .attr("class", "form-row nr" + globalSearchIterator)
+        .append("div")
+        .attr("class", "form-group col-2")
+        .append("select")
+        .attr("class", "form-control")
+        .attr("id", "input_second" + globalSearchIterator);
+
+    d3.select("#input_second" + globalSearchIterator)
+        .append("option")
+        .text("contains");
+
+    d3.select("#input_second" + globalSearchIterator)
+        .append("option")
+        .text("not contains");
+
+    d3.select(".form-row.nr" + globalSearchIterator)
+        .append("div")
+        .attr("class", "form-group col-md-4")
+        .append("input")
+        .attr("type", "text")
+        .attr("class", "form-control")
+        .attr("id", "input_string");
+
+    d3.select(".form-row.nr" + globalSearchIterator)
+        .append("button")
+        .attr("id", "remove_new_search_" + globalSearchIterator)
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .attr("style", "margin-left : 10px !important; margin-bottom : 15px !important ")
+        // .attr("style", "margin-bottom : 10px !important")
+        .text("remove")
+        .on("click", function () {
+
+            let identifier = $(this).attr("id").split("_")[3];
+            d3.select("#container_" + identifier).html("");
+            // globalSearchIterator--;
+        });
+}
+
+
+function addAppendButton() {
+
+    d3.select("#advanced_search_area")
+        .append("button")
+        .attr("id", "add_new_search")
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .attr("style", "margin-left : 10px !important")
+        .text("add search criteria ")
+        .on("click", function(){
+            globalSearchIterator++;
+            addCompartmentSelection()
+        });
+
+    d3.select("#advanced_search_area")
+        .append("button")
+        .attr("id", "submit_search")
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .attr("style", "margin-left : 10px !important")
+        .text("submit search ")
+        .on("click", function(){
+          alert("Das muss ich noch machen")
+        });
+}
+
+
+
+
+
+
 
 
 // Other
