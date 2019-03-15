@@ -860,13 +860,13 @@ function addCompartmentSelection() {
         .attr("class", "form-group col-2")
         .append("select")
         .attr("class", "form-control")
-        .attr("id", "input_second" + globalSearchIterator);
+        .attr("id", "input_second_" + globalSearchIterator);
 
-    d3.select("#input_second" + globalSearchIterator)
+    d3.select("#input_second_" + globalSearchIterator)
         .append("option")
         .text("contains");
 
-    d3.select("#input_second" + globalSearchIterator)
+    d3.select("#input_second_" + globalSearchIterator)
         .append("option")
         .text("not contains");
 
@@ -876,7 +876,7 @@ function addCompartmentSelection() {
         .append("input")
         .attr("type", "text")
         .attr("class", "form-control")
-        .attr("id", "input_string");
+        .attr("id", "input_string_" + globalSearchIterator);
 
     d3.select(".form-row.nr" + globalSearchIterator)
         .append("button")
@@ -927,42 +927,77 @@ function addAppendButton() {
 
 function filterTest(){
 
-    let sel = "Cytoplasm";
 
-    let even = compartments.filter(v => v !== sel);
+    let searchArray = [];
 
-   // console.log (even);
+    for (let i = 0 ; i < globalSearchIterator +1; i++){
 
+        if($("#input_first_" + i + " option:selected").text() !== "") {
 
-
-
-
-
-    let sel2 = [["Apical", "contains"],["membrane", "not contains"]];
-
-    console.log(sel2);
-
-    let even2 = ["Apical membrane", "Apical cytoplasm", "Basolateral membrane"];
-
-    sel2.forEach(function (d) {
-
-        if (d[1] === "not contains"){
-
-            even2 = even2.filter(v => v.includes(d[0]) === false );
-
-        } else if (d[1] === "contains"){
-
-            even2 = even2.filter(v => v.includes(d[0]) === true);
+            searchArray.push([$("#input_first_" + i + " option:selected").text(), $("#input_second_" + i + " option:selected").text(), $("#input_string_" + i).val()])
         }
+    }
+     console.log(searchArray);
 
 
+    let even2 = [];
+    for (let i in summedData){
+
+        even2.push(i);
+    }
+
+
+console.log(even2);
+    console.log(even2.keys());
+    searchArray.forEach(function (d) {
+
+
+        if (d[0] === "compartment") {
+
+            if (d[1] === "not contains") {
+
+                even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === false)
+
+            } else if (d[1] === "contains") {
+
+                even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === true)
+            }
+
+        }
+        });
+
+
+    searchArray.forEach(function (d) {
+
+
+        if (d[0] === "species") {
+
+            if (d[1] === "not contains") {
+
+                even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === false)
+
+            } else if (d[1] === "contains") {
+
+                even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === true)
+            }
+
+        }
     });
 
 
 
 
+        console.log(even2);
 
-console.log(even2);
+        console.log(summedData);
+
+
+
+
+
+
+
+//console.log(even2);
 
 }
 
