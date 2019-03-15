@@ -917,7 +917,7 @@ function addAppendButton() {
         .attr("style", "margin-left : 10px !important")
         .text("submit search ")
         .on("click", function(){
-          alert("Das muss ich noch machen")
+          filterTest();
         });
 }
 
@@ -925,7 +925,46 @@ function addAppendButton() {
 
 
 
+function filterTest(){
 
+    let sel = "Cytoplasm";
+
+    let even = compartments.filter(v => v !== sel);
+
+   // console.log (even);
+
+
+
+
+
+
+    let sel2 = [["Apical", "contains"],["membrane", "not contains"]];
+
+    console.log(sel2);
+
+    let even2 = ["Apical membrane", "Apical cytoplasm", "Basolateral membrane"];
+
+    sel2.forEach(function (d) {
+
+        if (d[1] === "not contains"){
+
+            even2 = even2.filter(v => v.includes(d[0]) === false );
+
+        } else if (d[1] === "contains"){
+
+            even2 = even2.filter(v => v.includes(d[0]) === true);
+        }
+
+
+    });
+
+
+
+
+
+console.log(even2);
+
+}
 
 
 // Other
