@@ -795,10 +795,6 @@ function getLineObjectFromSummedY (){
 
             addLine(summedLineArray, "#208357", "valueline3")
 
-
-
-
-
 }
 
 function addListOfSpecies(){
@@ -894,7 +890,6 @@ function addCompartmentSelection() {
         });
 }
 
-
 function addAppendButton() {
 
     d3.select("#advanced_search_area")
@@ -917,90 +912,68 @@ function addAppendButton() {
         .attr("style", "margin-left : 10px !important")
         .text("submit search ")
         .on("click", function(){
-          filterTest();
+          searchFilter();
         });
 }
 
+function searchFilter(){
 
-
-
-
-function filterTest(){
-
-
+    let even2 = [];
     let searchArray = [];
 
     for (let i = 0 ; i < globalSearchIterator +1; i++){
-
         if($("#input_first_" + i + " option:selected").text() !== "") {
-
             searchArray.push([$("#input_first_" + i + " option:selected").text(), $("#input_second_" + i + " option:selected").text(), $("#input_string_" + i).val()])
         }
     }
-     console.log(searchArray);
 
-
-    let even2 = [];
     for (let i in summedData){
-
         even2.push(i);
     }
 
-
-console.log(even2);
+    console.log(even2);
     console.log(even2.keys());
     searchArray.forEach(function (d) {
 
-
         if (d[0] === "compartment") {
-
             if (d[1] === "not contains") {
-
                 even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === false)
-
             } else if (d[1] === "contains") {
-
                 even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === true)
             }
-
         }
         });
 
-
     searchArray.forEach(function (d) {
-
-
         if (d[0] === "species") {
-
             if (d[1] === "not contains") {
-
                 even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === false)
-
             } else if (d[1] === "contains") {
-
                 even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === true)
             }
-
         }
     });
 
 
 
-
         console.log(even2);
-
         console.log(summedData);
 
-
-
-
-
-
-
-//console.log(even2);
+        highlightSpecies(even2);
 
 }
 
+function highlightSpecies(filteredSpecies){
+
+    $(".list-group-item").removeClass("list-group-item-info");
+
+    filteredSpecies.forEach(function (spec) {
+
+    $("li[id$=_" + species.indexOf(spec.substr(spec.indexOf("_")+ 1)) + "]").toggleClass("list-group-item-info");
+
+})
+
+}
 
 // Other
 
