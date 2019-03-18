@@ -9,9 +9,9 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
     height = parseInt(d3.select(".trajectory").style("height")) - margin.top - margin.bottom;
 
 const boxDivWidth = parseInt(d3.select(".titleDiv").style("width")),
-      boxDivHeight = parseInt(d3.select(".trajectory").style("height"));
+    boxDivHeight = parseInt(d3.select(".trajectory").style("height"));
 
-const color = ['#66a61e','#d95f02','#7570b3','#e7298a',];
+const color = ['#66a61e', '#d95f02', '#7570b3', '#e7298a',];
 
 const x = d3.scaleLinear().range([0, width]);
 let y0 = d3.scaleLinear().range([height, 0]),
@@ -19,31 +19,31 @@ let y0 = d3.scaleLinear().range([height, 0]),
     y2 = d3.scaleLinear().range([height, 0]);
 
 let summedData = [],
- activeTrajectories = [],
- time = [],
- compartments = [],
- species = [],
- timeUnit = null,
- concentrationUnit = null,
- reader = new FileReader(),
- globalData = null,
- valueline1 = d3.line(),
- svgMain,
- svgTitle,
- modalSvg,
- currentTime,
- currentCompartment,
- parent,
- summedY = [],
- highlightedSpecies = [],
- globalSearchIterator,
- searchButtonDataArray = [];
+    activeTrajectories = [],
+    time = [],
+    compartments = [],
+    species = [],
+    timeUnit = null,
+    concentrationUnit = null,
+    reader = new FileReader(),
+    globalData = null,
+    valueline1 = d3.line(),
+    svgMain,
+    svgTitle,
+    modalSvg,
+    currentTime,
+    currentCompartment,
+    parent,
+    summedY = [],
+    highlightedSpecies = [],
+    globalSearchIterator,
+    searchButtonDataArray = [];
 //Functions to read and structure the data into a uniform data format (nestedData)
 
-$(function() {
+$(function () {
 
     // We can attach the `fileselect` event to all file inputs on the page
-    $(document).on('change', ':file', function() {
+    $(document).on('change', ':file', function () {
         var input = $(this),
             numFiles = input.get(0).files ? input.get(0).files.length : 1,
             label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
@@ -52,16 +52,16 @@ $(function() {
     });
 
     // We can watch for our custom `fileselect` event like this
-    $(document).ready( function() {
-        $(':file').on('fileselect', function(event, numFiles, label) {
+    $(document).ready(function () {
+        $(':file').on('fileselect', function (event, numFiles, label) {
 
             var input = $(this).parents('.input-group').find(':text'),
                 log = numFiles > 1 ? numFiles + ' files selected' : label;
 
-            if( input.length ) {
+            if (input.length) {
                 input.val(log);
             } else {
-                if( log ) alert(log);
+                if (log) alert(log);
             }
 
         });
@@ -69,7 +69,7 @@ $(function() {
 
 });
 
-function resetGlobalArrays(){
+function resetGlobalArrays() {
     activeTrajectories.length = 0;
     time.length = 0;
     compartments.length = 0;
@@ -81,7 +81,7 @@ function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").toggleClass("visible");
 }
 
-function clearHtmlTags(){
+function clearHtmlTags() {
     d3.select("#allTrajectories").html("");
     d3.select("#allTrajectories").selectAll("*").remove();
     d3.select(".titleDiv").html("");
@@ -90,46 +90,46 @@ function clearHtmlTags(){
     d3.select('#list').html('')
 }
 
-function loadExampleCsv(){
+function loadExampleCsv() {
 
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
 
-    d3.csv("js/src/example_trajectories.csv", function(data){
-        globalData=data;
+    d3.csv("js/src/example_trajectories.csv", function (data) {
+        globalData = data;
     });
-    setTimeout(function(){
+    setTimeout(function () {
         prepareDataFromCsv();
         prepareNestedDataFromCsv(globalData);
         initializeMainContent();
-    },200);
+    }, 200);
 }
 
-function loadExampleJson(){
+function loadExampleJson() {
 
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
 
 
-    d3.json("js/src/example_trajectories.json", function(data){
-        globalData=data;
+    d3.json("js/src/example_trajectories.json", function (data) {
+        globalData = data;
     });
-    setTimeout(function(){
+    setTimeout(function () {
         nestedData = d3.map();
 
         prepareDataFromJson(globalData);
         initializeMainContent();
 
-    },200);
+    }, 200);
 }
 
 function loadFile() {
 
-resetGlobalArrays();
-btnAllTrajectoriesVisible();
-clearHtmlTags();
+    resetGlobalArrays();
+    btnAllTrajectoriesVisible();
+    clearHtmlTags();
 
     let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
@@ -154,7 +154,7 @@ function readDataFromCsv() {
     initializeMainContent();
 }
 
-function prepareDataFromCsv(){
+function prepareDataFromCsv() {
     globalData.forEach(function (d) {
         d.elapsed_time = +d["elapsed time"];
         d.concentration = +d.concentration;
@@ -316,7 +316,7 @@ function prepareModal() {
     let compart;
     let title;
     let selector;
-    console.log (summedData);
+    console.log(summedData);
     compartments.forEach(function (comp) {
         let modDiv = d3.select("#allTrajectories")
             .append("div")
@@ -329,9 +329,9 @@ function prepareModal() {
 
     for (let i in summedData) {
         compart = i.substr(0, i.indexOf("_"));
-        selector= "#allTraj" + compartments.indexOf(compart);
-        title= i.substr(i.indexOf("_") + 1);
-        defineModalSvg(selector,title);
+        selector = "#allTraj" + compartments.indexOf(compart);
+        title = i.substr(i.indexOf("_") + 1);
+        defineModalSvg(selector, title);
         defineModalAxes(i, modalIterator);
         modalIterator++;
     }
@@ -350,7 +350,7 @@ function defineModalSvg(selector, text) {
 
     modalSvg.append("text")
         .attr("x", (modalWidth / 2))
-        .attr("y", 0 - (modalMargin.top/ 1.5))
+        .attr("y", 0 - (modalMargin.top / 1.5))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("text-decoration", "underline")
@@ -375,13 +375,12 @@ function defineModalSvg(selector, text) {
 
 }
 
-function defineModalAxes(i, modalIterator){
+function defineModalAxes(i, modalIterator) {
     let modalX = d3.scaleLinear()
         .domain(d3.extent(summedData[i], function (d) {
             return d.x;
         }))
         .range([0, modalWidth]);
-
 
 
     modalSvg.append("g")
@@ -414,7 +413,7 @@ function defineModalAxes(i, modalIterator){
 // Functions to create elements that display the title of the trajectories.
 
 function setTitleBox() {
-    svgTitle=  d3.select(".titleDiv")
+    svgTitle = d3.select(".titleDiv")
         .attr("id", "boxSvg")
         .attr("width", boxDivWidth + margin.left + margin.right)
         .attr("height", boxDivHeight + margin.top + margin.bottom)
@@ -426,10 +425,10 @@ function setTitleBox() {
     defineTitleElement();
 }
 
-function defineTitleElement(){
+function defineTitleElement() {
 
     svgTitle.append("text")
-        .attr("class","label title one")
+        .attr("class", "label title one")
         .attr("id", "titleOne")
         .attr("x", (boxDivWidth / 2))
         .attr("y", 0 - (margin.top / 1.5))
@@ -439,11 +438,11 @@ function defineTitleElement(){
         .text();
 
     svgTitle.append("text")
-        .attr("class","label title spacer")
+        .attr("class", "label title spacer")
         .text(" ––– ");
 
     svgTitle.append("text")
-        .attr("class","label title two")
+        .attr("class", "label title two")
         .attr("id", "titleTwo")
         .attr("x", (boxDivWidth / 2))
         .attr("y", 20 - (margin.top / 1.5))
@@ -455,7 +454,7 @@ function defineTitleElement(){
     setTitle();
 }
 
-function setTitle(){
+function setTitle() {
 
     svgTitle.select("#titleOne")
         .styles({color: color[0]})
@@ -480,7 +479,7 @@ function addSelectionButtons() {
             .attr("id", "compartment_" + compartments.indexOf(comp))
             .attr("class", "list " + comp)
             .append("h4")
-            .text (comp);
+            .text(comp);
 
         nestedData.keys().forEach(function (element) {
             nestedData.get(element).get(comp).keys().forEach(function (buttonSpecies) {
@@ -495,7 +494,9 @@ function addSelectionButtons() {
                         .attr("class", "btn btn-outline-secondary")
                         .attr("type", "button")
                         .text(buttonSpecies)
-                        .on("click", function(){clickButton(this.id)});
+                        .on("click", function () {
+                            clickButton(this.id)
+                        });
                 }
             })
         })
@@ -504,25 +505,25 @@ function addSelectionButtons() {
     checkEmptyCompartment();
 }
 
-function clickButton(id){
-    if (activeTrajectories.length < 2 && $("#"+id).attr("class") === "btn btn-outline-secondary"){
+function clickButton(id) {
+    if (activeTrajectories.length < 2 && $("#" + id).attr("class") === "btn btn-outline-secondary") {
         addLineOnClick(id);
-    } else if ($("#"+id).attr("class") === "btn btn-outline-secondary active") {
+    } else if ($("#" + id).attr("class") === "btn btn-outline-secondary active") {
         removeLineOnClick(id)
 
     }
 
 }
 
-function addLineOnClick(id){
+function addLineOnClick(id) {
     activeTrajectories.push(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
-    $("#"+id).toggleClass("active");
+    $("#" + id).toggleClass("active");
     prepareGraph();
 }
 
 function removeLineOnClick(id) {
     $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
-    $("#"+ id).removeClass('active');
+    $("#" + id).removeClass('active');
     //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
     let index = activeTrajectories.indexOf(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
     if (index > -1) {
@@ -541,22 +542,22 @@ function getCompartmentFromId(id) {
 }
 
 function getId(selectedComp, selectedSpecies) {
-    return  compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
+    return compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
 }
 
-function checkEmptyCompartment(){
+function checkEmptyCompartment() {
 
     compartments.forEach(function (comp) {
 
-       // console.log('#compartment_' + compartments.indexOf(comp));
+        // console.log('#compartment_' + compartments.indexOf(comp));
 
-        if ( $(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1 ) {
+        if ($(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1) {
 
-         //   console.log( "YES, the child element is inside the parent")
+            //   console.log( "YES, the child element is inside the parent")
 
         } else {
 
-           // console.log("NO, it is not inside");
+            // console.log("NO, it is not inside");
             d3.select('#compartment_' + compartments.indexOf(comp))
                 .append("h5")
                 .text("[Empty]")
@@ -590,82 +591,52 @@ function removeElementsOfSvg() {
     d3.selectAll(".label").remove();
 }
 
+function setPath(data, scale, axis, line, iterator, buttonId) {
+
+    scale.domain([0, d3.max(data, function (d) {
+        return d.y;
+    })]);
+    setYAxis(axis, color[iterator]);
+    addLine(data, color[iterator], line);
+    $(buttonId + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator], "!important");
+
+
+}
+
 function prepareGraph() {
     let iterator = 0;
-
     removeElementsOfSvg();
     labelAxis();
     setTitleBox();
     getLineObjectFromSummedY();
-
     x.domain(d3.extent(time));
     setXAxis();
-
     activeTrajectories.forEach(function (content) {
         let data;
         let id;
+        let scale = null;
 
-        if (content.substr(0, content.indexOf("_")) === "search" ){
-
-            data = searchButtonDataArray[content.substr(content.indexOf("_")+1)]
-
-
-            if (iterator === 0) {
-                let scale = null;
-                if (iterator === 0) {
-                    scale = y0;
-                } else if (iterator === 1) {
-                    scale = y1;
-                }
-
-                
-                y0.domain([0, d3.max(data, function (d) {
-                    return d.y;
-                })]);
-                setYAxis("y axis left outer", color[iterator]);
-                addLine(data, color[iterator], "valueline1");
-                $("#search_" + content.substr(content.indexOf("_")+1) + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]  , "!important" );
-
-            } else if (iterator === 1) {
-                y1.domain([0, d3.max(data, function (d) {
-                    return d.y;
-                })])
-                    .range([height, 0]);
-                setYAxis("y axis right", color[iterator]);
-                addLine(data, color[iterator]);
-                $("#search_" + content.substr(content.indexOf("_")+1) + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator] , "!important" );
-            }
-
-        }else {
-
+        if (content.substr(0, content.indexOf("_")) === "search") {
+            data = searchButtonDataArray[content.substr(content.indexOf("_") + 1)];
+            id = "#search_" + content.substr(content.indexOf("_") + 1);
+        } else {
             let comp = activeTrajectories[iterator].split("_")[0];
             let spec = activeTrajectories[iterator].split("_")[1];
             data = filterData(comp, spec);
-            id = getId(comp, spec);
+            id = "#" + getId(comp, spec);
         }
-
         if (iterator === 0) {
-            y0.domain([0, d3.max(data, function (d) {
-                return d.y;
-            })]);
-            setYAxis("y axis left outer", color[iterator]);
-            addLine(data, color[iterator], "valueline1");
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]  , "!important" );
-
+            scale = y0;
+            setPath(data, scale, "y axis left outer", "valueline1", iterator, id);
         } else if (iterator === 1) {
-            y1.domain([0, d3.max(data, function (d) {
-                return d.y;
-            })])
-                .range([height, 0]);
-            setYAxis("y axis right", color[iterator]);
-            addLine(data, color[iterator]);
-            $("#" + id + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator] , "!important" );
+            scale = y1;
+            setPath(data, scale, "y axis right", "", iterator, id);
         }
         iterator++
     })
 }
 
-function labelAxis(){
+function labelAxis() {
     //label X-Axis
     svgMain.append("text")
         .attr("class", "x label")
@@ -704,19 +675,19 @@ function setYAxis(name, color) {
         d3.select(".y.axis.right").attr("transform", "translate(" + width + " ,0)")
             .call(d3.axisRight(y1))
             .styles({
-            fill: "none", stroke: color
-        })
+                fill: "none", stroke: color
+            })
             .attr("font-size", 17);
 
     } else if (name === "y axis left outer") {
 
-         d3.select(".y.axis.left.outer")
+        d3.select(".y.axis.left.outer")
             .call(d3.axisLeft(y0))
-             .styles({
-             fill: "none", stroke: color
-         })
+            .styles({
+                fill: "none", stroke: color
+            })
             .attr("font-size", 17);
-    } else if (name === "y axis left inner"){
+    } else if (name === "y axis left inner") {
 
         d3.select(".y.axis.left.inner")
             .call(d3.axisRight(y2))
@@ -729,51 +700,31 @@ function setYAxis(name, color) {
 
 function addLine(data, color, name) {
 
-        svgMain.append("path")
-            .datum(data)
-            .attr("id", "line")
-            .style("stroke", color)
-            .attr("d", valueline1
-                .x(function (d) {
-                    return x(d.x);
-                })
-                .y(function (d) {
-                    if (name === "valueline1"){
+    svgMain.append("path")
+        .datum(data)
+        .attr("id", "line")
+        .style("stroke", color)
+        .attr("d", valueline1
+            .x(function (d) {
+                return x(d.x);
+            })
+            .y(function (d) {
+                if (name === "valueline1") {
                     return y0(d.y);
-                    }else if (name === "valueline3") {
-                        return y2(d.y)
-                    }else{
-                        return y1(d.y)
-                    }
-                }));
+                } else if (name === "valueline3") {
+                    return y2(d.y)
+                } else {
+                    return y1(d.y)
+                }
+            }));
 }
 
 // Functions that realize data selection from input
+function getRegex() {
 
-function highlightButton(){
-
-highlightedSpecies.length = 0;
-    $(".list-group-item").removeClass("list-group-item-info");
-
-    let regex = getRegex();
-console.log(regex);
-if (regex.toString() !== "/(?:)/") {
-    species.forEach(function (spec) {
-       // console.log(spec.match(regex));
-        if (spec.match(regex) !== null) {
-            $("li[id$=_" + species.indexOf(spec) + "]").toggleClass("list-group-item-info");
-            highlightedSpecies.push(spec);
-
-        }
-    })
-}
-}
-
-function getRegex(){
-
-     RegExp.quote = function(str) {
-         return str.replace(/([.?*+^$[\]\\(){}|-])/gi, "\\$1");
-     };
+    RegExp.quote = function (str) {
+        return str.replace(/([.?*+^$[\]\\(){}|-])/gi, "\\$1");
+    };
 
     return new RegExp(RegExp.quote($("#input_0").val(), "i"));
 }
@@ -796,11 +747,11 @@ function sumSelectedData() {
     getLineObjectFromSummedY();
 }
 
-function getLineObjectFromSummedY (){
+function getLineObjectFromSummedY() {
     let summedLineObject;
     let summedLineArray = [];
 
-    for (let i = 0; i < time.length; i++ ) {
+    for (let i = 0; i < time.length; i++) {
         summedLineObject = {
             x: time[i],
             y: summedY[i]
@@ -810,7 +761,7 @@ function getLineObjectFromSummedY (){
     searchButtonDataArray.push(summedLineArray);
 }
 
-function addListOfSpecies(){
+function addListOfSpecies() {
     d3.select("#list")
         .append("ul")
         .attr("class", "list-group")
@@ -822,15 +773,15 @@ function addListOfSpecies(){
             .attr("class", "list-group-item list-group-item-success")
             .text(compartment);
 
-        for (let i in summedData ){
-            if(i.substr(0, i.indexOf("_"))=== compartment){
+        for (let i in summedData) {
+            if (i.substr(0, i.indexOf("_")) === compartment) {
 
-                let id = getId(i.substr(0, i.indexOf("_")), i.substr(i.indexOf("_")+1) );
+                let id = getId(i.substr(0, i.indexOf("_")), i.substr(i.indexOf("_") + 1));
                 d3.select("#search_list")
                     .append("li")
-                    .attr("class","list-group-item")
+                    .attr("class", "list-group-item")
                     .attr("id", "listItem" + id)
-                    .text(i.substr(i.indexOf("_")+1))
+                    .text(i.substr(i.indexOf("_") + 1))
             }
         }
     })
@@ -913,7 +864,7 @@ function addAppendButton() {
         .attr("type", "button")
         .attr("style", "margin-left : 10px !important")
         .text("add search criteria ")
-        .on("click", function(){
+        .on("click", function () {
             globalSearchIterator++;
             addCompartmentSelection()
         });
@@ -925,7 +876,7 @@ function addAppendButton() {
         .attr("type", "button")
         .attr("style", "margin-left : 10px !important")
         .text("submit search ")
-        .on("click", function(){
+        .on("click", function () {
 
             appendButtonForSelection(buttonNumber);
             searchFilter();
@@ -941,7 +892,7 @@ function addAppendButton() {
         .attr("id", "search_name");
 }
 
-function appendButtonForSelection(buttonNumber){
+function appendButtonForSelection(buttonNumber) {
 
     d3.select("#buttons")
         .append("button")
@@ -950,17 +901,17 @@ function appendButtonForSelection(buttonNumber){
         .attr("type", "button")
         .attr("style", "margin-left : 10px !important")
         .text($("#search_name").val())
-        .on("click", function(){
+        .on("click", function () {
 
             let id = this.id;
 
-            if (activeTrajectories.length < 2 && $("#"+id).attr("class") === "btn btn-outline-secondary"){
+            if (activeTrajectories.length < 2 && $("#" + id).attr("class") === "btn btn-outline-secondary") {
                 activeTrajectories.push(id);
-                $("#"+id).toggleClass("active");
+                $("#" + id).toggleClass("active");
                 prepareGraph();
-            } else if ($("#"+id).attr("class") === "btn btn-outline-secondary active") {
+            } else if ($("#" + id).attr("class") === "btn btn-outline-secondary active") {
                 $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
-                $("#"+ id).removeClass('active');
+                $("#" + id).removeClass('active');
                 //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
                 let index = activeTrajectories.indexOf(id);
                 if (index > -1) {
@@ -988,22 +939,25 @@ function appendButtonForSelection(buttonNumber){
 
 }
 
-function searchFilter(){
+
+
+function searchFilter() {
+
 
     let even2 = [];
     let searchArray = [];
 
-    for (let i = 0 ; i < globalSearchIterator +1; i++){
-        if($("#input_first_" + i + " option:selected").text() !== "") {
+    for (let i = 0; i < globalSearchIterator + 1; i++) {
+        if ($("#input_first_" + i + " option:selected").text() !== "") {
             searchArray.push([$("#input_first_" + i + " option:selected").text(), $("#input_second_" + i + " option:selected").text(), $("#input_string_" + i).val()])
         }
     }
 
-    for (let i in summedData){
+    for (let i in summedData) {
         even2.push(i);
     }
 
-   // console.log(even2);
+    // console.log(even2);
     //console.log(even2.keys());
     searchArray.forEach(function (d) {
 
@@ -1014,40 +968,39 @@ function searchFilter(){
                 even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === true)
             }
         }
-        });
+    });
 
     searchArray.forEach(function (d) {
         if (d[0] === "species") {
             if (d[1] === "not contains") {
-                even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === false)
+                even2 = even2.filter(v => v.substr(v.indexOf("_") + 1).includes(d[2]) === false)
             } else if (d[1] === "contains") {
-                even2 = even2.filter(v => v.substr(v.indexOf("_")+ 1).includes(d[2]) === true)
+                even2 = even2.filter(v => v.substr(v.indexOf("_") + 1).includes(d[2]) === true)
             }
         }
     });
 
 
-       // console.log(even2);
-       // console.log(summedData);
-        highlightSpecies(even2);
+    // console.log(even2);
+    // console.log(summedData);
+    highlightSpecies(even2);
 
 }
 
-function highlightSpecies(filteredSpecies){
+function highlightSpecies(filteredSpecies) {
 
     $(".list-group-item").removeClass("list-group-item-info");
 
     filteredSpecies.forEach(function (spec) {
 
-        highlightedSpecies.push(spec.substr(spec.indexOf("_")+ 1));
+        highlightedSpecies.push(spec.substr(spec.indexOf("_") + 1));
 
         console.log(highlightedSpecies);
 
-    $("li[id$=_" + species.indexOf(spec.substr(spec.indexOf("_")+ 1)) + "]").toggleClass("list-group-item-info");
+        $("li[id$=_" + species.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
 
 
-
-});
+    });
 
     sumSelectedData();
 }
