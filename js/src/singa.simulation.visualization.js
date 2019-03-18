@@ -601,12 +601,49 @@ function prepareGraph() {
     x.domain(d3.extent(time));
     setXAxis();
 
-    activeTrajectories.forEach(function () {
+    activeTrajectories.forEach(function (content) {
+        let data;
+        let id;
 
-        let comp = activeTrajectories[iterator].split("_")[0];
-        let spec = activeTrajectories[iterator].split("_")[1];
-        let data = filterData(comp, spec);
-        let id   = getId(comp,spec);
+        if (content.substr(0, content.indexOf("_")) === "search" ){
+
+            data = searchButtonDataArray[content.substr(content.indexOf("_")+1)]
+
+
+            if (iterator === 0) {
+                let scale = null;
+                if (iterator === 0) {
+                    scale = y0;
+                } else if (iterator === 1) {
+                    scale = y1;
+                }
+
+                
+                y0.domain([0, d3.max(data, function (d) {
+                    return d.y;
+                })]);
+                setYAxis("y axis left outer", color[iterator]);
+                addLine(data, color[iterator], "valueline1");
+                $("#search_" + content.substr(content.indexOf("_")+1) + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator]  , "!important" );
+
+            } else if (iterator === 1) {
+                y1.domain([0, d3.max(data, function (d) {
+                    return d.y;
+                })])
+                    .range([height, 0]);
+                setYAxis("y axis right", color[iterator]);
+                addLine(data, color[iterator]);
+                $("#search_" + content.substr(content.indexOf("_")+1) + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator] , "!important" );
+            }
+
+        }else {
+
+            let comp = activeTrajectories[iterator].split("_")[0];
+            let spec = activeTrajectories[iterator].split("_")[1];
+            data = filterData(comp, spec);
+            id = getId(comp, spec);
+        }
+
         if (iterator === 0) {
             y0.domain([0, d3.max(data, function (d) {
                 return d.y;
@@ -915,16 +952,36 @@ function appendButtonForSelection(buttonNumber){
         .text($("#search_name").val())
         .on("click", function(){
 
-            let data = searchButtonDataArray[this.id.substr(this.id.indexOf("_")+1)];
+            let id = this.id;
 
-            x.domain(d3.extent(time));
-            setXAxis();
+            if (activeTrajectories.length < 2 && $("#"+id).attr("class") === "btn btn-outline-secondary"){
+                activeTrajectories.push(id);
+                $("#"+id).toggleClass("active");
+                prepareGraph();
+            } else if ($("#"+id).attr("class") === "btn btn-outline-secondary active") {
+                $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
+                $("#"+ id).removeClass('active');
+                //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
+                let index = activeTrajectories.indexOf(id);
+                if (index > -1) {
+                    activeTrajectories.splice(index, 1);
+                }
+                // $("#" + id));
+                prepareGraph();
 
-            y2.domain([0, d3.max(data, function (d) {
-                return d.y;})]);
-            setYAxis("y axis left inner", "#208357");
+            }
 
-            addLine(data, "#208357", "valueline3")
+
+            // let data = searchButtonDataArray[this.id.substr(this.id.indexOf("_")+1)];
+            //
+            // x.domain(d3.extent(time));
+            // setXAxis();
+            //
+            // y2.domain([0, d3.max(data, function (d) {
+            //     return d.y;})]);
+            // setYAxis("y axis left inner", "#208357");
+            //
+            // addLine(data, "#208357", "valueline3")
 
 
         });
