@@ -36,7 +36,8 @@ let summedData = [],
  parent,
  summedY = [],
  highlightedSpecies = [],
-globalSearchIterator;
+ globalSearchIterator,
+ searchButtonDataArray = [];
 //Functions to read and structure the data into a uniform data format (nestedData)
 
 $(function() {
@@ -247,8 +248,6 @@ function prepareDataFromJson(data) {
         }
     }
 }
-
-
 
 function initializeMainContent() {
     sumData();
@@ -506,7 +505,6 @@ function addSelectionButtons() {
 }
 
 function clickButton(id){
-
     if (activeTrajectories.length < 2 && $("#"+id).attr("class") === "btn btn-outline-secondary"){
         addLineOnClick(id);
     } else if ($("#"+id).attr("class") === "btn btn-outline-secondary active") {
@@ -535,15 +533,11 @@ function removeLineOnClick(id) {
 }
 
 function getSpeciesFromId(id) {
-
     return species[parseInt(id.split("_")[1])]
-
 }
 
 function getCompartmentFromId(id) {
-
     return compartments[parseInt(id.split("_")[0])]
-
 }
 
 function getId(selectedComp, selectedSpecies) {
@@ -575,8 +569,6 @@ function checkEmptyCompartment(){
 //Functions that organize the main window. Create coordinate system and draw the trajectories.
 
 function initialMainSvg() {
-
-
     svgMain = d3.select(".trajectory")
         .attr("id", "chart")
         .append("svg")
@@ -759,21 +751,15 @@ function sumSelectedData() {
                 if (nestedData.get(timestep).get(comp).get(spec) !== undefined) {
 
                     sum += nestedData.get(timestep).get(comp).get(spec);
-
                 }
-
             })
         });
         summedY.push(sum);
-
     });
-
     getLineObjectFromSummedY();
-
 }
 
 function getLineObjectFromSummedY (){
-
     let summedLineObject;
     let summedLineArray = [];
 
@@ -782,19 +768,9 @@ function getLineObjectFromSummedY (){
             x: time[i],
             y: summedY[i]
         };
-
         summedLineArray.push(summedLineObject);
     }
-
-    x.domain(d3.extent(time));
-            setXAxis();
-
-            y2.domain([0, d3.max(summedLineArray, function (d) {
-                return d.y;})]);
-            setYAxis("y axis left inner", "#208357");
-
-            addLine(summedLineArray, "#208357", "valueline3")
-
+    searchButtonDataArray.push(summedLineArray);
 }
 
 function addListOfSpecies(){
@@ -891,6 +867,7 @@ function addCompartmentSelection() {
 }
 
 function addAppendButton() {
+    let buttonNumber = 0;
 
     d3.select("#advanced_search_area")
         .append("button")
@@ -912,8 +889,46 @@ function addAppendButton() {
         .attr("style", "margin-left : 10px !important")
         .text("submit search ")
         .on("click", function(){
-          searchFilter();
+
+            appendButtonForSelection(buttonNumber);
+            searchFilter();
+            buttonNumber++;
+
         });
+
+    d3.select("#advanced_search_area")
+        .append("input")
+        .attr("type", "text")
+        .attr("class", "form-control")
+        .attr("style", "width : 300px !important ;margin-left : 10px !important ; display : -webkit-inline-box !important")
+        .attr("id", "search_name");
+}
+
+function appendButtonForSelection(buttonNumber){
+
+    d3.select("#buttons")
+        .append("button")
+        .attr("id", "search_" + buttonNumber)
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .attr("style", "margin-left : 10px !important")
+        .text($("#search_name").val())
+        .on("click", function(){
+
+            let data = searchButtonDataArray[this.id.substr(this.id.indexOf("_")+1)];
+
+            x.domain(d3.extent(time));
+            setXAxis();
+
+            y2.domain([0, d3.max(data, function (d) {
+                return d.y;})]);
+            setYAxis("y axis left inner", "#208357");
+
+            addLine(data, "#208357", "valueline3")
+
+
+        });
+
 }
 
 function searchFilter(){
@@ -931,8 +946,8 @@ function searchFilter(){
         even2.push(i);
     }
 
-    console.log(even2);
-    console.log(even2.keys());
+   // console.log(even2);
+    //console.log(even2.keys());
     searchArray.forEach(function (d) {
 
         if (d[0] === "compartment") {
@@ -955,10 +970,8 @@ function searchFilter(){
     });
 
 
-
-        console.log(even2);
-        console.log(summedData);
-
+       // console.log(even2);
+       // console.log(summedData);
         highlightSpecies(even2);
 
 }
@@ -969,10 +982,17 @@ function highlightSpecies(filteredSpecies){
 
     filteredSpecies.forEach(function (spec) {
 
+        highlightedSpecies.push(spec.substr(spec.indexOf("_")+ 1));
+
+        console.log(highlightedSpecies);
+
     $("li[id$=_" + species.indexOf(spec.substr(spec.indexOf("_")+ 1)) + "]").toggleClass("list-group-item-info");
 
-})
 
+
+});
+
+    sumSelectedData();
 }
 
 // Other
