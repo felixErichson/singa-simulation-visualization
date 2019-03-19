@@ -170,8 +170,9 @@ path {
 }
 
 .btn-outline-cool, .btn-outline-cool:hover, .btn-outline-cool:active, .btn-outline-cool:visited , .btn-outline-cool:focus{
-    background-color: #c734d3 ;
-    border-color: #c734d3 ;
+    /*background-color: #c734d3 ;*/
+    border-color: #219c68;
+    margin-left: 10px;
 }
 
 .btn.btn-primary:focus {
@@ -198,6 +199,11 @@ a.nav-link, a.nav-link:hover {
 
 .search_div{
     margin: 10px;
+}
+
+.btn-outline-secondary{
+
+    margin-left: 10px;
 }
 
 

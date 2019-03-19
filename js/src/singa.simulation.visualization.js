@@ -39,36 +39,6 @@ let summedData = [],
     globalSearchIterator,
     searchButtonDataArray = [];
 //Functions to read and structure the data into a uniform data format (nestedData)
-
-// $(function () {
-//
-//     // We can attach the `fileselect` event to all file inputs on the page
-//     $(document).on('change', ':file', function () {
-//         var input = $(this),
-//             numFiles = input.get(0).files ? input.get(0).files.length : 1,
-//             label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-//         input.trigger('fileselect', [numFiles, label]);
-//
-//     });
-//
-//     // We can watch for our custom `fileselect` event like this
-//     $(document).ready(function () {
-//         $(':file').on('fileselect', function (event, numFiles, label) {
-//
-//             var input = $(this).parents('.input-group').find(':text'),
-//                 log = numFiles > 1 ? numFiles + ' files selected' : label;
-//
-//             if (input.length) {
-//                 input.val(log);
-//             } else {
-//                 if (log) alert(log);
-//             }
-//
-//         });
-//     });
-//
-// });
-
 function resetGlobalArrays() {
     activeTrajectories.length = 0;
     time.length = 0;
@@ -878,6 +848,7 @@ function addAppendButton() {
         .text("submit search ")
         .on("click", function () {
 
+            $("#search_buttons").css("visibility: visible");
             appendButtonForSelection(buttonNumber);
             searchFilter();
             buttonNumber++;
@@ -894,12 +865,11 @@ function addAppendButton() {
 
 function appendButtonForSelection(buttonNumber) {
 
-    d3.select("#buttons")
+    d3.select("#search_buttons")
         .append("button")
         .attr("id", "search_" + buttonNumber)
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "margin-left : 10px !important")
         .text($("#search_name").val())
         .on("click", function () {
 
@@ -921,25 +891,8 @@ function appendButtonForSelection(buttonNumber) {
                 prepareGraph();
 
             }
-
-
-            // let data = searchButtonDataArray[this.id.substr(this.id.indexOf("_")+1)];
-            //
-            // x.domain(d3.extent(time));
-            // setXAxis();
-            //
-            // y2.domain([0, d3.max(data, function (d) {
-            //     return d.y;})]);
-            // setYAxis("y axis left inner", "#208357");
-            //
-            // addLine(data, "#208357", "valueline3")
-
-
         });
-
 }
-
-
 
 function searchFilter() {
 
