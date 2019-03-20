@@ -8,9 +8,6 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
     height = parseInt(d3.select(".trajectory").style("height")) - margin.top - margin.bottom;
 
-const boxDivWidth = parseInt(d3.select(".titleDiv").style("width")),
-    boxDivHeight = parseInt(d3.select(".trajectory").style("height"));
-
 const color = ['#66a61e', '#d95f02', '#7570b3', '#e7298a',];
 
 const x = d3.scaleLinear().range([0, width]);
@@ -29,7 +26,6 @@ let summedData = [],
     globalData = null,
     valueline1 = d3.line(),
     svgMain,
-    svgTitle,
     modalSvg,
     currentTime,
     currentCompartment,
@@ -49,15 +45,20 @@ function resetGlobalArrays() {
 function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
+    $(".nav.nav-tabs.justify-content-center").removeClass("invisible");
+    $(".nav.nav-tabs.justify-content-center").toggleClass("visible");
+
 }
 
 function clearHtmlTags() {
     d3.select("#allTrajectories").html("");
     d3.select("#allTrajectories").selectAll("*").remove();
-    d3.select(".titleDiv").html("");
     d3.select(".trajectory").html("");
     d3.select(".box").html("");
-    d3.select('#list').html('')
+    d3.select('#list').html('');
+    d3.select("#advanced_search_area").html("");
+    d3.select("#search_button_area").html("");
+    $("#search_buttons").hide();
 }
 
 function loadExampleCsv() {
@@ -226,8 +227,10 @@ function initializeMainContent() {
     prepareModal();
     addListOfSpecies();
     globalSearchIterator = 0;
+    searchButtonDataArray.length = 0;
     addAppendButton();
     addCompartmentSelection();
+
 
 
 }
@@ -254,7 +257,7 @@ function sumData() {
 
 function filterData(compartment, species) {
 
-    let trajektoryData = [];
+    let trajectoryData = [];
     let obj = {};
 
     nestedData.keys().forEach(function (element) {
@@ -264,17 +267,17 @@ function filterData(compartment, species) {
                 x: parseFloat(element),
                 y: 0
             };
-            trajektoryData.push(obj);
+            trajectoryData.push(obj);
         } else {
             obj = {
                 // name: compartment+ "_" + species,
                 x: parseFloat(element),
                 y: nestedData.get(element).get(compartment).get(species)
             };
-            trajektoryData.push(obj);
+            trajectoryData.push(obj);
         }
     });
-    return trajektoryData;
+    return trajectoryData;
 }
 
 // Functions to display all trajectories in a modal
@@ -378,63 +381,6 @@ function defineModalAxes(i, modalIterator) {
             .y(function (d) {
                 return modalY(d.y);
             }));
-}
-
-// Functions to create elements that display the title of the trajectories.
-
-function setTitleBox() {
-    svgTitle = d3.select(".titleDiv")
-        .attr("id", "boxSvg")
-        .attr("width", boxDivWidth + margin.left + margin.right)
-        .attr("height", boxDivHeight + margin.top + margin.bottom)
-        .attr("viewBox", "0 0 " + parseInt(d3.select(".trajectory").style("width")) + " " + parseInt(d3.select(".trajectory").style("height")))
-        .attr("preserveAspectRatio", "xMidYMid meet")
-        .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-    defineTitleElement();
-}
-
-function defineTitleElement() {
-
-    svgTitle.append("text")
-        .attr("class", "label title one")
-        .attr("id", "titleOne")
-        .attr("x", (boxDivWidth / 2))
-        .attr("y", 0 - (margin.top / 1.5))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text();
-
-    svgTitle.append("text")
-        .attr("class", "label title spacer")
-        .text(" ––– ");
-
-    svgTitle.append("text")
-        .attr("class", "label title two")
-        .attr("id", "titleTwo")
-        .attr("x", (boxDivWidth / 2))
-        .attr("y", 20 - (margin.top / 1.5))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text();
-
-    setTitle();
-}
-
-function setTitle() {
-
-    svgTitle.select("#titleOne")
-        .styles({color: color[0]})
-        .text(activeTrajectories[0]);
-
-    svgTitle.select("#titleTwo")
-        .styles({color: color[1]})
-        .text(activeTrajectories[1]);
-
-
 }
 
 // Functions to create buttons and their click events and how to create the ID and get data from the ID
@@ -553,8 +499,6 @@ function initialMainSvg() {
 
 function removeElementsOfSvg() {
     d3.selectAll("#line").remove();
-    d3.selectAll("#titleOne").remove();
-    d3.selectAll("#titleTwo").remove();
     d3.selectAll(".x.axis").remove();
     d3.selectAll(".y.axis.left").remove();
     d3.selectAll(".y.axis.right").remove();
@@ -577,14 +521,16 @@ function prepareGraph() {
     let iterator = 0;
     removeElementsOfSvg();
     labelAxis();
-    setTitleBox();
-    getLineObjectFromSummedY();
     x.domain(d3.extent(time));
     setXAxis();
     activeTrajectories.forEach(function (content) {
         let data;
         let id;
         let scale = null;
+console.log(searchButtonDataArray);
+console.log(activeTrajectories);
+
+
 
         if (content.substr(0, content.indexOf("_")) === "search") {
             data = searchButtonDataArray[content.substr(content.indexOf("_") + 1)];
@@ -690,17 +636,9 @@ function addLine(data, color, name) {
 }
 
 // Functions that realize data selection from input
-function getRegex() {
-
-    RegExp.quote = function (str) {
-        return str.replace(/([.?*+^$[\]\\(){}|-])/gi, "\\$1");
-    };
-
-    return new RegExp(RegExp.quote($("#input_0").val(), "i"));
-}
 
 function sumSelectedData() {
-
+   summedY.length = 0;
     nestedData.keys().forEach(function (timestep) {
         let sum = 0;
         compartments.forEach(function (comp) {
@@ -848,7 +786,7 @@ function addAppendButton() {
         .text("submit search ")
         .on("click", function () {
 
-            $("#search_buttons").css("visibility: visible");
+            $("#search_buttons").show();
             appendButtonForSelection(buttonNumber);
             searchFilter();
             buttonNumber++;
@@ -865,7 +803,7 @@ function addAppendButton() {
 
 function appendButtonForSelection(buttonNumber) {
 
-    d3.select("#search_buttons")
+    d3.select("#search_button_area")
         .append("button")
         .attr("id", "search_" + buttonNumber)
         .attr("class", "btn btn-outline-secondary")
@@ -882,12 +820,10 @@ function appendButtonForSelection(buttonNumber) {
             } else if ($("#" + id).attr("class") === "btn btn-outline-secondary active") {
                 $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
                 $("#" + id).removeClass('active');
-                //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
                 let index = activeTrajectories.indexOf(id);
                 if (index > -1) {
                     activeTrajectories.splice(index, 1);
                 }
-                // $("#" + id));
                 prepareGraph();
 
             }
@@ -895,7 +831,6 @@ function appendButtonForSelection(buttonNumber) {
 }
 
 function searchFilter() {
-
 
     let even2 = [];
     let searchArray = [];
@@ -934,7 +869,7 @@ function searchFilter() {
     });
 
 
-    // console.log(even2);
+     console.log(even2);
     // console.log(summedData);
     highlightSpecies(even2);
 
@@ -943,7 +878,7 @@ function searchFilter() {
 function highlightSpecies(filteredSpecies) {
 
     $(".list-group-item").removeClass("list-group-item-info");
-
+    highlightedSpecies.length = 0;
     filteredSpecies.forEach(function (spec) {
 
         highlightedSpecies.push(spec.substr(spec.indexOf("_") + 1));
