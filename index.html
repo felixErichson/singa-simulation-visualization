@@ -33,13 +33,17 @@
                     <div class="sidebar-sticky">
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="link" href="https://github.com/singa-bio" target="_blank" ><img src="singa_logo_website.png"> </a>
+                                <a class="link" href="https://github.com/singa-bio" target="_blank" ><img id="singa_logo" src="singa_logo_website.png"> </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="fileBrowser" data-toggle="modal" data-target="#fileBrowserModal">upload file</a>
+                                <a class="nav-link" id="fileBrowser" data-toggle="modal" data-target="#fileBrowserModal">
+                                    <img id="folder" src="folder.svg">
+                                    load file
+                                </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="exampleCharts" data-toggle="modal" data-target="#exampleFileModal">
+                                    <img id="file" src="file.svg" >
                                     example
                                 </a>
                             </li>
@@ -107,9 +111,6 @@
                                 </label>
                                 <!--<span class="btn btn-primary">Browse&hellip; <input id="file-upload" type="file" onchange="loadFile()" accept=".csv, .json" style="display: none;" multiple></span>-->
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -126,9 +127,6 @@
                             <div class="modal-body">
                                 <button type="button" class="btn btn-primary" id="exC" onclick="loadExampleCsv()" data-dismiss="modal">example_trajectories.cvs</button>
                                 <button type="button" class="btn btn-primary" id="exJ" onclick="loadExampleJson()" data-dismiss="modal">example_trajectories.json</button>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>

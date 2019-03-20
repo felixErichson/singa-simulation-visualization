@@ -70,12 +70,23 @@ body {
     text-align: center;
 }
 
-img{
+#singa_logo{
     margin-top: 10px;
     margin-bottom: 50px;
-    width: auto;
-    height: 60px;
+    width: 200px;
+    height: auto;
 
+}
+
+#folder{
+    width: 25px;
+    height: auto;
+}
+
+#file{
+    vertical-align: sub;
+    width: auto;
+    height: 25px;
 }
 
 .graph{
@@ -191,10 +202,15 @@ a.nav-link, a.nav-link:hover {
 }
 
 .card{
-    margin: 15px !important;
-    border: 2px solid #1f7634 !important;
-    border-radius: .50rem !important;
+    border: 1px solid rgba(0,0,0,.125) !important;
+}
 
+.card.card-body{
+    border-radius: unset;
+}
+.list-group-item:first-child{
+    border-top-left-radius: unset !important;
+    border-bottom-right-radius: unset !important;
 }
 
 .search_div{
@@ -204,6 +220,15 @@ a.nav-link, a.nav-link:hover {
 .btn-outline-secondary{
 
     margin-left: 10px;
+}
+
+.list-group-item.list-group-item-action.list-group-item-success{
+
+    color: #155724;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    margin-top: 20px ;
+
 }
 
 
