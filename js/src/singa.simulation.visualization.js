@@ -10,6 +10,7 @@ const margin = {top: 40, right: 50, bottom: 40, left: 50},
 
 const color = ['#66a61e', '#d95f02', '#7570b3', '#e7298a',];
 
+
 const x = d3.scaleLinear().range([0, width]);
 let y0 = d3.scaleLinear().range([height, 0]),
     y1 = d3.scaleLinear().range([height, 0]),
@@ -20,6 +21,7 @@ let summedData = [],
     time = [],
     compartments = [],
     species = [],
+    allNodes=[],
     timeUnit = null,
     concentrationUnit = null,
     reader = new FileReader(),
@@ -29,6 +31,7 @@ let summedData = [],
     modalSvg,
     currentTime,
     currentCompartment,
+    currentNode,
     parent,
     summedY = [],
     highlightedSpecies = [],
@@ -169,12 +172,17 @@ function readDataFromJson() {
 
     globalData = JSON.parse(reader.result);
     nestedData = d3.map();
+    nestedHeatmapData = d3.map();
 
     prepareDataFromJson(globalData);
+
+    prepareHeatmapData(globalData);
+
     initializeMainContent();
 }
 
 function prepareDataFromJson(data) {
+
     for (let currentKey in data) {
 
         if (data[currentKey] !== null) {
@@ -220,7 +228,178 @@ function prepareDataFromJson(data) {
     }
 }
 
+
+function prepareHeatmapData(data){
+
+    for (let currentKey in data) {
+
+        if (data[currentKey] !== null) {
+            if (typeof(data[currentKey]) === "object") {
+
+                if (parent === "trajectory-data") {
+                    currentTime = currentKey;
+                    if (!time.includes(currentKey)) {
+                        time.push(parseFloat(currentKey));
+                        nestedHeatmapData.set(currentKey, d3.map())
+                    }
+                }
+
+                if(parent === "concentration-data") {
+                    currentNode = currentKey;
+                    if(!allNodes.includes(currentKey)){
+                        allNodes.push(currentKey)
+
+                    }
+                    nestedHeatmapData.get(currentTime).set(currentNode, d3.map())
+                }
+
+                if (parent === "concentrations") {
+                    currentCompartment = currentKey;
+                    if (!compartments.includes(currentKey)) {
+                        compartments.push(currentKey);
+
+                    }
+                    nestedHeatmapData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
+                }
+                const grandparent = parent;
+                parent = currentKey;
+                prepareHeatmapData(data[currentKey]);
+                parent = grandparent;
+
+            } else {
+
+                if (currentKey === "time-unit") {
+
+                    timeUnit = data[currentKey];
+
+                } else if (currentKey === "concentration-unit") {
+
+                    concentrationUnit = data[currentKey]
+                } else {
+                    if (!species.includes(currentKey)) {
+                        species.push(currentKey);
+                    }
+                    nestedHeatmapData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                }
+            }
+        }
+    }
+
+
+}
+
+function drawHeatmap() {
+
+
+    let regEx = new  RegExp("\\((\\d+), (\\d+)\\)", "g");
+
+    let heatmapData =[];
+    let obj;
+
+    nestedHeatmapData.get(5007.483159798618).keys().forEach(function (node) {
+
+if (nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm") !== undefined){
+
+        if (nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm").get("CAMP") === undefined) {
+            obj = {
+                //  name: compartment+ "_" + species,
+                x: node.split(regEx)[1],
+                y: node.split(regEx)[2],
+                value: 0
+            };
+            heatmapData.push(obj);
+        } else {
+            obj = {
+                x: node.split(regEx)[1],
+                y: node.split(regEx)[2],
+                value: nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm").get("CAMP")
+            };
+            heatmapData.push(obj);
+        }
+
+    } else {
+
+    obj = {
+        //  name: compartment+ "_" + species,
+        x: node.split(regEx)[1],
+        y: node.split(regEx)[2],
+        value: 0
+    };
+    heatmapData.push(obj);
+
+}
+
+    });
+
+
+    /////////////////////////////////7
+
+    let xV = [0,1,2,3,4,5,6,7,8,9,10];
+    let yV = [0,1,2,3,4,5,6,7,8,9,10];
+
+    // set the dimensions and margins of the graph
+    var heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
+        heatwidth = 450 - heatMargin.left - heatMargin.right,
+        heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
+// append the svg object to the body of the page
+    var svg = d3.select(".heat")
+        .append("svg")
+        .attr("width", heatwidth + heatMargin.left + heatMargin.right)
+        .attr("height", heatheight + heatMargin.top + heatMargin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + heatMargin.left + "," + heatMargin.top + ")");
+
+
+// Build X scales and axis:
+    var x = d3.scaleBand()
+        .range([ 0, heatwidth ])
+        .domain(xV)
+        .padding(0.01);
+    svg.append("g")
+        .attr("transform", "translate(0," + heatheight + ")")
+        .call(d3.axisBottom(x));
+
+// Build X scales and axis:
+    var y = d3.scaleBand()
+        .range([ heatheight, 0 ])
+        .domain(yV)
+        .padding(0.01);
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+// Build color scale
+    var myColor = d3.scaleLinear()
+        .range(["white", "#69b3a2"])
+        .domain([0,0.055])
+
+
+
+        svg.selectAll()
+            .data(heatmapData, function(d) {return d.x+':'+d.y;})
+            .enter()
+            .append("rect")
+            .attr("x", function(d) { return x(d.x) })
+            .attr("y", function(d) { return y(d.y) })
+            .attr("width", x.bandwidth() )
+            .attr("height", y.bandwidth() )
+            .style("fill", function(d) { return myColor(d.value)} )
+
+
+
+    /////////////////////////////////////
+
+
+    console.log (heatmapData);
+
+
+
+}
+
+
 function initializeMainContent() {
+    console.log(nestedHeatmapData);
     sumData();
     addSelectionButtons();
     initialMainSvg();

@@ -89,6 +89,12 @@ body {
     height: 25px;
 }
 
+#headmap_icon{
+    width: 25px;
+    height: auto;
+
+}
+
 .graph{
     width: 1000px;
     margin: 25px auto 25px auto;

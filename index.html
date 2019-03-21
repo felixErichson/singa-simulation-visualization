@@ -47,11 +47,18 @@
                                     example
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="heat_map" onclick="drawHeatmap()">
+                                    <img id="headmap_icon" src="heatmap.svg" >
+                                    heatmap
+                                </a>
+
+                            </li>
                         </ul>
                     </div>
                 </nav>
                 <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px4">
-
+<div class="heat"></div>
                     <div class="graph">
                         <div class="titleDiv"></div>
                         <div class="trajectory"></div>
@@ -59,7 +66,7 @@
 
                     <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
                         <li class="nav-item">
-                             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home" aria-selected="true">Button selection</a>
+                             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home" aria-selected="true">species selection</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="profile-tab" data-toggle="tab" href="#search" role="tab" aria-controls="profile" aria-selected="false">search area</a>
@@ -82,10 +89,10 @@
 
                                 </div>
                             </div>
-                            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse" data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
                                 advanced search
                             </a>
-                            <div class="collapse" id="collapseExample">
+                            <div class="collapse show" id="collapseExample">
                                 <div class="card card-body">
                                     <div id="advanced_search_area"></div>
                                 </div>
@@ -138,6 +145,7 @@
 
 
 <script src="js/src/singa.simulation.visualization.js"></script>
+
 </body>
 </html>
 
