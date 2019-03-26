@@ -20,8 +20,8 @@ let summedData = [],
     activeTrajectories = [],
     time = [],
     compartments = [],
-    species = [],
-    allNodes=[],
+    allSpecies = [],
+    allNodes = [],
     timeUnit = null,
     concentrationUnit = null,
     reader = new FileReader(),
@@ -36,13 +36,15 @@ let summedData = [],
     summedY = [],
     highlightedSpecies = [],
     globalSearchIterator,
-    searchButtonDataArray = [];
+    searchButtonDataArray = [],
+    heatmapData = [];
+
 //Functions to read and structure the data into a uniform data format (nestedData)
 function resetGlobalArrays() {
     activeTrajectories.length = 0;
     time.length = 0;
     compartments.length = 0;
-    species.length = 0;
+    allSpecies.length = 0;
 }
 
 function btnAllTrajectoriesVisible() {
@@ -141,8 +143,8 @@ function prepareDataFromCsv() {
             compartments.push(d.compartment)
         }
 
-        if (!species.includes(d.species)) {
-            species.push(d.species)
+        if (!allSpecies.includes(d.species)) {
+            allSpecies.push(d.species)
         }
     });
 }
@@ -218,8 +220,8 @@ function prepareDataFromJson(data) {
 
                     concentrationUnit = data[currentKey]
                 } else {
-                    if (!species.includes(currentKey)) {
-                        species.push(currentKey);
+                    if (!allSpecies.includes(currentKey)) {
+                        allSpecies.push(currentKey);
                     }
                     nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
                 }
@@ -229,7 +231,8 @@ function prepareDataFromJson(data) {
 }
 
 
-function prepareHeatmapData(data){
+function prepareHeatmapData(data) {
+
 
     for (let currentKey in data) {
 
@@ -239,14 +242,14 @@ function prepareHeatmapData(data){
                 if (parent === "trajectory-data") {
                     currentTime = currentKey;
                     if (!time.includes(currentKey)) {
-                        time.push(parseFloat(currentKey));
+                        // time.push(parseFloat(currentKey));
                         nestedHeatmapData.set(currentKey, d3.map())
                     }
                 }
 
-                if(parent === "concentration-data") {
+                if (parent === "concentration-data") {
                     currentNode = currentKey;
-                    if(!allNodes.includes(currentKey)){
+                    if (!allNodes.includes(currentKey)) {
                         allNodes.push(currentKey)
 
                     }
@@ -276,8 +279,8 @@ function prepareHeatmapData(data){
 
                     concentrationUnit = data[currentKey]
                 } else {
-                    if (!species.includes(currentKey)) {
-                        species.push(currentKey);
+                    if (!allSpecies.includes(currentKey)) {
+                        allSpecies.push(currentKey);
                     }
                     nestedHeatmapData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
                 }
@@ -288,54 +291,64 @@ function prepareHeatmapData(data){
 
 }
 
-function drawHeatmap() {
+function getCompartmentFromSpecies(species) {
 
-
-    let regEx = new  RegExp("\\((\\d+), (\\d+)\\)", "g");
-
-    let heatmapData =[];
-    let obj;
-
-    nestedHeatmapData.get(5007.483159798618).keys().forEach(function (node) {
-
-if (nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm") !== undefined){
-
-        if (nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm").get("CAMP") === undefined) {
-            obj = {
-                //  name: compartment+ "_" + species,
-                x: node.split(regEx)[1],
-                y: node.split(regEx)[2],
-                value: 0
-            };
-            heatmapData.push(obj);
-        } else {
-            obj = {
-                x: node.split(regEx)[1],
-                y: node.split(regEx)[2],
-                value: nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm").get("CAMP")
-            };
-            heatmapData.push(obj);
+    for (let currentTrajectory in summedData){
+        if (currentTrajectory.includes(species) === true) {
+            console.log(currentTrajectory.split("_")[0]);
+            return currentTrajectory.split("_")[0];
         }
-
-    } else {
-
-    obj = {
-        //  name: compartment+ "_" + species,
-        x: node.split(regEx)[1],
-        y: node.split(regEx)[2],
-        value: 0
-    };
-    heatmapData.push(obj);
-
+    }
 }
 
-    });
+function setHeatmapDropdown() {
+
+    let dropdown = d3.select(".heat")
+        .append("div")
+        .attr("class", "btn-group")
+        .attr("id", "heatmap_dropdown")
+        .append("button")
+        .attr("type", "button")
+        .attr("class", "btn btn-info dropdown-toogle")
+        .attr("data-toggle", "dropdown")
+        .attr("aria-haspopup", "true")
+        .attr("aria-expanded", "flase")
+        .text("Dieser Button ist unverhältnismäßig lang!");
+
+    d3.select("#heatmap_dropdown")
+        .append("div")
+        .attr("class", "dropdown-menu")
+        .attr("id", "heat_menu");
+
+    for (let i in allSpecies) {
+        d3.select("#heat_menu")
+            .append("a")
+            .attr("class", "dropdown-item")
+            .attr("id", i)
+            .text(allSpecies[i])
+            .on("click", function () {
 
 
-    /////////////////////////////////7
+                drawHeatmap($(this).text());
 
-    let xV = [0,1,2,3,4,5,6,7,8,9,10];
-    let yV = [0,1,2,3,4,5,6,7,8,9,10];
+            })
+
+    }
+}
+
+function drawHeatmap(sp) {
+
+let compartment= getCompartmentFromSpecies(sp);
+
+    let currentValue = 0.001;
+    console.log(time);
+
+    let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
+    var data = time;
+
+
+    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //Anzahl der Knoten (sortiert) (Variable machen)
+    let yV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     // set the dimensions and margins of the graph
     var heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
@@ -354,45 +367,158 @@ if (nestedHeatmapData.get(5007.483159798618).get(node).get("cytoplasm") !== unde
 
 // Build X scales and axis:
     var x = d3.scaleBand()
-        .range([ 0, heatwidth ])
+        .range([0, heatwidth])
         .domain(xV)
         .padding(0.01);
-    svg.append("g")
-        .attr("transform", "translate(0," + heatheight + ")")
-        .call(d3.axisBottom(x));
+    // svg.append("g")
+    //     .attr("transform", "translate(0," + heatheight + ")")
+    //     .call(d3.axisBottom(x));
 
 // Build X scales and axis:
     var y = d3.scaleBand()
-        .range([ heatheight, 0 ])
+        .range([heatheight, 0])
         .domain(yV)
-        .padding(0.01);
-    svg.append("g")
-        .call(d3.axisLeft(y));
-
-// Build color scale
-    var myColor = d3.scaleLinear()
-        .range(["white", "#69b3a2"])
-        .domain([0,0.055])
+    //     .padding(0.01);
+    // svg.append("g")
+    //     .call(d3.axisLeft(y));
 
 
 
-        svg.selectAll()
-            .data(heatmapData, function(d) {return d.x+':'+d.y;})
-            .enter()
-            .append("rect")
-            .attr("x", function(d) { return x(d.x) })
-            .attr("y", function(d) { return y(d.y) })
-            .attr("width", x.bandwidth() )
-            .attr("height", y.bandwidth() )
-            .style("fill", function(d) { return myColor(d.value)} )
+    var sliderSimple = d3
+        .sliderBottom()
+        .min(0)
+        .max(time.length * 10)
+        .width(400)
+        .ticks(10)
+        .step(10)
+        .default(0)
+        .on('onchange', val => {
+            d3.select('p#value-simple').text(time[sliderSimple.value() / 10]);
+
+            console.log(sliderSimple.value());
+            currentValue = time[sliderSimple.value() / 10];
+            console.log(currentValue);
+
+            heatmapData.length = 0;
+
+            let obj;
+
+            nestedHeatmapData.get(currentValue).keys().forEach(function (node) {
+
+                if (nestedHeatmapData.get(currentValue).get(node).get(compartment) !== undefined) {
+
+                    if (nestedHeatmapData.get(currentValue).get(node).get(compartment).get(sp) === undefined) {
+                        obj = {
+                            //  name: compartment+ "_" + species,
+                            x: node.split(regEx)[1],
+                            y: node.split(regEx)[2],
+                            value: 0
+                        };
+                        heatmapData.push(obj);
+                    } else {
+                        obj = {
+                            x: node.split(regEx)[1],
+                            y: node.split(regEx)[2],
+                            value: nestedHeatmapData.get(currentValue).get(node).get(compartment).get(sp)
+                        };
+                        heatmapData.push(obj);
+                    }
+
+                } else {
+
+                    obj = {
+                        //  name: compartment+ "_" + species,
+                        x: node.split(regEx)[1],
+                        y: node.split(regEx)[2],
+                        value: 0
+                    };
+                    heatmapData.push(obj);
+
+                }
+
+            });
+
+            // Build color scale
+            var myColor = d3.scaleLinear()
+                .range(["white", "#219c68"])
+                .domain([0, d3.max(heatmapData, function (d) {
+                    return d.value;
+
+                })]); // Maximale Konzentration nach species filtern
 
 
 
-    /////////////////////////////////////
+            /////////////////////////////////
+
+            var tooltip = d3.select(".heat")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "rgba(245,245,245,0.8)")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "5px")
+                .style("padding", "5px");
+
+            // Three function that change the tooltip when user hover / move / leave a cell
+            var mouseover = function(d) {
+                tooltip.style("opacity", 1)
+            }
+            var mousemove = function(d) {
+                tooltip
+                    .html("The exact value of<br>this cell is: " + d.value)
+                    .style("left", (d3.mouse(this)[0])+200 + "px")
+                    .style("top", (d3.mouse(this)[1])+100 + "px")
+            }
+            var mouseleave = function(d) {
+                tooltip.style("opacity", 0)
+            }
 
 
-    console.log (heatmapData);
 
+            svg.selectAll()
+                .data(heatmapData, function (d) {
+                    return d.x + ':' + d.y;
+                })
+                .enter()
+                .append("rect")
+                .attr("x", function (d) {
+                    return x(d.x)
+                })
+                .attr("y", function (d) {
+                    return y(d.y)
+                })
+                .attr("width", x.bandwidth())
+                .attr("height", y.bandwidth())
+                .style("stroke", "black")
+                .style("stroke-opacity", 0.6)
+                .style("fill", function (d) {
+                    return myColor(d.value)
+                })
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
+
+
+            /////////////////////////////////////
+
+
+        });
+
+    var gSimple = d3
+        .select('div#slider-simple')
+        .append('svg')
+        .attr('width', 500)
+        .attr('height', 100)
+        .append('g')
+        .attr('transform', 'translate(30,30)');
+
+    gSimple.call(sliderSimple);
+
+    d3.select('p#value-simple').text(d3.format('.2')(sliderSimple.value()));
+
+
+    // console.log (heatmapData);
 
 
 }
@@ -411,7 +537,6 @@ function initializeMainContent() {
     addCompartmentSelection();
 
 
-
 }
 
 function sumData() {
@@ -421,12 +546,12 @@ function sumData() {
 
         nestedData.keys().forEach(function (element) {
 
-            nestedData.get(element).get(comp).keys().forEach(function (species) {
+            nestedData.get(element).get(comp).keys().forEach(function (spe) {
 
-                if (!rememberSpecies.includes(species) && nestedData.get(element).get(comp).get(species) > 0) {
+                if (!rememberSpecies.includes(spe) && nestedData.get(element).get(comp).get(spe) > 0) {
 
-                    rememberSpecies.push(species);
-                    summedData[comp + "_" + species] = filterData(comp, species);
+                    rememberSpecies.push(spe);
+                    summedData[comp + "_" + spe] = filterData(comp, spe);
 
                 }
             })
@@ -434,24 +559,22 @@ function sumData() {
     })
 }
 
-function filterData(compartment, species) {
+function filterData(compartment, spec) {
 
     let trajectoryData = [];
     let obj = {};
 
     nestedData.keys().forEach(function (element) {
-        if (nestedData.get(element).get(compartment).get(species) === undefined) {
+        if (nestedData.get(element).get(compartment).get(spec) === undefined) {
             obj = {
-                //  name: compartment+ "_" + species,
                 x: parseFloat(element),
                 y: 0
             };
             trajectoryData.push(obj);
         } else {
             obj = {
-                // name: compartment+ "_" + species,
                 x: parseFloat(element),
-                y: nestedData.get(element).get(compartment).get(species)
+                y: nestedData.get(element).get(compartment).get(spec)
             };
             trajectoryData.push(obj);
         }
@@ -629,7 +752,7 @@ function removeLineOnClick(id) {
 }
 
 function getSpeciesFromId(id) {
-    return species[parseInt(id.split("_")[1])]
+    return allSpecies[parseInt(id.split("_")[1])]
 }
 
 function getCompartmentFromId(id) {
@@ -637,7 +760,7 @@ function getCompartmentFromId(id) {
 }
 
 function getId(selectedComp, selectedSpecies) {
-    return compartments.indexOf(selectedComp) + "_" + species.indexOf(selectedSpecies)
+    return compartments.indexOf(selectedComp) + "_" + allSpecies.indexOf(selectedSpecies)
 }
 
 function checkEmptyCompartment() {
@@ -706,9 +829,8 @@ function prepareGraph() {
         let data;
         let id;
         let scale = null;
-console.log(searchButtonDataArray);
-console.log(activeTrajectories);
-
+        console.log(searchButtonDataArray);
+        console.log(activeTrajectories);
 
 
         if (content.substr(0, content.indexOf("_")) === "search") {
@@ -768,7 +890,7 @@ function setYAxis(name, color) {
     if (name === "y axis right") {
 
         d3.select(".y.axis.right").attr("transform", "translate(" + width + " ,0)")
-            .call(d3.axisRight(y1))
+            .call(d3.axisRight(y1).tickFormat(d3.format('.2')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -777,7 +899,7 @@ function setYAxis(name, color) {
     } else if (name === "y axis left outer") {
 
         d3.select(".y.axis.left.outer")
-            .call(d3.axisLeft(y0))
+            .call(d3.axisLeft(y0).tickFormat(d3.format('.2')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -785,7 +907,7 @@ function setYAxis(name, color) {
     } else if (name === "y axis left inner") {
 
         d3.select(".y.axis.left.inner")
-            .call(d3.axisRight(y2))
+            .call(d3.axisRight(y2).tickFormat(d3.format('.2')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -817,7 +939,7 @@ function addLine(data, color, name) {
 // Functions that realize data selection from input
 
 function sumSelectedData() {
-   summedY.length = 0;
+    summedY.length = 0;
     nestedData.keys().forEach(function (timestep) {
         let sum = 0;
         compartments.forEach(function (comp) {
@@ -1048,7 +1170,7 @@ function searchFilter() {
     });
 
 
-     console.log(even2);
+    console.log(even2);
     // console.log(summedData);
     highlightSpecies(even2);
 
@@ -1064,7 +1186,7 @@ function highlightSpecies(filteredSpecies) {
 
         console.log(highlightedSpecies);
 
-        $("li[id$=_" + species.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
+        $("li[id$=_" + allSpecies.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
 
 
     });
