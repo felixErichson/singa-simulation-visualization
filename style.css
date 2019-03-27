@@ -1,5 +1,5 @@
 body {
-    font: 12px Arial;
+    font: 8px Arial;
     height: 2000px;
 }
 
@@ -61,8 +61,9 @@ body {
 .sidenav a {
     padding: 6px 8px 6px 16px;
     text-decoration: none;
-    font-size: 25px;
-    color: #219c68;
+    font-size: 20px;
+    font-family: Helvetica;
+    color: #000000;
     display: block;
 }
 
@@ -79,7 +80,8 @@ body {
 
 .content {
     margin-left: 250px; /* Same as the width of the sidenav */
-    font-size: 28px; /* Increased text to enable scrolling */
+    font-size: 20px; /* Increased text to enable scrolling */
+    font-family: Helvetica;
     padding: 0px 0px;
 }
 
@@ -135,9 +137,26 @@ body {
 
 }
 
+.heat{
+
+    height: 500px;
+    width: 480px;
+    position: absolute;
+    margin: 0px 0px 10px 10px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+}
+
 .graph{
-    width: 800px;
-    margin: 25px auto 25px auto;
+    width: 600px;
+
+    margin: 25px 25px 10px 500px;
     background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -145,6 +164,21 @@ body {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+#slider_div{
+    width: 1090px;
+    height: 100px;
+    margin: 5px 25px 25px 10px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: justify;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+
 }
 
 .titleDiv{

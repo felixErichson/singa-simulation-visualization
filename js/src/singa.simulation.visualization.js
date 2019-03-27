@@ -29,6 +29,9 @@ let summedData = [],
     valueline1 = d3.line(),
     svgMain,
     modalSvg,
+    heatmapSvg,
+    heatmapY,
+    heatmapX,
     currentTime,
     currentCompartment,
     currentNode,
@@ -37,7 +40,10 @@ let summedData = [],
     highlightedSpecies = [],
     globalSearchIterator,
     searchButtonDataArray = [],
-    heatmapData = [];
+    heatmapData = [],
+    sliderSimple,
+    gSimple;
+
 
 //Functions to read and structure the data into a uniform data format (nestedData)
 
@@ -314,13 +320,16 @@ function setHeatmapDropdown() {
         .append("div")
         .attr("class", "btn-group")
         .attr("id", "heatmap_dropdown")
+        .style("margin-top", "0px")
+        .style("position", "absolute")
+        .style("bottom", "0")
         .append("button")
         .attr("type", "button")
         .attr("class", "btn btn-info dropdown-toogle")
         .attr("data-toggle", "dropdown")
         .attr("aria-haspopup", "true")
         .attr("aria-expanded", "flase")
-        .text("Dieser Button ist unverhältnismäßig lang!");
+        .text("random dropdown");
 
     d3.select("#heatmap_dropdown")
         .append("div")
@@ -335,10 +344,116 @@ function setHeatmapDropdown() {
             .text(allSpecies[i])
             .on("click", function () {
 
-
+setHeatMapSvg();
                 drawHeatmap($(this).text());
 
             })
+
+    }
+}
+
+function setHeatMapSvg() {
+    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //Anzahl der Knoten (sortiert) (Variable machen)
+    let yV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    // set the dimensions and margins of the graph
+    var heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
+        heatwidth = 450 - heatMargin.left - heatMargin.right,
+        heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
+// append the svg object to the body of the page
+         heatmapSvg = d3.select(".heat")
+        .append("svg")
+        .attr("width", heatwidth + heatMargin.left + heatMargin.right)
+        .attr("height", heatheight + heatMargin.top + heatMargin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + heatMargin.left + "," + heatMargin.top + ")");
+
+
+// Build X scales and axis:
+        heatmapX = d3.scaleBand()
+        .range([0, heatwidth])
+        .domain(xV)
+        .padding(0.01);
+    // svg.append("g")
+    //     .attr("transform", "translate(0," + heatheight + ")")
+    //     .call(d3.axisBottom(x));
+
+// Build X scales and axis:
+    heatmapY = d3.scaleBand()
+        .range([heatheight, 0])
+        .domain(yV)
+    //     .padding(0.01);
+    // svg.append("g")
+    //     .call(d3.axisLeft(y));
+}
+
+function getHeatmapData(currentTimeStep, compartment, species){
+
+
+    let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
+
+    heatmapData.length = 0;
+
+    let obj;
+
+    nestedHeatmapData.get(currentTimeStep).keys().forEach(function (node) {
+
+        if (nestedHeatmapData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
+
+            if (nestedHeatmapData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
+                obj = {
+                    //  name: compartment+ "_" + species,
+                    x: node.split(regEx)[1],
+                    y: node.split(regEx)[2],
+                    value: 0
+                };
+                heatmapData.push(obj);
+            } else {
+                obj = {
+                    x: node.split(regEx)[1],
+                    y: node.split(regEx)[2],
+                    value: nestedHeatmapData.get(currentTimeStep).get(node).get(compartment).get(species)
+                };
+                heatmapData.push(obj);
+            }
+
+        } else {
+
+            obj = {
+                //  name: compartment+ "_" + species,
+                x: node.split(regEx)[1],
+                y: node.split(regEx)[2],
+                value: 0
+            };
+            heatmapData.push(obj);
+
+        }
+
+    });
+
+
+}
+
+function checkBoxOutput(compartment, species) {
+    if($('input[name="check"]:checked').val() === "relative"){
+
+        return d3.scaleLinear()
+            .range(["white", "#219c68"])
+            .domain([0, d3.max(heatmapData, function (d) {
+                return d.value;
+
+            })]);
+
+    }else{
+
+       return d3.scaleLinear()
+            .range(["white", "#219c68"])
+            .domain([0, d3.max(summedData[compartment+"_"+species], function (d) {
+                return d.y;
+
+            })]);
 
     }
 }
@@ -350,131 +465,28 @@ let compartment= getCompartmentFromSpecies(sp);
     let currentValue = 0.001;
     console.log(time);
 
-    let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 
-
-    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //Anzahl der Knoten (sortiert) (Variable machen)
-    let yV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-    // set the dimensions and margins of the graph
-    var heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
-        heatwidth = 450 - heatMargin.left - heatMargin.right,
-        heatheight = 450 - heatMargin.top - heatMargin.bottom;
-
-// append the svg object to the body of the page
-    var svg = d3.select(".heat")
-        .append("svg")
-        .attr("width", heatwidth + heatMargin.left + heatMargin.right)
-        .attr("height", heatheight + heatMargin.top + heatMargin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + heatMargin.left + "," + heatMargin.top + ")");
-
-
-// Build X scales and axis:
-    var x = d3.scaleBand()
-        .range([0, heatwidth])
-        .domain(xV)
-        .padding(0.01);
-    // svg.append("g")
-    //     .attr("transform", "translate(0," + heatheight + ")")
-    //     .call(d3.axisBottom(x));
-
-// Build X scales and axis:
-    var y = d3.scaleBand()
-        .range([heatheight, 0])
-        .domain(yV)
-    //     .padding(0.01);
-    // svg.append("g")
-    //     .call(d3.axisLeft(y));
-
-
-
-    var sliderSimple = d3
+         sliderSimple =d3
         .sliderBottom()
         .min(0)
         .max(time.length * 10)
         .width(400)
         .ticks(10)
         .step(10)
-        .default(0)
-        .on('onchange', val => {
+        .default(0.001)
+        .on('onchange', function ()
+         {
             d3.select('p#value-simple').text(time[sliderSimple.value() / 10]);
 
-            console.log(sliderSimple.value());
             currentValue = time[sliderSimple.value() / 10];
-            console.log(currentValue);
 
-            heatmapData.length = 0;
-
-            let obj;
-
-            nestedHeatmapData.get(currentValue).keys().forEach(function (node) {
-
-                if (nestedHeatmapData.get(currentValue).get(node).get(compartment) !== undefined) {
-
-                    if (nestedHeatmapData.get(currentValue).get(node).get(compartment).get(sp) === undefined) {
-                        obj = {
-                            //  name: compartment+ "_" + species,
-                            x: node.split(regEx)[1],
-                            y: node.split(regEx)[2],
-                            value: 0
-                        };
-                        heatmapData.push(obj);
-                    } else {
-                        obj = {
-                            x: node.split(regEx)[1],
-                            y: node.split(regEx)[2],
-                            value: nestedHeatmapData.get(currentValue).get(node).get(compartment).get(sp)
-                        };
-                        heatmapData.push(obj);
-                    }
-
-                } else {
-
-                    obj = {
-                        //  name: compartment+ "_" + species,
-                        x: node.split(regEx)[1],
-                        y: node.split(regEx)[2],
-                        value: 0
-                    };
-                    heatmapData.push(obj);
-
-                }
-
-            });
-
-            // Build color scale relative to timestep
-            let myColor;
+            getHeatmapData(currentValue, compartment, sp);
 
 
-          if($('input[name="check"]:checked').val() === "relative"){
+            let heatmapColor;
 
-               myColor = d3.scaleLinear()
-                  .range(["white", "#219c68"])
-                  .domain([0, d3.max(heatmapData, function (d) {
-                      return d.value;
+            heatmapColor = checkBoxOutput(compartment, sp);
 
-                  })]);
-
-          }else{
-
-                myColor = d3.scaleLinear()
-                  .range(["white", "#219c68"])
-                  .domain([0, d3.max(summedData[compartment+"_"+sp], function (d) {
-                      return d.y;
-
-                  })]);
-
-          }
-
-
-
-
-
-
-
-            /////////////////////////////////
 
             var tooltip = d3.select(".heat")
                 .append("div")
@@ -486,44 +498,37 @@ let compartment= getCompartmentFromSpecies(sp);
                 .style("border-radius", "5px")
                 .style("padding", "5px");
 
-            // Three function that change the tooltip when user hover / move / leave a cell
-            var mouseover = function(d) {
-                tooltip.style("opacity", 1)
-            }
-            var mousemove = function(d) {
-                tooltip
-                    .html("The exact value of<br>this cell is: " + d.value)
-                    .style("left", (d3.mouse(this)[0])+200 + "px")
-                    .style("top", (d3.mouse(this)[1])+100 + "px")
-            }
-            var mouseleave = function(d) {
-                tooltip.style("opacity", 0)
-            }
 
-
-
-            svg.selectAll()
+            heatmapSvg.selectAll()
                 .data(heatmapData, function (d) {
                     return d.x + ':' + d.y;
                 })
                 .enter()
                 .append("rect")
                 .attr("x", function (d) {
-                    return x(d.x)
+                    return heatmapX(d.x)
                 })
                 .attr("y", function (d) {
-                    return y(d.y)
+                    return heatmapY(d.y)
                 })
-                .attr("width", x.bandwidth())
-                .attr("height", y.bandwidth())
+                .attr("width", heatmapX.bandwidth())
+                .attr("height", heatmapY.bandwidth())
+                .style("stroke-width", "2")
                 .style("stroke", "black")
                 .style("stroke-opacity", 0.6)
                 .style("fill", function (d) {
-                    return myColor(d.value)
+                    return heatmapColor(d.value)
                 })
-                .on("mouseover", mouseover)
-                .on("mousemove", mousemove)
-                .on("mouseleave", mouseleave)
+                .on("mouseover", function() {
+                    d3.select(this)
+                        .style("stroke-width", "5")
+                })
+                .on("mouseleave", function(){
+
+                    d3.select(this)
+                        .style("stroke-width", "2")
+                        .style("stroke-opacity", 0.6)
+         })
 
 
             /////////////////////////////////////
@@ -532,7 +537,7 @@ let compartment= getCompartmentFromSpecies(sp);
         });
 
     var gSimple = d3
-        .select('div#slider-simple')
+        .select('#slider_div')
         .append('svg')
         .attr('width', 500)
         .attr('height', 100)

@@ -39,7 +39,11 @@
 
 <!--Sidebar-->
 <div class="sidenav">
+
+    <!--singa picture-->
     <a  href="https://github.com/singa-bio" target="_blank"><img id="singa_logo" src="singa_logo_website.png"> </a>
+
+    <!--upload file (with svg picture)-->
     <a  id="fileBrowser" data-toggle="modal" data-target="#fileBrowserModal">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 400 70" fill="none" stroke="#0cac79" style="margin-right: 10px" >
 
@@ -49,6 +53,7 @@
                     />
         </svg>load file</a>
 
+    <!--load example (with svg picture)-->
     <a  id="exampleCharts" data-toggle="modal" data-target="#exampleFileModal">
 
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 550 70" stroke="#0cac79" style="margin-right: 10px">
@@ -66,6 +71,8 @@
                     d="M 68.398858,344.7578 341.9046,342.59503 Z"
                     style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
         </svg>example</a>
+
+    <!--show heatmap (with svg picture)-->
     <a  id="heat_map" onclick="setHeatmapDropdown()">
 
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 30 250 70" stroke="#0cac79" style="margin-right: 10px" >
@@ -101,10 +108,11 @@
         </svg>heatmap</a>
 </div>
 
+<!--Content-->
+
 <div class="content">
     <div class="heat">
         <div class="row align-items-center">
-            <div class="col-sm-2"><p id="value-simple"></p></div>
             <div class="col-sm">
                 <div id="slider-simple"></div>
             </div>
@@ -114,6 +122,8 @@
         <div class="titleDiv"></div>
         <div class="trajectory"></div>
     </div>
+
+    <div id="slider_div"> </div>
 
     <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
         <li class="nav-item">
