@@ -22,138 +22,205 @@
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>-->
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>-->
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
 
 
 </head>
 
 <body>
-    <div id="main">
-      <!--Header-->
 
-        <div class="container-fluid">
-            <div class="row">
-                <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-                    <div class="sidebar-sticky">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="link" href="https://github.com/singa-bio" target="_blank" ><img id="singa_logo" src="singa_logo_website.png"> </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="fileBrowser" data-toggle="modal" data-target="#fileBrowserModal">
-                                    <img id="folder" src="folder.svg">
-                                    load file
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="exampleCharts" data-toggle="modal" data-target="#exampleFileModal">
-                                    <img id="file" src="file.svg" >
-                                    example
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="heat_map" onclick="setHeatmapDropdown()">
-                                    <img id="headmap_icon" src="heatmap.svg" >
-                                    heatmap
-                                </a>
+<!--Sidebar-->
+<div class="sidenav">
+    <a  href="https://github.com/singa-bio" target="_blank"><img id="singa_logo" src="singa_logo_website.png"> </a>
+    <a  id="fileBrowser" data-toggle="modal" data-target="#fileBrowserModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 400 70" fill="none" stroke="#0cac79" style="margin-right: 10px" >
 
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-                <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px4">
-                    <div class="heat">
-                        <h2>Simple</h2>
-                        <div class="row align-items-center">
-                            <div class="col-sm-2"><p id="value-simple"></p></div>
-                            <div class="col-sm"><div id="slider-simple"></div></div>
-                        </div>
-                    </div>
-                    <div class="graph">
-                        <div class="titleDiv"></div>
-                        <div class="trajectory"></div>
-                    </div>
+            <path
+                    style="fill:none;stroke:#0cac79;stroke-width:19.66500092;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                    d="m 13.722721,286.20176 0.80967,-185.01568 c -0.54749,-17.419352 6.65016,-25.922774 21.42608,-25.702381 l 71.104019,-0.885653 c 16.2752,-0.936533 21.21125,6.724752 21.33435,18.035412 l 0.50965,25.904112 c -0.59857,5.07339 -0.70593,9.32002 14.17483,8.23686 l 128.81026,-0.91056 c 17.08894,-0.12763 20.66342,8.85231 21.53352,19.65477 v 19.73073 h 19.65476 c 13.21723,-0.55148 21.8607,1.68107 12.09524,15.11906 L 252.60367,286.20176 H 13.722721 l 31.122,-120.36225 99.970889,-0.75782 148.60949,0.16768 -148.60949,-0.16768 -99.970889,0.75782 z"
+                    />
+        </svg>load file</a>
 
-                    <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
-                        <li class="nav-item">
-                             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home" aria-selected="true">species selection</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#search" role="tab" aria-controls="profile" aria-selected="false">search area</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#allTrajectories" role="tab" aria-controls="contact" aria-selected="false">all trajectories</a>
-                        </li>
-                    </ul>
+    <a  id="exampleCharts" data-toggle="modal" data-target="#exampleFileModal">
 
-                    <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show active" id="buttons" role="tabpanel" aria-labelledby="home-tab">
-                            <div id="search_buttons">
-                                <div id="search_button_area"></div>
-                            </div>
-                            <div class="box"></div>
-                        </div>
-                        <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="profile-tab">
-                            <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
-                                <div class="input-group-prepend">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 550 70" stroke="#0cac79" style="margin-right: 10px">
 
-                                </div>
-                            </div>
-                            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse" data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
-                                advanced search
-                            </a>
-                            <div class="collapse show" id="collapseExample">
-                                <div class="card card-body">
-                                    <div id="advanced_search_area"></div>
-                                </div>
-                            </div>
-                            <div id="list"></div>
-                        </div>
-                        <div class="tab-pane fade" id="allTrajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
-                    </div>
-                </main>
+            <path
+                    d="M 25.767024,391.35304 24.442822,45.703759 C 23.089522,24.831423 30.377197,3.2981411 58.081622,4.7779021 L 207.44069,6.0926885 370.8523,156.55311 216.10382,154.79803 219.53593,18.187927 388.99516,171.67216 l 0.2528,250.38467 c 0.16429,25.13332 -24.97796,24.84016 -40.52863,23.78189 L 50.248435,445.68771 C 22.814432,441.09626 27.542117,418.97114 25.767024,391.35304 Z"
+                    style="fill:none;stroke:#0cac79;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 68.002451,252.48901 341.50818,250.32624 Z"
+                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 67.642905,298.64469 341.14864,296.48192 Z"
+                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 68.398858,344.7578 341.9046,342.59503 Z"
+                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        </svg>example</a>
+    <a  id="heat_map" onclick="setHeatmapDropdown()">
 
-                <div class="modal fade" id="fileBrowserModal" tabindex="-1" role="dialog" aria-labelledby="FileBrowserModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="FileBrowserModalLabel">Load your own files!</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <label class="input-group-btn">
-                                    <span class="btn btn-primary">Browse... <input id="file-upload2" type="file" onchange="loadFile()" accept=".csv, .json" style="display: none;"></span>
-                                </label>
-                                <!--<span class="btn btn-primary">Browse&hellip; <input id="file-upload" type="file" onchange="loadFile()" accept=".csv, .json" style="display: none;" multiple></span>-->
-                            </div>
-                        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 30 250 70" stroke="#0cac79" style="margin-right: 10px" >
+
+            <path
+                    d="M 192.32335,-2.0912561 V 124.53078"
+                    style="fill:none;stroke:#0cac79;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 100.38263,-2.0912561 V 124.53078"
+                    style="fill:none;stroke:#0cac79;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 54.412278,-2.0912561 V 124.53078"
+                    style="fill:none;stroke:#0cac79;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 8.4419231,-2.0912561 V 124.53078"
+                    style="fill:none;stroke:#0cac79;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 146.35299,-2.0912561 V 124.53079"
+                    style="fill:none;stroke:#0cac79;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 1.4874286,4.5012773 H 199.26528"
+                    style="opacity:0.95;fill:none;stroke:#0cac79;stroke-width:13.18506145;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 1.4874286,80.125924 H 199.26528"
+                    style="opacity:0.95;fill:none;stroke:#0cac79;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 1.4874286,42.313601 H 199.26528"
+                    style="opacity:0.95;fill:none;stroke:#0cac79;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            <path
+                    d="M 1.4999825,117.93825 H 199.27784"
+                    style="opacity:0.95;fill:none;stroke:#0cac79;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+
+        </svg>heatmap</a>
+</div>
+
+<div class="content">
+    <div class="heat">
+        <div class="row align-items-center">
+            <div class="col-sm-2"><p id="value-simple"></p></div>
+            <div class="col-sm">
+                <div id="slider-simple"></div>
+            </div>
+        </div>
+    </div>
+    <div class="graph">
+        <div class="titleDiv"></div>
+        <div class="trajectory"></div>
+    </div>
+
+    <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home"
+               aria-selected="true">species selection</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#search" role="tab" aria-controls="profile"
+               aria-selected="false">search area</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#allTrajectories" role="tab"
+               aria-controls="contact" aria-selected="false">all trajectories</a>
+        </li>
+        <li>
+            <a class="nav-link" id="option-tab" data-toggle="tab" href="#options" role="tab" aria-controls="option"
+               aria-selected="false">options</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="buttons" role="tabpanel" aria-labelledby="home-tab">
+            <div id="search_buttons">
+                <div id="search_button_area"></div>
+            </div>
+            <div class="box"></div>
+        </div>
+        <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
+                <div class="input-group-prepend">
+
+                </div>
+            </div>
+            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse"
+               data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
+                advanced search
+            </a>
+            <div class="collapse show" id="collapseExample">
+                <div class="card card-body">
+                    <div id="advanced_search_area"></div>
+                </div>
+            </div>
+            <div id="list"></div>
+        </div>
+        <div class="tab-pane fade" id="allTrajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
+        <div class="tab-pane fade" id="options" role="tabpanel" aria-labelledby="option-tab">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input type="checkbox" aria-label="Checkbox for following text input" name="check"
+                               value="relative" checked> relative
                     </div>
                 </div>
 
-                <div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <button type="button" class="btn btn-primary" id="exC" onclick="loadExampleCsv()" data-dismiss="modal">example_trajectories.cvs</button>
-                                <button type="button" class="btn btn-primary" id="exJ" onclick="loadExampleJson()" data-dismiss="modal">example_trajectories.json</button>
-                            </div>
-                        </div>
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input type="checkbox" aria-label="Checkbox for following text input" name="check"
+                               value="absolute"> absolute
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
+<div class="modal fade" id="fileBrowserModal" tabindex="-1" role="dialog" aria-labelledby="FileBrowserModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="FileBrowserModalLabel">Load your own files!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label class="input-group-btn">
+                    <span class="btn btn-primary">Browse... <input id="file-upload2" type="file" onchange="loadFile()"
+                                                                   accept=".csv, .json" style="display: none;"></span>
+                </label>
+                <!--<span class="btn btn-primary">Browse&hellip; <input id="file-upload" type="file" onchange="loadFile()" accept=".csv, .json" style="display: none;" multiple></span>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <button type="button" class="btn btn-primary" id="exC" onclick="loadExampleCsv()" data-dismiss="modal">
+                    example_trajectories.cvs
+                </button>
+                <button type="button" class="btn btn-primary" id="exJ" onclick="loadExampleJson()" data-dismiss="modal">
+                    example_trajectories.json
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <script src="js/src/singa.simulation.visualization.js"></script>

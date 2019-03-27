@@ -40,6 +40,14 @@ let summedData = [],
     heatmapData = [];
 
 //Functions to read and structure the data into a uniform data format (nestedData)
+
+
+$(document).ready(function(){
+    $('input:checkbox').click(function() {
+        $('input:checkbox').not(this).prop('checked', false);
+    });
+});
+
 function resetGlobalArrays() {
     activeTrajectories.length = 0;
     time.length = 0;
@@ -230,7 +238,6 @@ function prepareDataFromJson(data) {
     }
 }
 
-
 function prepareHeatmapData(data) {
 
 
@@ -344,7 +351,6 @@ let compartment= getCompartmentFromSpecies(sp);
     console.log(time);
 
     let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
-    var data = time;
 
 
     let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //Anzahl der Knoten (sortiert) (Variable machen)
@@ -438,13 +444,33 @@ let compartment= getCompartmentFromSpecies(sp);
 
             });
 
-            // Build color scale
-            var myColor = d3.scaleLinear()
-                .range(["white", "#219c68"])
-                .domain([0, d3.max(heatmapData, function (d) {
-                    return d.value;
+            // Build color scale relative to timestep
+            let myColor;
 
-                })]); // Maximale Konzentration nach species filtern
+
+          if($('input[name="check"]:checked').val() === "relative"){
+
+               myColor = d3.scaleLinear()
+                  .range(["white", "#219c68"])
+                  .domain([0, d3.max(heatmapData, function (d) {
+                      return d.value;
+
+                  })]);
+
+          }else{
+
+                myColor = d3.scaleLinear()
+                  .range(["white", "#219c68"])
+                  .domain([0, d3.max(summedData[compartment+"_"+sp], function (d) {
+                      return d.y;
+
+                  })]);
+
+          }
+
+
+
+
 
 
 

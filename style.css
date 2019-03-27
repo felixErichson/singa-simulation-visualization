@@ -46,10 +46,50 @@ body {
 }
 
 
-#main{
-    min-height: 100%;
-    background-color: #ffffff;
+.sidenav {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: rgba(17, 17, 17, 0.09);
+    overflow-x: hidden;
+    padding-top: 20px;
 }
+
+.sidenav a {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #219c68;
+    display: block;
+}
+
+.sidenav a svg path {
+
+    stroke: #000000 !important;
+
+}
+
+
+.sidenav a:hover {
+    color: #f1f1f1;
+}
+
+.content {
+    margin-left: 250px; /* Same as the width of the sidenav */
+    font-size: 28px; /* Increased text to enable scrolling */
+    padding: 0px 0px;
+}
+
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}
+
+
+
 
 #header{
     width: 100%;
@@ -96,7 +136,7 @@ body {
 }
 
 .graph{
-    width: 1000px;
+    width: 800px;
     margin: 25px auto 25px auto;
     background-color: #ffffff;
     border: 1px solid #ddd;
