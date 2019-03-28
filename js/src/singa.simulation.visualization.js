@@ -4,11 +4,11 @@ const modalMargin = {top: 40, right: 20, bottom: 40, left: 100},
     modalWidth = 400 - modalMargin.left - modalMargin.right,
     modalHeight = 300 - modalMargin.top - modalMargin.bottom;
 
-const margin = {top: 40, right: 50, bottom: 40, left: 50},
+const margin = {top: 40, right: 25, bottom: 40, left: 25},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
     height = parseInt(d3.select(".trajectory").style("height")) - margin.top - margin.bottom;
 
-const color = ['#66a61e', '#d95f02', '#7570b3', '#e7298a',];
+const color = [ '#d95f02', '#7570b3', '#e7298a',];
 
 
 const x = d3.scaleLinear().range([0, width]);
@@ -17,9 +17,12 @@ let y0 = d3.scaleLinear().range([height, 0]),
     y2 = d3.scaleLinear().range([height, 0]);
 
 let summedData = [],
+    summedNodeData = [],
     activeTrajectories = [],
     time = [],
+    globalNode,
     compartments = [],
+    allCompartments = [],
     allSpecies = [],
     allNodes = [],
     timeUnit = null,
@@ -165,7 +168,7 @@ function prepareDataFromCsv() {
 
 function prepareNestedDataFromCsv(data) {
 
-    nestedData =
+    OldnestedData =
         d3.nest()
             .key(function (d) {
                 return d.elapsed_time;
@@ -188,61 +191,59 @@ function readDataFromJson() {
 
     globalData = JSON.parse(reader.result);
     nestedData = d3.map();
-    nestedHeatmapData = d3.map();
-
-    prepareDataFromJson(globalData);
 
     prepareHeatmapData(globalData);
+    sumData();
 
-    initializeMainContent();
+
 }
 
-function prepareDataFromJson(data) {
-
-    for (let currentKey in data) {
-
-        if (data[currentKey] !== null) {
-            if (typeof(data[currentKey]) === "object") {
-
-                if (parent === "trajectory-data") {
-                    currentTime = currentKey;
-                    if (!time.includes(currentKey)) {
-                        time.push(parseFloat(currentKey));
-                        nestedData.set(currentKey, d3.map())
-                    }
-                }
-
-                if (parent === "concentrations") {
-                    currentCompartment = currentKey;
-                    if (!compartments.includes(currentKey)) {
-                        compartments.push(currentKey);
-                    }
-                    nestedData.get(currentTime).set(currentCompartment, d3.map())
-                }
-                const grandparent = parent;
-                parent = currentKey;
-                prepareDataFromJson(data[currentKey]);
-                parent = grandparent;
-
-            } else {
-
-                if (currentKey === "time-unit") {
-
-                    timeUnit = data[currentKey];
-
-                } else if (currentKey === "concentration-unit") {
-
-                    concentrationUnit = data[currentKey]
-                } else {
-                    if (!allSpecies.includes(currentKey)) {
-                        allSpecies.push(currentKey);
-                    }
-                    nestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-                }
-            }
-        }
-    }
-}
+// function prepareDataFromJson(data) {
+//
+//     for (let currentKey in data) {
+//
+//         if (data[currentKey] !== null) {
+//             if (typeof(data[currentKey]) === "object") {
+//
+//                 if (parent === "trajectory-data") {
+//                     currentTime = currentKey;
+//                     if (!time.includes(currentKey)) {
+//                         time.push(parseFloat(currentKey));
+//                         OldnestedData.set(currentKey, d3.map())
+//                     }
+//                 }
+//
+//                 if (parent === "concentrations") {
+//                     currentCompartment = currentKey;
+//                     if (!compartments.includes(currentKey)) {
+//                         compartments.push(currentKey);
+//                     }
+//                     OldnestedData.get(currentTime).set(currentCompartment, d3.map())
+//                 }
+//                 const grandparent = parent;
+//                 parent = currentKey;
+//                 prepareDataFromJson(data[currentKey]);
+//                 parent = grandparent;
+//
+//             } else {
+//
+//                 if (currentKey === "time-unit") {
+//
+//                     timeUnit = data[currentKey];
+//
+//                 } else if (currentKey === "concentration-unit") {
+//
+//                     concentrationUnit = data[currentKey]
+//                 } else {
+//                     if (!allSpecies.includes(currentKey)) {
+//                         allSpecies.push(currentKey);
+//                     }
+//                     OldnestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
+//                 }
+//             }
+//         }
+//     }
+// }
 
 function prepareHeatmapData(data) {
 
@@ -255,8 +256,8 @@ function prepareHeatmapData(data) {
                 if (parent === "trajectory-data") {
                     currentTime = currentKey;
                     if (!time.includes(currentKey)) {
-                        // time.push(parseFloat(currentKey));
-                        nestedHeatmapData.set(currentKey, d3.map())
+                         time.push(parseFloat(currentKey));
+                        nestedData.set(currentKey, d3.map())
                     }
                 }
 
@@ -266,16 +267,16 @@ function prepareHeatmapData(data) {
                         allNodes.push(currentKey)
 
                     }
-                    nestedHeatmapData.get(currentTime).set(currentNode, d3.map())
+                    nestedData.get(currentTime).set(currentNode, d3.map())
                 }
 
                 if (parent === "concentrations") {
                     currentCompartment = currentKey;
-                    if (!compartments.includes(currentKey)) {
-                        compartments.push(currentKey);
+                    if (!allCompartments.includes(currentKey)) {
+                        allCompartments.push(currentKey);
 
                     }
-                    nestedHeatmapData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
+                    nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
                 }
                 const grandparent = parent;
                 parent = currentKey;
@@ -295,7 +296,7 @@ function prepareHeatmapData(data) {
                     if (!allSpecies.includes(currentKey)) {
                         allSpecies.push(currentKey);
                     }
-                    nestedHeatmapData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                    nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
                 }
             }
         }
@@ -306,7 +307,9 @@ function prepareHeatmapData(data) {
 
 function getCompartmentFromSpecies(species) {
 
+
     for (let currentTrajectory in summedData){
+        console.log(currentTrajectory);
         if (currentTrajectory.includes(species) === true) {
             console.log(currentTrajectory.split("_")[0]);
             return currentTrajectory.split("_")[0];
@@ -344,7 +347,7 @@ function setHeatmapDropdown() {
             .text(allSpecies[i])
             .on("click", function () {
 
-setHeatMapSvg();
+                setHeatMapSvg();
                 drawHeatmap($(this).text());
 
             })
@@ -398,11 +401,11 @@ function getHeatmapData(currentTimeStep, compartment, species){
 
     let obj;
 
-    nestedHeatmapData.get(currentTimeStep).keys().forEach(function (node) {
+    nestedData.get(currentTimeStep).keys().forEach(function (node) {
 
-        if (nestedHeatmapData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
+        if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
 
-            if (nestedHeatmapData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
+            if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
                 obj = {
                     //  name: compartment+ "_" + species,
                     x: node.split(regEx)[1],
@@ -414,7 +417,7 @@ function getHeatmapData(currentTimeStep, compartment, species){
                 obj = {
                     x: node.split(regEx)[1],
                     y: node.split(regEx)[2],
-                    value: nestedHeatmapData.get(currentTimeStep).get(node).get(compartment).get(species)
+                    value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
                 };
                 heatmapData.push(obj);
             }
@@ -439,21 +442,26 @@ function getHeatmapData(currentTimeStep, compartment, species){
 function checkBoxOutput(compartment, species) {
     if($('input[name="check"]:checked').val() === "relative"){
 
-        return d3.scaleLinear()
-            .range(["white", "#219c68"])
-            .domain([0, d3.max(heatmapData, function (d) {
-                return d.value;
 
-            })]);
+        return d3.scaleLinear()
+            .range(["#ffffff","#0cac79"  ])
+            .domain([0, d3.max(heatmapData, function (d) {
+                return d.value
+
+            })])
+            .interpolate(d3.interpolateHsl);
 
     }else{
 
        return d3.scaleLinear()
-            .range(["white", "#219c68"])
-            .domain([0, d3.max(summedData[compartment+"_"+species], function (d) {
+           .range(['#0cac79', '#8cac0c', "#ac0c0c"])
+            .domain([0, 0.5*d3.max(summedData[compartment+"_"+species], function (d) {
                 return d.y;
 
-            })]);
+            }) , d3.max(summedData[compartment+"_"+species], function (d) {
+                return d.y;
+
+            })  ]);
 
     }
 }
@@ -529,6 +537,10 @@ let compartment= getCompartmentFromSpecies(sp);
                         .style("stroke-width", "2")
                         .style("stroke-opacity", 0.6)
          })
+                .on("click", function (d) {
+                    drawGraphFromNode(d)
+
+                })
 
 
             /////////////////////////////////////
@@ -554,10 +566,33 @@ let compartment= getCompartmentFromSpecies(sp);
 
 }
 
+function drawGraphFromNode(data) {
+    compartments.length = 0;
+    alert(data.x + ":" + data.y + " " + data.value);
+
+
+        globalNode = "Node ("+data.x+", "+data.y+")";
+
+        nestedData.keys().forEach(function (timestep) {
+            nestedData.get(timestep).get(globalNode).keys().forEach(function (compartment) {
+                if (!compartments.includes(compartment)){
+                    compartments.push(compartment)
+                }
+            })
+        })
+
+
+    clearHtmlTags();
+    summCurrentNodeData();
+    initializeMainContent();
+
+
+
+}
 
 function initializeMainContent() {
-    console.log(nestedHeatmapData);
-    sumData();
+    console.log(nestedData);
+
     addSelectionButtons();
     initialMainSvg();
     prepareModal();
@@ -573,21 +608,49 @@ function initializeMainContent() {
 function sumData() {
 
     let rememberSpecies = [];
-    compartments.forEach(function (comp) {
+    allCompartments.forEach(function (comp) {
 
         nestedData.keys().forEach(function (element) {
 
-            nestedData.get(element).get(comp).keys().forEach(function (spe) {
+            nestedData.get(element).keys().forEach(function (node) {
 
-                if (!rememberSpecies.includes(spe) && nestedData.get(element).get(comp).get(spe) > 0) {
+                if(nestedData.get(element).get(node).get(comp) !== undefined && nestedData.get(element).get(node).get(comp).keys() !== undefined) {
 
-                    rememberSpecies.push(spe);
-                    summedData[comp + "_" + spe] = filterData(comp, spe);
+                    nestedData.get(element).get(node).get(comp).keys().forEach(function (spe) {
 
-                }
-            })
+                        if (!rememberSpecies.includes(spe) && nestedData.get(element).get(node).get(comp).get(spe) > 0 && nestedData.get(element).get(node).get(comp).get(spe) !== undefined ) {
+
+                            rememberSpecies.push(spe);
+                            globalNode = node;
+                            summedData[comp + "_" + spe] = filterData(comp, spe);
+
+                        }
+                    })
+                }})
         })
     })
+    //alert("summed Data now")
+    console.log(summedData);
+}
+
+function summCurrentNodeData(){
+
+    let rememberSpecies = [];
+    compartments.forEach(function (compartment) {
+      nestedData.keys().forEach(function (timestep){
+          nestedData.get(timestep).get(globalNode).get(compartment).keys().forEach(function (species) {
+              if(!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined){
+                  rememberSpecies.push(species);
+                  summedNodeData[compartment + "_" + species] = filterData(compartment, species);
+
+              }
+
+          })
+
+      })
+    })
+
+
 }
 
 function filterData(compartment, spec) {
@@ -596,7 +659,7 @@ function filterData(compartment, spec) {
     let obj = {};
 
     nestedData.keys().forEach(function (element) {
-        if (nestedData.get(element).get(compartment).get(spec) === undefined) {
+        if (nestedData.get(element).get(globalNode).get(compartment).get(spec) === undefined) {
             obj = {
                 x: parseFloat(element),
                 y: 0
@@ -605,7 +668,7 @@ function filterData(compartment, spec) {
         } else {
             obj = {
                 x: parseFloat(element),
-                y: nestedData.get(element).get(compartment).get(spec)
+                y: nestedData.get(element).get(globalNode).get(compartment).get(spec)
             };
             trajectoryData.push(obj);
         }
@@ -622,7 +685,7 @@ function prepareModal() {
     let compart;
     let title;
     let selector;
-    console.log(summedData);
+    console.log(summedNodeData);
     compartments.forEach(function (comp) {
         let modDiv = d3.select("#allTrajectories")
             .append("div")
@@ -633,7 +696,7 @@ function prepareModal() {
 
     });
 
-    for (let i in summedData) {
+    for (let i in summedNodeData) {
         compart = i.substr(0, i.indexOf("_"));
         selector = "#allTraj" + compartments.indexOf(compart);
         title = i.substr(i.indexOf("_") + 1);
@@ -683,7 +746,7 @@ function defineModalSvg(selector, text) {
 
 function defineModalAxes(i, modalIterator) {
     let modalX = d3.scaleLinear()
-        .domain(d3.extent(summedData[i], function (d) {
+        .domain(d3.extent(summedNodeData[i], function (d) {
             return d.x;
         }))
         .range([0, modalWidth]);
@@ -695,7 +758,7 @@ function defineModalAxes(i, modalIterator) {
 
 //Add Y axis
     let modalY = d3.scaleLinear()
-        .domain([0, d3.max(summedData[i], function (d) {
+        .domain([0, d3.max(summedNodeData[i], function (d) {
             return d.y;
         })])
         .range([modalHeight, 0]);
@@ -703,7 +766,7 @@ function defineModalAxes(i, modalIterator) {
         .call(d3.axisLeft(modalY).ticks(5));
 
     modalSvg.append("path")
-        .datum(summedData[i])
+        .datum(summedNodeData[i])
         .attr("id", "line_" + modalIterator)
         .style("stroke", getRandomColor())
         .attr("d", d3.line()
@@ -731,8 +794,8 @@ function addSelectionButtons() {
             .text(comp);
 
         nestedData.keys().forEach(function (element) {
-            nestedData.get(element).get(comp).keys().forEach(function (buttonSpecies) {
-                if (!rememberSpecies.includes(buttonSpecies) && nestedData.get(element).get(comp).get(buttonSpecies) > 0) {
+            nestedData.get(element).get(globalNode).get(comp).keys().forEach(function (buttonSpecies) {
+                if (!rememberSpecies.includes(buttonSpecies) && nestedData.get(element).get(globalNode).get(comp).get(buttonSpecies) > 0) {
                     rememberSpecies.push(buttonSpecies);
 
                     d3.select("#compartment_" + compartments.indexOf((comp)))
@@ -824,7 +887,7 @@ function initialMainSvg() {
         .append("svg")
         .attr("width", width)//+ margin.left + margin.right
         .attr("height", height + margin.top + margin.bottom)
-        .attr("viewBox", "-80 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
+        .attr("viewBox", "-50 +80 " + (100 + parseInt(d3.select(".trajectory").style("width"))) + " " + parseInt(d3.select(".trajectory").style("height")))
         .attr("preserveAspectRatio", "xMidYMax meet")
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
@@ -976,9 +1039,9 @@ function sumSelectedData() {
         compartments.forEach(function (comp) {
             highlightedSpecies.forEach(function (spec) {
 
-                if (nestedData.get(timestep).get(comp).get(spec) !== undefined) {
+                if (nestedData.get(timestep).get(globalNode).get(comp).get(spec) !== undefined) {
 
-                    sum += nestedData.get(timestep).get(comp).get(spec);
+                    sum += nestedData.get(timestep).get(globalNode).get(comp).get(spec);
                 }
             })
         });
