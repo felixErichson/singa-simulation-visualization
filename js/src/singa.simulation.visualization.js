@@ -347,8 +347,13 @@ function setHeatmapDropdown() {
             .text(allSpecies[i])
             .on("click", function () {
 
+                d3.selectAll('.heat svg').remove();
+                d3.selectAll('#slider_div svg').remove();
+
                 setHeatMapSvg();
                 drawHeatmap($(this).text());
+                clearHtmlTags();
+
 
             })
 
@@ -444,7 +449,7 @@ function checkBoxOutput(compartment, species) {
 
 
         return d3.scaleLinear()
-            .range(["#ffffff","#0cac79"  ])
+            .range(["#ffffff","#0cac79"])
             .domain([0, d3.max(heatmapData, function (d) {
                 return d.value
 
@@ -454,14 +459,12 @@ function checkBoxOutput(compartment, species) {
     }else{
 
        return d3.scaleLinear()
-           .range(['#0cac79', '#8cac0c', "#ac0c0c"])
-            .domain([0, 0.5*d3.max(summedData[compartment+"_"+species], function (d) {
+           .range(["#ffffff","#0cac79"])
+            .domain([0, d3.max(summedData[compartment+"_"+species], function (d) {
                 return d.y;
 
-            }) , d3.max(summedData[compartment+"_"+species], function (d) {
-                return d.y;
-
-            })  ]);
+            })
+            ]);
 
     }
 }
@@ -581,7 +584,8 @@ function drawGraphFromNode(data) {
             })
         })
 
-
+    //$(".btn-outline-secondary.active").removeClass("active");
+    activeTrajectories.length = 0;
     clearHtmlTags();
     summCurrentNodeData();
     initializeMainContent();
