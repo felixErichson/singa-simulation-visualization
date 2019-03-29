@@ -53,7 +53,7 @@ body {
     z-index: 1;
     top: 0;
     left: 0;
-    background-color: rgba(17, 17, 17, 0.09);
+    background-color: #f5f5f5;
     overflow-x: hidden;
     padding-top: 20px;
 }
@@ -70,12 +70,16 @@ body {
 .sidenav a svg path {
 
     stroke: #000000 !important;
-
 }
 
-
 .sidenav a:hover {
-    color: #f1f1f1;
+    color: #0cac79;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.sidenav a:hover svg path {
+    stroke: #0cac79!important;
 }
 
 .content {
@@ -167,7 +171,7 @@ body {
 }
 
 #slider_div{
-    width: 1090px;
+    width: 1290px;
     height: 100px;
     margin: 5px 25px 25px 10px;
     background-color: #ffffff;
@@ -255,9 +259,11 @@ path {
 }
 
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited , .btn-primary:focus{
-    background-color: #1de2a3 !important;
-    border-color: #1dd398ff !important;
+    background-color: #0cac79 !important;
+    border-color: #0cac79 !important;
     margin-left: 5px;
+    border-bottom-right-radius: 0.25rem !important;
+    border-top-right-radius: 0.25rem !important;
 }
 
 .btn-outline-cool, .btn-outline-cool:hover, .btn-outline-cool:active, .btn-outline-cool:visited , .btn-outline-cool:focus{
@@ -311,6 +317,10 @@ a.nav-link, a.nav-link:hover {
 
 }
 
+.nav.nav-tabs.justify-content-center.visible{
+justify-content:end !important;
+
+}
 
 
 

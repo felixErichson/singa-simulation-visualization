@@ -83,6 +83,8 @@ function clearHtmlTags() {
     $("#search_buttons").hide();
 }
 
+//TODO Beispiele aktualisieren
+
 function loadExampleCsv() {
 
     resetGlobalArrays();
@@ -147,6 +149,8 @@ function readDataFromCsv() {
     initializeMainContent();
 }
 
+//TODO künstlich Node einfügen damit Daten genested werden können
+
 function prepareDataFromCsv() {
     globalData.forEach(function (d) {
         d.elapsed_time = +d["elapsed time"];
@@ -194,56 +198,14 @@ function readDataFromJson() {
 
     prepareHeatmapData(globalData);
     sumData();
+    setHeatmapDropdown();
 
 
 }
 
-// function prepareDataFromJson(data) {
-//
-//     for (let currentKey in data) {
-//
-//         if (data[currentKey] !== null) {
-//             if (typeof(data[currentKey]) === "object") {
-//
-//                 if (parent === "trajectory-data") {
-//                     currentTime = currentKey;
-//                     if (!time.includes(currentKey)) {
-//                         time.push(parseFloat(currentKey));
-//                         OldnestedData.set(currentKey, d3.map())
-//                     }
-//                 }
-//
-//                 if (parent === "concentrations") {
-//                     currentCompartment = currentKey;
-//                     if (!compartments.includes(currentKey)) {
-//                         compartments.push(currentKey);
-//                     }
-//                     OldnestedData.get(currentTime).set(currentCompartment, d3.map())
-//                 }
-//                 const grandparent = parent;
-//                 parent = currentKey;
-//                 prepareDataFromJson(data[currentKey]);
-//                 parent = grandparent;
-//
-//             } else {
-//
-//                 if (currentKey === "time-unit") {
-//
-//                     timeUnit = data[currentKey];
-//
-//                 } else if (currentKey === "concentration-unit") {
-//
-//                     concentrationUnit = data[currentKey]
-//                 } else {
-//                     if (!allSpecies.includes(currentKey)) {
-//                         allSpecies.push(currentKey);
-//                     }
-//                     OldnestedData.get(currentTime).get(currentCompartment).set(currentKey, data[currentKey]);
-//                 }
-//             }
-//         }
-//     }
-// }
+//TODO Legende für Heatmap anfertigen
+
+//TODO Playbutton für Slider anfügen
 
 function prepareHeatmapData(data) {
 
@@ -323,16 +285,16 @@ function setHeatmapDropdown() {
         .append("div")
         .attr("class", "btn-group")
         .attr("id", "heatmap_dropdown")
-        .style("margin-top", "0px")
-        .style("position", "absolute")
-        .style("bottom", "0")
+        .style("margin-top", "5px")
+        .style("position", "relative")
         .append("button")
         .attr("type", "button")
-        .attr("class", "btn btn-info dropdown-toogle")
+        .attr("class", "btn btn-primary dropdown-toogle")
+        .attr("id", "dropdown_button")
         .attr("data-toggle", "dropdown")
         .attr("aria-haspopup", "true")
         .attr("aria-expanded", "flase")
-        .text("random dropdown");
+        .text("select species");
 
     d3.select("#heatmap_dropdown")
         .append("div")
@@ -347,8 +309,11 @@ function setHeatmapDropdown() {
             .text(allSpecies[i])
             .on("click", function () {
 
+                $("#dropdown_button").text("species: " + $(this).text());
                 d3.selectAll('.heat svg').remove();
                 d3.selectAll('#slider_div svg').remove();
+
+                //TODO Heatmap initaial Zeichnen
 
                 setHeatMapSvg();
                 drawHeatmap($(this).text());
@@ -360,8 +325,12 @@ function setHeatmapDropdown() {
     }
 }
 
+
 function setHeatMapSvg() {
-    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //Anzahl der Knoten (sortiert) (Variable machen)
+
+    //TODO Anzahl der Knoten dynamisch generieren
+
+    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     let yV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     // set the dimensions and margins of the graph
@@ -384,17 +353,12 @@ function setHeatMapSvg() {
         .range([0, heatwidth])
         .domain(xV)
         .padding(0.01);
-    // svg.append("g")
-    //     .attr("transform", "translate(0," + heatheight + ")")
-    //     .call(d3.axisBottom(x));
+
 
 // Build X scales and axis:
     heatmapY = d3.scaleBand()
         .range([heatheight, 0])
         .domain(yV)
-    //     .padding(0.01);
-    // svg.append("g")
-    //     .call(d3.axisLeft(y));
 }
 
 function getHeatmapData(currentTimeStep, compartment, species){
@@ -449,7 +413,7 @@ function checkBoxOutput(compartment, species) {
 
 
         return d3.scaleLinear()
-            .range(["#ffffff","#0cac79"])
+            .range(["#f1ff7f","#0cac79"])
             .domain([0, d3.max(heatmapData, function (d) {
                 return d.value
 
@@ -476,39 +440,25 @@ let compartment= getCompartmentFromSpecies(sp);
     let currentValue = 0.001;
     console.log(time);
 
+//TODO silder mit Graphen verbinden
 
          sliderSimple =d3
         .sliderBottom()
         .min(0)
         .max(time.length * 10)
-        .width(400)
+        .width(600)
         .ticks(10)
         .step(10)
         .default(0.001)
         .on('onchange', function ()
          {
-            d3.select('p#value-simple').text(time[sliderSimple.value() / 10]);
-
             currentValue = time[sliderSimple.value() / 10];
 
             getHeatmapData(currentValue, compartment, sp);
 
-
             let heatmapColor;
 
             heatmapColor = checkBoxOutput(compartment, sp);
-
-
-            var tooltip = d3.select(".heat")
-                .append("div")
-                .style("opacity", 0)
-                .attr("class", "tooltip")
-                .style("background-color", "rgba(245,245,245,0.8)")
-                .style("border", "solid")
-                .style("border-width", "2px")
-                .style("border-radius", "5px")
-                .style("padding", "5px");
-
 
             heatmapSvg.selectAll()
                 .data(heatmapData, function (d) {
@@ -530,17 +480,54 @@ let compartment= getCompartmentFromSpecies(sp);
                 .style("fill", function (d) {
                     return heatmapColor(d.value)
                 })
-                .on("mouseover", function() {
+                .on("mouseover", function(d) {
                     d3.select(this)
                         .style("stroke-width", "5")
+
+                    d3.select("#data")
+                        .append("p")
+                        .attr("position", "absolute")
+                        .attr("bottom","0")
+                        .text("Node ("+ d.x + "," + d.y+ ")")
+
+                     d3.select("#data")
+                        .append("p")
+                         .attr("id", "showed_species")
+                        .attr("position", "absolute")
+                        .attr("bottom","0");
+
+                        if (d.value === 0){
+                           d3.select("#showed_species").text("nothing to find here")
+                        } else {
+                            d3.select("#showed_species").text("species: " + sp)
+                        }
+
+
+                    d3.select("#data")
+                        .append("p")
+                        .attr("id", "showed_species")
+                        .attr("position", "absolute")
+                        .attr("bottom","0")
+                        .text("possible compartments: " + nestedData.get(currentValue).get("Node ("+ d.x + ", " + d.y+ ")").keys());
+
+
+                    d3.select("#data")
+                        .append("p")
+                        .attr("position", "absolute")
+                        .attr("bottom","0")
+                        .text("value: " + d.value)
                 })
                 .on("mouseleave", function(){
 
                     d3.select(this)
                         .style("stroke-width", "2")
                         .style("stroke-opacity", 0.6)
+
+                    d3.select("#data")
+                        .selectAll("p").remove();
          })
                 .on("click", function (d) {
+                    //TODO aktivieren des Buttons mit der richtigen Species
                     drawGraphFromNode(d)
 
                 })
@@ -554,8 +541,9 @@ let compartment= getCompartmentFromSpecies(sp);
     var gSimple = d3
         .select('#slider_div')
         .append('svg')
-        .attr('width', 500)
+        .attr('width', 700)
         .attr('height', 100)
+        .style("margin-left", "25%")
         .append('g')
         .attr('transform', 'translate(30,30)');
 
@@ -571,8 +559,6 @@ let compartment= getCompartmentFromSpecies(sp);
 
 function drawGraphFromNode(data) {
     compartments.length = 0;
-    alert(data.x + ":" + data.y + " " + data.value);
-
 
         globalNode = "Node ("+data.x+", "+data.y+")";
 
