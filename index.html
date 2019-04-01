@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>SiNGA visualization</title>
+
+    <link rel="icon" type="image/png" href="singa_icon.png" sizes="128x128">
+
     <meta charset="utf-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -126,7 +130,7 @@
     <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
 
         <li>
-            <a class="nav-link" id="data-tab" data-toggle="tab" href="#data" role="tab" aria-controls="home"
+            <a class="nav-link" id="data-tab" data-toggle="tab" href="#data" role="tab" aria-controls="data"
                aria-selected="true">Node data</a>
         </li>
 
@@ -136,8 +140,8 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="jo"
-               aria-selected="false">species selection</a>
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home"
+               aria-selected="true">species selection</a>
         </li>
 
 
@@ -162,7 +166,7 @@
         <div class="tab-pane fade " id="data" role="tabpanel" aria-labelledby="data-tab"></div>
 
 
-        <div class="tab-pane fade " id="buttons" role="tabpanel" aria-labelledby="home-tab">
+        <div class="tab-pane fade show active " id="buttons" role="tabpanel" aria-labelledby="home-tab">
             <div id="search_buttons">
                 <div id="search_button_area"></div>
             </div>

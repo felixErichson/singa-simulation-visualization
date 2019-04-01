@@ -8,6 +8,10 @@ const margin = {top: 40, right: 25, bottom: 40, left: 25},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
     height = parseInt(d3.select(".trajectory").style("height")) - margin.top - margin.bottom;
 
+const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
+    heatwidth = 450 - heatMargin.left - heatMargin.right,
+    heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
 const color = [ '#d95f02', '#7570b3', '#e7298a',];
 
 
@@ -45,7 +49,11 @@ let summedData = [],
     searchButtonDataArray = [],
     heatmapData = [],
     sliderSimple,
-    gSimple;
+    gSimple,
+    heatmapXRange = [],
+    heatmapYRange = [];
+
+let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 
 
 //Functions to read and structure the data into a uniform data format (nestedData)
@@ -83,8 +91,6 @@ function clearHtmlTags() {
     $("#search_buttons").hide();
 }
 
-//TODO Beispiele aktualisieren
-
 function loadExampleCsv() {
 
     resetGlobalArrays();
@@ -97,7 +103,8 @@ function loadExampleCsv() {
     setTimeout(function () {
         prepareDataFromCsv();
         prepareNestedDataFromCsv(globalData);
-        initializeMainContent();
+        sumData();
+        setHeatmapDropdown();
     }, 200);
 }
 
@@ -114,8 +121,9 @@ function loadExampleJson() {
     setTimeout(function () {
         nestedData = d3.map();
 
-        prepareDataFromJson(globalData);
-        initializeMainContent();
+        prepareHeatmapData(globalData);
+        sumData();
+        setHeatmapDropdown();
 
     }, 200);
 }
@@ -146,10 +154,10 @@ function readDataFromCsv() {
 
     prepareDataFromCsv();
     prepareNestedDataFromCsv(globalData);
-    initializeMainContent();
-}
+    sumData();
+    setHeatmapDropdown();
 
-//TODO künstlich Node einfügen damit Daten genested werden können
+}
 
 function prepareDataFromCsv() {
     globalData.forEach(function (d) {
@@ -160,22 +168,27 @@ function prepareDataFromCsv() {
             time.push(d.elapsed_time)
         }
 
-        if (!compartments.includes(d.compartment)) {
-            compartments.push(d.compartment)
+        if (!allCompartments.includes(d.compartment)) {
+            allCompartments.push(d.compartment)
         }
 
         if (!allSpecies.includes(d.species)) {
             allSpecies.push(d.species)
         }
     });
+
 }
 
 function prepareNestedDataFromCsv(data) {
 
-    OldnestedData =
+    nestedData =
         d3.nest()
             .key(function (d) {
                 return d.elapsed_time;
+            })
+            .key(function (d) {
+                return "Node (0, 0)"
+
             })
             .key(function (d) {
                 return d.compartment;
@@ -189,6 +202,7 @@ function prepareNestedDataFromCsv(data) {
                 });
             })
             .map(data);
+    console.log(nestedData);
 }
 
 function readDataFromJson() {
@@ -269,11 +283,9 @@ function prepareHeatmapData(data) {
 
 function getCompartmentFromSpecies(species) {
 
-
     for (let currentTrajectory in summedData){
         console.log(currentTrajectory);
-        if (currentTrajectory.includes(species) === true) {
-            console.log(currentTrajectory.split("_")[0]);
+        if (currentTrajectory.split("_")[1] === species) {
             return currentTrajectory.split("_")[0];
         }
     }
@@ -313,10 +325,9 @@ function setHeatmapDropdown() {
                 d3.selectAll('.heat svg').remove();
                 d3.selectAll('#slider_div svg').remove();
 
-                //TODO Heatmap initaial Zeichnen
-
+                setHeatmapRange();
                 setHeatMapSvg();
-                drawHeatmap($(this).text());
+                drawSilder($(this).text());
                 clearHtmlTags();
 
 
@@ -326,17 +337,82 @@ function setHeatmapDropdown() {
 }
 
 
+function setHeatmapRange() {
+
+    nestedData.keys().forEach(function (timestep) {
+        nestedData.get(timestep).keys().forEach(function (node) {
+            if(!heatmapXRange.includes(node.split(regEx)[1])){
+                heatmapXRange.push(node.split(regEx)[1]);
+            }
+
+            if(!heatmapYRange.includes(node.split(regEx)[2])){
+                heatmapYRange.push(node.split(regEx)[2]);
+            }
+        })
+    });
+
+    heatmapXRange.sort(  function sortNumber(a, b) {
+        return a - b;
+    });
+
+    heatmapYRange.sort(  function sortNumber(a, b) {
+        return a - b;
+    });
+}
+
+let gridSize = Math.floor(heatwidth / time.length);
+
+function drawHeatmapLegend(){
+
+d3.select("#legend_rect").remove();
+    d3.select("#legend_div").remove();
+
+    var legendHeight = 20;
+    var legendWidth = heatwidth;
+    var legendId = 'legendGradient';
+
+    var legend = d3.select(".heat").append("div").append("svg:svg")
+        .attr("id", "legend_div")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight);
+
+
+    var gradient = heatmapSvg.append("svg:defs")
+        .append("svg:linearGradient")
+        .attr("id", "linear-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "0%")
+        .attr("spreadMethod", "pad");
+
+    gradient.append("svg:stop")
+        .attr("offset", "0%")
+        .attr("stop-color", heatmapColor(0))
+        .attr("stop-opacity", 1);
+
+    gradient.append("svg:stop")
+        .attr("offset", "100%")
+        .attr("stop-color", heatmapColor(10))
+        .attr("stop-opacity", 1);
+
+
+    legend.append("svg:rect")
+        .attr("id", "legend_rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", "url(#linear-gradient)")
+        .attr("transform", "translate(" + margin.left + ",0)");
+
+
+
+}
+
 function setHeatMapSvg() {
 
-    //TODO Anzahl der Knoten dynamisch generieren
-
-    let xV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let yV = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     // set the dimensions and margins of the graph
-    var heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
-        heatwidth = 450 - heatMargin.left - heatMargin.right,
-        heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
 
 // append the svg object to the body of the page
          heatmapSvg = d3.select(".heat")
@@ -351,20 +427,17 @@ function setHeatMapSvg() {
 // Build X scales and axis:
         heatmapX = d3.scaleBand()
         .range([0, heatwidth])
-        .domain(xV)
+        .domain(heatmapXRange)
         .padding(0.01);
 
 
 // Build X scales and axis:
     heatmapY = d3.scaleBand()
         .range([heatheight, 0])
-        .domain(yV)
+        .domain(heatmapYRange)
 }
 
 function getHeatmapData(currentTimeStep, compartment, species){
-
-
-    let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 
     heatmapData.length = 0;
 
@@ -408,9 +481,9 @@ function getHeatmapData(currentTimeStep, compartment, species){
 
 }
 
-function checkBoxOutput(compartment, species) {
-    if($('input[name="check"]:checked').val() === "relative"){
+function setHeatmapColor(compartment, species) {
 
+    if($('input[name="check"]:checked').val() === "relative"){
 
         return d3.scaleLinear()
             .range(["#f1ff7f","#0cac79"])
@@ -423,7 +496,7 @@ function checkBoxOutput(compartment, species) {
     }else{
 
        return d3.scaleLinear()
-           .range(["#ffffff","#0cac79"])
+           .range(["#f1ff7f","#0cac79"])
             .domain([0, d3.max(summedData[compartment+"_"+species], function (d) {
                 return d.y;
 
@@ -433,14 +506,98 @@ function checkBoxOutput(compartment, species) {
     }
 }
 
-function drawHeatmap(sp) {
+let heatmapColor;
 
-let compartment= getCompartmentFromSpecies(sp);
+function drawHeatmap(currentValue, species) {
 
-    let currentValue = 0.001;
-    console.log(time);
+
+
+    heatmapSvg.selectAll()
+        .data(heatmapData, function (d) {
+            return d.x + ':' + d.y;
+        })
+        .enter()
+        .append("rect")
+        .attr("x", function (d) {
+            return heatmapX(d.x)
+        })
+        .attr("y", function (d) {
+            return heatmapY(d.y)
+        })
+        .attr("width", heatmapX.bandwidth())
+        .attr("height", heatmapY.bandwidth())
+        .style("stroke-width", "2")
+        .style("stroke", "black")
+        .style("stroke-opacity", 0.6)
+        .style("fill", function (d) {
+            return heatmapColor(d.value)
+        })
+        .on("mouseover", function(d) {
+            d3.select(this)
+                .style("stroke-width", "5")
+
+            d3.select("#data")
+                .append("p")
+                .attr("position", "absolute")
+                .attr("bottom","0")
+                .text("Node ("+ d.x + "," + d.y+ ")")
+
+            d3.select("#data")
+                .append("p")
+                .attr("id", "showed_species")
+                .attr("position", "absolute")
+                .attr("bottom","0");
+
+            if (d.value === 0){
+                d3.select("#showed_species").text("species: nothing to find here")
+            } else {
+                d3.select("#showed_species").text("species: " + species)
+            }
+
+
+            d3.select("#data")
+                .append("p")
+                .attr("id", "showed_species")
+                .attr("position", "absolute")
+                .attr("bottom","0")
+                .text("possible compartments: " + nestedData.get(currentValue).get("Node ("+ d.x + ", " + d.y+ ")").keys());
+
+
+            d3.select("#data")
+                .append("p")
+                .attr("position", "absolute")
+                .attr("bottom","0")
+                .text("value: " + d.value)
+        })
+        .on("mouseleave", function(){
+
+            d3.select(this)
+                .style("stroke-width", "2")
+                .style("stroke-opacity", 0.6)
+
+            d3.select("#data")
+                .selectAll("p").remove();
+        })
+        .on("click", function (d) {
+            drawGraphFromNode(d);
+            clickButton(getId(getCompartmentFromSpecies(species),species));
+        })
+
+
+}
+
+function drawSilder(species) {
+
+let compartment= getCompartmentFromSpecies(species);
+
+    let currentValue =time[0];
 
 //TODO silder mit Graphen verbinden
+
+    getHeatmapData(currentValue, compartment, species);
+    heatmapColor =  setHeatmapColor(compartment, species);
+    drawHeatmap(currentValue, heatmapColor, species);
+
 
          sliderSimple =d3
         .sliderBottom()
@@ -453,88 +610,10 @@ let compartment= getCompartmentFromSpecies(sp);
         .on('onchange', function ()
          {
             currentValue = time[sliderSimple.value() / 10];
-
-            getHeatmapData(currentValue, compartment, sp);
-
-            let heatmapColor;
-
-            heatmapColor = checkBoxOutput(compartment, sp);
-
-            heatmapSvg.selectAll()
-                .data(heatmapData, function (d) {
-                    return d.x + ':' + d.y;
-                })
-                .enter()
-                .append("rect")
-                .attr("x", function (d) {
-                    return heatmapX(d.x)
-                })
-                .attr("y", function (d) {
-                    return heatmapY(d.y)
-                })
-                .attr("width", heatmapX.bandwidth())
-                .attr("height", heatmapY.bandwidth())
-                .style("stroke-width", "2")
-                .style("stroke", "black")
-                .style("stroke-opacity", 0.6)
-                .style("fill", function (d) {
-                    return heatmapColor(d.value)
-                })
-                .on("mouseover", function(d) {
-                    d3.select(this)
-                        .style("stroke-width", "5")
-
-                    d3.select("#data")
-                        .append("p")
-                        .attr("position", "absolute")
-                        .attr("bottom","0")
-                        .text("Node ("+ d.x + "," + d.y+ ")")
-
-                     d3.select("#data")
-                        .append("p")
-                         .attr("id", "showed_species")
-                        .attr("position", "absolute")
-                        .attr("bottom","0");
-
-                        if (d.value === 0){
-                           d3.select("#showed_species").text("nothing to find here")
-                        } else {
-                            d3.select("#showed_species").text("species: " + sp)
-                        }
-
-
-                    d3.select("#data")
-                        .append("p")
-                        .attr("id", "showed_species")
-                        .attr("position", "absolute")
-                        .attr("bottom","0")
-                        .text("possible compartments: " + nestedData.get(currentValue).get("Node ("+ d.x + ", " + d.y+ ")").keys());
-
-
-                    d3.select("#data")
-                        .append("p")
-                        .attr("position", "absolute")
-                        .attr("bottom","0")
-                        .text("value: " + d.value)
-                })
-                .on("mouseleave", function(){
-
-                    d3.select(this)
-                        .style("stroke-width", "2")
-                        .style("stroke-opacity", 0.6)
-
-                    d3.select("#data")
-                        .selectAll("p").remove();
-         })
-                .on("click", function (d) {
-                    //TODO aktivieren des Buttons mit der richtigen Species
-                    drawGraphFromNode(d)
-
-                })
-
-
-            /////////////////////////////////////
-
+            getHeatmapData(currentValue, compartment, species);
+            heatmapColor =  setHeatmapColor(compartment, species);
+            drawHeatmap(currentValue, heatmapColor, species);
+             drawHeatmapLegend();
 
         });
 
@@ -582,7 +661,6 @@ function drawGraphFromNode(data) {
 
 function initializeMainContent() {
     console.log(nestedData);
-
     addSelectionButtons();
     initialMainSvg();
     prepareModal();
@@ -600,15 +678,15 @@ function sumData() {
     let rememberSpecies = [];
     allCompartments.forEach(function (comp) {
 
-        nestedData.keys().forEach(function (element) {
+        nestedData.keys().forEach(function (timestep) {
 
-            nestedData.get(element).keys().forEach(function (node) {
+            nestedData.get(timestep).keys().forEach(function (node) {
 
-                if(nestedData.get(element).get(node).get(comp) !== undefined && nestedData.get(element).get(node).get(comp).keys() !== undefined) {
+                if(nestedData.get(timestep).get(node).get(comp) !== undefined && nestedData.get(timestep).get(node).get(comp).keys() !== undefined)  {
 
-                    nestedData.get(element).get(node).get(comp).keys().forEach(function (spe) {
+                    nestedData.get(timestep).get(node).get(comp).keys().forEach(function (spe) {
 
-                        if (!rememberSpecies.includes(spe) && nestedData.get(element).get(node).get(comp).get(spe) > 0 && nestedData.get(element).get(node).get(comp).get(spe) !== undefined ) {
+                        if (!rememberSpecies.includes(spe) && nestedData.get(timestep).get(node).get(comp).get(spe) !== 0 && nestedData.get(timestep).get(node).get(comp).get(spe) !== undefined ) {
 
                             rememberSpecies.push(spe);
                             globalNode = node;
@@ -619,7 +697,6 @@ function sumData() {
                 }})
         })
     })
-    //alert("summed Data now")
     console.log(summedData);
 }
 
@@ -629,7 +706,7 @@ function summCurrentNodeData(){
     compartments.forEach(function (compartment) {
       nestedData.keys().forEach(function (timestep){
           nestedData.get(timestep).get(globalNode).get(compartment).keys().forEach(function (species) {
-              if(!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined){
+              if(!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined && nestedData.get(timestep).get(globalNode).get(compartment).get(species)>0){
                   rememberSpecies.push(species);
                   summedNodeData[compartment + "_" + species] = filterData(compartment, species);
 
@@ -1255,7 +1332,6 @@ function searchFilter() {
 
 
     console.log(even2);
-    // console.log(summedData);
     highlightSpecies(even2);
 
 }
