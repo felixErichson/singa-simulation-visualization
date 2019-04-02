@@ -12,7 +12,7 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatwidth = 450 - heatMargin.left - heatMargin.right,
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
-const color = [ '#d95f02', '#7570b3', '#e7298a',];
+const color = ['#d95f02', '#7570b3', '#e7298a'];
 
 
 const x = d3.scaleLinear().range([0, width]);
@@ -59,8 +59,8 @@ let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 //Functions to read and structure the data into a uniform data format (nestedData)
 
 
-$(document).ready(function(){
-    $('input:checkbox').click(function() {
+$(document).ready(function () {
+    $('input:checkbox').click(function () {
         $('input:checkbox').not(this).prop('checked', false);
     });
 });
@@ -217,8 +217,6 @@ function readDataFromJson() {
 
 }
 
-//TODO Legende für Heatmap anfertigen
-
 //TODO Playbutton für Slider anfügen
 
 function prepareHeatmapData(data) {
@@ -227,12 +225,12 @@ function prepareHeatmapData(data) {
     for (let currentKey in data) {
 
         if (data[currentKey] !== null) {
-            if (typeof(data[currentKey]) === "object") {
+            if (typeof (data[currentKey]) === "object") {
 
                 if (parent === "trajectory-data") {
                     currentTime = currentKey;
                     if (!time.includes(currentKey)) {
-                         time.push(parseFloat(currentKey));
+                        time.push(parseFloat(currentKey));
                         nestedData.set(currentKey, d3.map())
                     }
                 }
@@ -283,7 +281,7 @@ function prepareHeatmapData(data) {
 
 function getCompartmentFromSpecies(species) {
 
-    for (let currentTrajectory in summedData){
+    for (let currentTrajectory in summedData) {
         console.log(currentTrajectory);
         if (currentTrajectory.split("_")[1] === species) {
             return currentTrajectory.split("_")[0];
@@ -341,91 +339,120 @@ function setHeatmapRange() {
 
     nestedData.keys().forEach(function (timestep) {
         nestedData.get(timestep).keys().forEach(function (node) {
-            if(!heatmapXRange.includes(node.split(regEx)[1])){
+            if (!heatmapXRange.includes(node.split(regEx)[1])) {
                 heatmapXRange.push(node.split(regEx)[1]);
             }
 
-            if(!heatmapYRange.includes(node.split(regEx)[2])){
+            if (!heatmapYRange.includes(node.split(regEx)[2])) {
                 heatmapYRange.push(node.split(regEx)[2]);
             }
         })
     });
 
-    heatmapXRange.sort(  function sortNumber(a, b) {
+    heatmapXRange.sort(function sortNumber(a, b) {
         return a - b;
     });
 
-    heatmapYRange.sort(  function sortNumber(a, b) {
+    heatmapYRange.sort(function sortNumber(a, b) {
         return a - b;
     });
 }
 
 let gridSize = Math.floor(heatwidth / time.length);
 
-function drawHeatmapLegend(){
+function drawHeatmapLegend() {
 
-d3.select("#legend_rect").remove();
-    d3.select("#legend_div").remove();
+    d3.select("#legend-traffic").remove();
+    d3.select(".legendRect").remove();
+    d3.select(".axislegend").remove();
 
-    var legendHeight = 20;
-    var legendWidth = heatwidth;
-    var legendId = 'legendGradient';
 
-    var legend = d3.select(".heat").append("div").append("svg:svg")
-        .attr("id", "legend_div")
+    let countScale = d3.scaleLinear()
+        .domain([0, d3.max(heatmapData, function (d) {
+            return d.value
+        })
+        ])
+        .range([0, heatwidth]);
+
+//Calculate the variables for the temp gradient
+    let numStops = 10;
+    let countRange = countScale.domain();
+    countRange[2] = countRange[1] - countRange[0];
+    let countPoint = [];
+    for (var i = 0; i < numStops; i++) {
+        countPoint.push(i * countRange[2] / (numStops - 1) + countRange[0]);
+    }//for i
+
+//Create the gradient
+    heatmapSvg.append("defs")
+        .append("linearGradient")
+        .attr("id", "legend-traffic")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "100%").attr("y2", "0%")
+        .selectAll("stop")
+        .data(d3.range(numStops))
+        .enter().append("stop")
+        .attr("offset", function (d, i) {
+            return countScale(countPoint[i]) / heatwidth;
+        })
+        .attr("stop-color", function (d, i) {
+            return heatmapColor(countPoint[i])
+        });
+
+
+    let legendWidth = Math.min(heatwidth, 400);
+//Color Legend container
+    let legendsvg = heatmapSvg.append("g")
+        .attr("class", "legendWrapper")
+        .attr("transform", "translate(0,10)");
+
+//Draw the Rectangle
+    legendsvg.append("rect")
+        .attr("class", "legendRect")
+        .attr("x", 0)
+        .attr("y", 390)
+        //.attr("rx", hexRadius*1.25/2)
         .attr("width", legendWidth)
-        .attr("height", legendHeight);
+        .attr("height", 10)
+        .style("fill", "url(#legend-traffic)");
 
 
-    var gradient = heatmapSvg.append("svg:defs")
-        .append("svg:linearGradient")
-        .attr("id", "linear-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "0%")
-        .attr("spreadMethod", "pad");
+//Set scale for x-axis
+    let xScale = d3.scaleLinear()
+        .range([-legendWidth / 2, legendWidth / 2])
+        .domain([0, d3.max(heatmapData, function (d) {
+            return d.value
 
-    gradient.append("svg:stop")
-        .attr("offset", "0%")
-        .attr("stop-color", heatmapColor(0))
-        .attr("stop-opacity", 1);
+        })])
 
-    gradient.append("svg:stop")
-        .attr("offset", "100%")
-        .attr("stop-color", heatmapColor(10))
-        .attr("stop-opacity", 1);
+//Define x-axis
+    let xAxis = d3.axisBottom()
+        .ticks(5)
+        //.tickFormat(formatPercent)
+        .scale(xScale);
 
-
-    legend.append("svg:rect")
-        .attr("id", "legend_rect")
-        .attr("width", legendWidth)
-        .attr("height", legendHeight)
-        .style("fill", "url(#linear-gradient)")
-        .attr("transform", "translate(" + margin.left + ",0)");
-
-
+//Set up X axis
+    legendsvg.append("g")
+        .attr("class", "axislegend")
+        .attr("transform", "translate(195,400)")
+        .call(xAxis);
 
 }
 
 function setHeatMapSvg() {
 
-
-    // set the dimensions and margins of the graph
-
-
 // append the svg object to the body of the page
-         heatmapSvg = d3.select(".heat")
+    heatmapSvg = d3.select(".heat")
         .append("svg")
         .attr("width", heatwidth + heatMargin.left + heatMargin.right)
         .attr("height", heatheight + heatMargin.top + heatMargin.bottom)
         .append("g")
         .attr("transform",
-            "translate(" + heatMargin.left + "," + heatMargin.top + ")");
+            "translate(30,10)");
 
 
 // Build X scales and axis:
-        heatmapX = d3.scaleBand()
+    heatmapX = d3.scaleBand()
         .range([0, heatwidth])
         .domain(heatmapXRange)
         .padding(0.01);
@@ -437,7 +464,7 @@ function setHeatMapSvg() {
         .domain(heatmapYRange)
 }
 
-function getHeatmapData(currentTimeStep, compartment, species){
+function getHeatmapData(currentTimeStep, compartment, species) {
 
     heatmapData.length = 0;
 
@@ -477,40 +504,34 @@ function getHeatmapData(currentTimeStep, compartment, species){
         }
 
     });
-
-
 }
 
 function setHeatmapColor(compartment, species) {
 
-    if($('input[name="check"]:checked').val() === "relative"){
+    if ($('input[name="check"]:checked').val() === "relative") {
 
         return d3.scaleLinear()
-            .range(["#f1ff7f","#0cac79"])
+            .range(["#f1ff7f", "#0cac79"])
             .domain([0, d3.max(heatmapData, function (d) {
                 return d.value
 
-            })])
-            .interpolate(d3.interpolateHsl);
+            })
+            ])
+    } else {
 
-    }else{
-
-       return d3.scaleLinear()
-           .range(["#f1ff7f","#0cac79"])
-            .domain([0, d3.max(summedData[compartment+"_"+species], function (d) {
+        return d3.scaleLinear()
+            .range(["#f1ff7f", "#0cac79"])
+            .domain([0, d3.max(summedData[compartment + "_" + species], function (d) {
                 return d.y;
 
             })
-            ]);
-
+            ])
     }
 }
 
 let heatmapColor;
 
 function drawHeatmap(currentValue, species) {
-
-
 
     heatmapSvg.selectAll()
         .data(heatmapData, function (d) {
@@ -532,23 +553,23 @@ function drawHeatmap(currentValue, species) {
         .style("fill", function (d) {
             return heatmapColor(d.value)
         })
-        .on("mouseover", function(d) {
+        .on("mouseover", function (d) {
             d3.select(this)
                 .style("stroke-width", "5")
 
             d3.select("#data")
                 .append("p")
                 .attr("position", "absolute")
-                .attr("bottom","0")
-                .text("Node ("+ d.x + "," + d.y+ ")")
+                .attr("bottom", "0")
+                .text("Node (" + d.x + "," + d.y + ")")
 
             d3.select("#data")
                 .append("p")
                 .attr("id", "showed_species")
                 .attr("position", "absolute")
-                .attr("bottom","0");
+                .attr("bottom", "0");
 
-            if (d.value === 0){
+            if (d.value === 0) {
                 d3.select("#showed_species").text("species: nothing to find here")
             } else {
                 d3.select("#showed_species").text("species: " + species)
@@ -559,17 +580,17 @@ function drawHeatmap(currentValue, species) {
                 .append("p")
                 .attr("id", "showed_species")
                 .attr("position", "absolute")
-                .attr("bottom","0")
-                .text("possible compartments: " + nestedData.get(currentValue).get("Node ("+ d.x + ", " + d.y+ ")").keys());
+                .attr("bottom", "0")
+                .text("possible compartments: " + nestedData.get(currentValue).get("Node (" + d.x + ", " + d.y + ")").keys());
 
 
             d3.select("#data")
                 .append("p")
                 .attr("position", "absolute")
-                .attr("bottom","0")
+                .attr("bottom", "0")
                 .text("value: " + d.value)
         })
-        .on("mouseleave", function(){
+        .on("mouseleave", function () {
 
             d3.select(this)
                 .style("stroke-width", "2")
@@ -580,7 +601,61 @@ function drawHeatmap(currentValue, species) {
         })
         .on("click", function (d) {
             drawGraphFromNode(d);
-            clickButton(getId(getCompartmentFromSpecies(species),species));
+            clickButton(getId(getCompartmentFromSpecies(species), species));
+            setChartTitle("Node (" + d.x + "," + d.y + ")");
+        })
+
+
+}
+
+
+let selectedTime;
+
+function changeVerticalLineData() {
+
+
+    d3.select(".verticalLine")
+        .attr("x1", x(selectedTime))
+        .attr("x2", x(selectedTime));
+
+
+    let data  = summedNodeData[activeTrajectories[0]];
+    data = data[Math.trunc(selectedTime/10)];
+
+    d3.select(".verticalLineLabel")
+        .datum(data)
+        .attr("transform", function(d) {
+            return "translate(" + x(d.x) + "," + y0(d.y) + ")";
+        }).text(function (d) {
+            return d.y;
+
+    });
+
+    d3.select(".verticalLineCircle")
+        .datum(data)
+        .attr("transform", function(d) {
+            return "translate(" + x(d.x) + "," + y0(d.y) + ")";
+        });
+
+
+    let data2;
+
+    data2 = summedNodeData[activeTrajectories[1]];
+    data2 = data2[Math.trunc(selectedTime / 10)];
+
+    d3.select(".verticalLineLabel2")
+        .datum(data2)
+        .attr("transform", function (d) {
+            return "translate(" + x(d.x) + "," + y1(d.y) + ")";
+        }).text(function (d) {
+        return d.y;
+
+    });
+
+    d3.select(".verticalLineCircle2")
+        .datum(data2)
+        .attr("transform", function (d) {
+            return "translate(" + x(d.x) + "," + y1(d.y) + ")";
         })
 
 
@@ -588,73 +663,211 @@ function drawHeatmap(currentValue, species) {
 
 function drawSilder(species) {
 
-let compartment= getCompartmentFromSpecies(species);
 
-    let currentValue =time[0];
+    var marginSlider = {top:50, right:50, bottom:0, left:50},
+        widthSlider = 600 - marginSlider.left - marginSlider.right,
+        heightSlider = 200 - marginSlider.top - marginSlider.bottom;
 
-//TODO silder mit Graphen verbinden
+    var svgSlider = d3.select("#slider_div")
+        .append("svg")
+        .attr("width", widthSlider + marginSlider.left + marginSlider.right)
+        .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
-    getHeatmapData(currentValue, compartment, species);
-    heatmapColor =  setHeatmapColor(compartment, species);
-    drawHeatmap(currentValue, heatmapColor, species);
+    let compartment = getCompartmentFromSpecies(species);
 
+        selectedTime = time[0];
 
-         sliderSimple =d3
-        .sliderBottom()
-        .min(0)
-        .max(time.length * 10)
-        .width(600)
-        .ticks(10)
-        .step(10)
-        .default(0.001)
-        .on('onchange', function ()
-         {
-            currentValue = time[sliderSimple.value() / 10];
-            getHeatmapData(currentValue, compartment, species);
-            heatmapColor =  setHeatmapColor(compartment, species);
-            drawHeatmap(currentValue, heatmapColor, species);
-             drawHeatmapLegend();
+    getHeatmapData(selectedTime, compartment, species);
+    heatmapColor = setHeatmapColor(compartment, species);
+    drawHeatmap(selectedTime, species);
 
-        });
+    //TODO hier weiter machen
 
-    var gSimple = d3
-        .select('#slider_div')
-        .append('svg')
-        .attr('width', 700)
-        .attr('height', 100)
-        .style("margin-left", "25%")
-        .append('g')
-        .attr('transform', 'translate(30,30)');
+//https://bl.ocks.org/officeofjane/47d2b0bfeecfcb41d2212d06d095c763
 
-    gSimple.call(sliderSimple);
+    var moving = false;
+    var currentValue = 0;
+    var targetValue = widthSlider;
 
-    d3.select('p#value-simple').text(d3.format('.2')(sliderSimple.value()));
+    var playButton = d3.select("#play-button");
+
+    console.log(time[time.length-1]);
+
+    var xtime = d3.scaleTime()
+        .domain([0, time.length-1])
+        .range([0, targetValue])
+        .clamp(true);
 
 
-    // console.log (heatmapData);
+
+    let slider =
+    svgSlider
+        .append("g")
+        .attr("class", "slider")
+        .attr("transform", "translate(50,60)");
+
+    slider.append("line")
+        .attr("class", "track")
+        .attr("x1", xtime.range()[0])
+        .attr("x2", xtime.range()[1])
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .attr("class", "track-inset")
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .attr("class", "track-overlay")
+        .call(d3.drag()
+            .on("start.interrupt", function() { slider.interrupt(); })
+            .on("start drag", function() {
+                selectedTime = time[d3.event.x];
+               update(xtime.invert(selectedTime));
+console.log(selectedTime);
+                // selectedTime = time[sliderSimple.value() / 10];
+
+                getHeatmapData(selectedTime, compartment, species);
+                heatmapColor = setHeatmapColor(compartment, species);
+                drawHeatmap(selectedTime, species);
+                drawHeatmapLegend();
+                changeVerticalLineData();
+            })
+        );
+
+    slider.insert("g", ".track-overlay")
+        .attr("class", "ticks")
+        .attr("transform", "translate(0," + 18 + ")")
+        .selectAll("text")
+        .data(xtime.ticks(10))
+        .enter()
+        .append("text")
+        .attr("x", xtime)
+        .attr("y", 10)
+        .attr("text-anchor", "middle")
+        .text(function(d) { d });
+
+    var handle = slider.insert("circle", ".track-overlay")
+        .attr("class", "handle")
+        .attr("r", 9);
+
+    var label = slider.append("text")
+        .attr("class", "label")
+        .attr("text-anchor", "middle")
+        .text(time[0])
+        .attr("transform", "translate(0," + (-25) + ")")
+
+    function update(h) {
+        // update position and text of label according to slider scale
+        handle.attr("cx", x(h));
+        label
+            .attr("x", x(h))
+            .text(x(h));
+    }
 
 
+    //
+    //
+    //
+    // sliderSimple = d3
+    //     .sliderBottom()
+    //     .min(0)
+    //     .max(time.length * 10)
+    //     .width(600)
+    //     .ticks(10)
+    //     .step(10)
+    //     .default(0.001)
+    //     .on('oninput', function () {
+    //         selectedTime = time[sliderSimple.value() / 10];
+    //
+    //         getHeatmapData(selectedTime, compartment, species);
+    //         heatmapColor = setHeatmapColor(compartment, species);
+    //         drawHeatmap(selectedTime, species);
+    //         drawHeatmapLegend();
+    //         changeVerticalLineData();
+    //
+    //     });
+    //
+    // var gSimple = d3
+    //     .select('#slider_div')
+    //     .append('svg')
+    //     .attr('width', 700)
+    //     .attr('height', 100)
+    //     .style("margin-left", "25%")
+    //     .append('g')
+    //     .attr('transform', 'translate(30,30)');
+    //
+    // gSimple.call(sliderSimple);
+    //
+    // d3.select('p#value-simple').text(d3.format('.2')(sliderSimple.value()));
+    //
+    //
+    //
+    // // console.log (heatmapData);
+
+
+}
+
+function initializeLineDataView() {
+
+    svgMain.append("line")
+        .attr("class", "verticalLine")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", height)
+        .style("stroke-width", 1)
+        .style("stroke", "#808080")
+        .style("fill", "none");
+
+
+    svgMain.append("text")
+        .attr("class","verticalLineLabel")
+        .attr("x", 10)
+        .attr("style", "font-size: 15px")
+        .attr("dy", 15)
+
+    svgMain.append("circle")
+        .attr("class", "verticalLineCircle")
+        .attr("r", 7)
+        .style("stroke", color[0])
+        .attr("x", 0)
+        .attr("dy", 0)
+        .style("fill", "none")
+        .style("stroke-width", "1px")
+        .style("opacity", "1");
+
+    svgMain.append("text")
+        .attr("class","verticalLineLabel2")
+        .attr("x", 10)
+        .attr("style", "font-size: 15px")
+        .attr("dy", 15);
+
+    svgMain.append("circle")
+        .attr("class", "verticalLineCircle2")
+        .attr("r", 7)
+        .style("stroke", color[1])
+        .attr("x", 0)
+        .attr("dy", 0)
+        .style("fill", "none")
+        .style("stroke-width", "1px")
+        .style("opacity", "1");
 }
 
 function drawGraphFromNode(data) {
     compartments.length = 0;
 
-        globalNode = "Node ("+data.x+", "+data.y+")";
+    globalNode = "Node (" + data.x + ", " + data.y + ")";
 
-        nestedData.keys().forEach(function (timestep) {
-            nestedData.get(timestep).get(globalNode).keys().forEach(function (compartment) {
-                if (!compartments.includes(compartment)){
-                    compartments.push(compartment)
-                }
-            })
+    nestedData.keys().forEach(function (timestep) {
+        nestedData.get(timestep).get(globalNode).keys().forEach(function (compartment) {
+            if (!compartments.includes(compartment)) {
+                compartments.push(compartment)
+            }
         })
+    })
 
     //$(".btn-outline-secondary.active").removeClass("active");
     activeTrajectories.length = 0;
     clearHtmlTags();
     summCurrentNodeData();
     initializeMainContent();
-
+    initializeLineDataView();
 
 
 }
@@ -682,11 +895,11 @@ function sumData() {
 
             nestedData.get(timestep).keys().forEach(function (node) {
 
-                if(nestedData.get(timestep).get(node).get(comp) !== undefined && nestedData.get(timestep).get(node).get(comp).keys() !== undefined)  {
+                if (nestedData.get(timestep).get(node).get(comp) !== undefined && nestedData.get(timestep).get(node).get(comp).keys() !== undefined) {
 
                     nestedData.get(timestep).get(node).get(comp).keys().forEach(function (spe) {
 
-                        if (!rememberSpecies.includes(spe) && nestedData.get(timestep).get(node).get(comp).get(spe) !== 0 && nestedData.get(timestep).get(node).get(comp).get(spe) !== undefined ) {
+                        if (!rememberSpecies.includes(spe) && nestedData.get(timestep).get(node).get(comp).get(spe) !== 0 && nestedData.get(timestep).get(node).get(comp).get(spe) !== undefined) {
 
                             rememberSpecies.push(spe);
                             globalNode = node;
@@ -694,30 +907,26 @@ function sumData() {
 
                         }
                     })
-                }})
+                }
+            })
         })
     })
-    console.log(summedData);
 }
 
-function summCurrentNodeData(){
+function summCurrentNodeData() {
 
     let rememberSpecies = [];
     compartments.forEach(function (compartment) {
-      nestedData.keys().forEach(function (timestep){
-          nestedData.get(timestep).get(globalNode).get(compartment).keys().forEach(function (species) {
-              if(!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined && nestedData.get(timestep).get(globalNode).get(compartment).get(species)>0){
-                  rememberSpecies.push(species);
-                  summedNodeData[compartment + "_" + species] = filterData(compartment, species);
+        nestedData.keys().forEach(function (timestep) {
+            nestedData.get(timestep).get(globalNode).get(compartment).keys().forEach(function (species) {
+                if (!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined && nestedData.get(timestep).get(globalNode).get(compartment).get(species) > 0) {
+                    rememberSpecies.push(species);
+                    summedNodeData[compartment + "_" + species] = filterData(compartment, species);
 
-              }
-
-          })
-
-      })
+                }
+            })
+        })
     })
-
-
 }
 
 function filterData(compartment, spec) {
@@ -958,6 +1167,16 @@ function initialMainSvg() {
         .attr("preserveAspectRatio", "xMidYMax meet")
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
+}
+
+function setChartTitle(node) {
+    svgMain.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "24px")
+        .style("text-decoration", "underline")
+        .text(node);
 }
 
 function removeElementsOfSvg() {
