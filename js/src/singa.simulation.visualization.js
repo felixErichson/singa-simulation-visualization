@@ -217,8 +217,6 @@ function readDataFromJson() {
 
 }
 
-//TODO Playbutton für Slider anfügen
-
 function prepareHeatmapData(data) {
 
 
@@ -423,7 +421,7 @@ function drawHeatmapLegend() {
         .domain([0, d3.max(heatmapData, function (d) {
             return d.value
 
-        })])
+        })]);
 
 //Define x-axis
     let xAxis = d3.axisBottom()
@@ -611,16 +609,19 @@ function drawHeatmap(currentValue, species) {
 
 let selectedTime;
 
+
+//TODO hier weiterarbeiten!
+
 function changeVerticalLineData() {
 
 
     d3.select(".verticalLine")
-        .attr("x1", x(selectedTime))
-        .attr("x2", x(selectedTime));
+        .attr("x1", x(time[selectedTime]))
+        .attr("x2", x(time[selectedTime]));
 
 
     let data  = summedNodeData[activeTrajectories[0]];
-    data = data[Math.trunc(selectedTime/10)];
+    data = data[selectedTime];
 
     d3.select(".verticalLineLabel")
         .datum(data)
@@ -641,7 +642,7 @@ function changeVerticalLineData() {
     let data2;
 
     data2 = summedNodeData[activeTrajectories[1]];
-    data2 = data2[Math.trunc(selectedTime / 10)];
+    data2 = data2[selectedTime];
 
     d3.select(".verticalLineLabel2")
         .datum(data2)
@@ -663,13 +664,13 @@ function changeVerticalLineData() {
 
 function drawSilder(species) {
 
-
-    var marginSlider = {top:50, right:50, bottom:0, left:50},
+    let marginSlider = {top:50, right:50, bottom:0, left:50},
         widthSlider = 600 - marginSlider.left - marginSlider.right,
         heightSlider = 200 - marginSlider.top - marginSlider.bottom;
 
-    var svgSlider = d3.select("#slider_div")
+    let svgSlider = d3.select("#slider_div")
         .append("svg")
+        .attr("style","margin-left: 20%")
         .attr("width", widthSlider + marginSlider.left + marginSlider.right)
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
@@ -681,24 +682,16 @@ function drawSilder(species) {
     heatmapColor = setHeatmapColor(compartment, species);
     drawHeatmap(selectedTime, species);
 
-    //TODO hier weiter machen
-
-//https://bl.ocks.org/officeofjane/47d2b0bfeecfcb41d2212d06d095c763
-
     var moving = false;
-    var currentValue = 0;
+    var selectedTime = 0;
     var targetValue = widthSlider;
 
     var playButton = d3.select("#play-button");
 
-    console.log(time[time.length-1]);
-
-    var xtime = d3.scaleTime()
-        .domain([0, time.length-1])
+    var xtime = d3.scaleLinear()
+        .domain([0,time.length-1])
         .range([0, targetValue])
         .clamp(true);
-
-
 
     let slider =
     svgSlider
@@ -717,28 +710,22 @@ function drawSilder(species) {
         .call(d3.drag()
             .on("start.interrupt", function() { slider.interrupt(); })
             .on("start drag", function() {
-                selectedTime = time[d3.event.x];
-               update(xtime.invert(selectedTime));
-console.log(selectedTime);
-                // selectedTime = time[sliderSimple.value() / 10];
+                selectedTime = Math.trunc(d3.event.x);
+                console.log(selectedTime);
+               update(selectedTime);
 
-                getHeatmapData(selectedTime, compartment, species);
-                heatmapColor = setHeatmapColor(compartment, species);
-                drawHeatmap(selectedTime, species);
-                drawHeatmapLegend();
-                changeVerticalLineData();
             })
         );
 
     slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
-        .attr("transform", "translate(0," + 18 + ")")
+        .attr("transform", "translate(0,0)")
         .selectAll("text")
         .data(xtime.ticks(10))
         .enter()
         .append("text")
         .attr("x", xtime)
-        .attr("y", 10)
+        .attr("y", 0)
         .attr("text-anchor", "middle")
         .text(function(d) { d });
 
@@ -747,60 +734,56 @@ console.log(selectedTime);
         .attr("r", 9);
 
     var label = slider.append("text")
-        .attr("class", "label")
+        .attr("class", "label333")
         .attr("text-anchor", "middle")
         .text(time[0])
-        .attr("transform", "translate(0," + (-25) + ")")
+        .attr("transform", "translate(0," + (-25) + ")");
+
+    playButton
+        .on("click", function() {
+            var button = d3.select(this);
+            if (button.text() === "Pause") {
+                moving = false;
+                clearInterval(timer);
+                // timer = 0;
+                button.text("Play");
+            } else {
+                moving = true;
+                timer = setInterval(step, 1);
+                button.text("Pause");
+            }
+            console.log("Slider moving: " + moving);
+        });
+
+    function step() {
+        update(selectedTime);
+        selectedTime = selectedTime + (5);
+        console.log(selectedTime);
+        if (selectedTime > time.length-1) {
+            moving = false;
+            selectedTime = 0;
+            clearInterval(timer);
+            // timer = 0;
+            playButton.text("Play");
+            console.log("Slider moving: " + moving);
+        }
+    }
 
     function update(h) {
         // update position and text of label according to slider scale
-        handle.attr("cx", x(h));
-        label
-            .attr("x", x(h))
-            .text(x(h));
+        handle.attr("cx", xtime(h));
+
+        label.attr("x", xtime(h))
+            .text(time[h]);
+
+        getHeatmapData(time[h], compartment, species);
+        heatmapColor = setHeatmapColor(compartment, species);
+        drawHeatmap(time[h], species);
+        drawHeatmapLegend();
+        if(activeTrajectories[0]!== undefined){
+            changeVerticalLineData();
+        }
     }
-
-
-    //
-    //
-    //
-    // sliderSimple = d3
-    //     .sliderBottom()
-    //     .min(0)
-    //     .max(time.length * 10)
-    //     .width(600)
-    //     .ticks(10)
-    //     .step(10)
-    //     .default(0.001)
-    //     .on('oninput', function () {
-    //         selectedTime = time[sliderSimple.value() / 10];
-    //
-    //         getHeatmapData(selectedTime, compartment, species);
-    //         heatmapColor = setHeatmapColor(compartment, species);
-    //         drawHeatmap(selectedTime, species);
-    //         drawHeatmapLegend();
-    //         changeVerticalLineData();
-    //
-    //     });
-    //
-    // var gSimple = d3
-    //     .select('#slider_div')
-    //     .append('svg')
-    //     .attr('width', 700)
-    //     .attr('height', 100)
-    //     .style("margin-left", "25%")
-    //     .append('g')
-    //     .attr('transform', 'translate(30,30)');
-    //
-    // gSimple.call(sliderSimple);
-    //
-    // d3.select('p#value-simple').text(d3.format('.2')(sliderSimple.value()));
-    //
-    //
-    //
-    // // console.log (heatmapData);
-
-
 }
 
 function initializeLineDataView() {
@@ -873,7 +856,6 @@ function drawGraphFromNode(data) {
 }
 
 function initializeMainContent() {
-    console.log(nestedData);
     addSelectionButtons();
     initialMainSvg();
     prepareModal();
@@ -882,8 +864,6 @@ function initializeMainContent() {
     searchButtonDataArray.length = 0;
     addAppendButton();
     addCompartmentSelection();
-
-
 }
 
 function sumData() {
