@@ -322,12 +322,6 @@ justify-content:end !important;
 
 }
 
-
-
-
-
-
-
 .ticks {
     font-size: 10px;
 }
@@ -370,20 +364,9 @@ justify-content:end !important;
 
     position: absolute;
     vertical-align: middle;
-    margin: 35px;
-    background: #0cac79;
-    padding-right: 26px;
-    border-radius: 3px;
-    border: none;
-    color: white;
-    width: 60px;
-    cursor: pointer;
-    height: 30px;
+    margin: 33px;
 }
 
-#play-button:hover {
-    background-color: #696969;
-}
 
 
 

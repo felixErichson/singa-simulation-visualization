@@ -202,7 +202,6 @@ function prepareNestedDataFromCsv(data) {
                 });
             })
             .map(data);
-    console.log(nestedData);
 }
 
 function readDataFromJson() {
@@ -280,11 +279,24 @@ function prepareHeatmapData(data) {
 function getCompartmentFromSpecies(species) {
 
     for (let currentTrajectory in summedData) {
-        console.log(currentTrajectory);
         if (currentTrajectory.split("_")[1] === species) {
             return currentTrajectory.split("_")[0];
         }
     }
+}
+
+let playButton;
+
+function appendPlayButton() {
+
+   d3.select("#slider_div")
+        .append("button")
+        .attr("id", "play-button")
+        .attr("class", "btn btn-primary")
+       .text("Play")
+
+    playButton = d3.select("#play-button")
+
 }
 
 function setHeatmapDropdown() {
@@ -323,8 +335,10 @@ function setHeatmapDropdown() {
 
                 setHeatmapRange();
                 setHeatMapSvg();
+                appendPlayButton();
                 drawSilder($(this).text());
                 clearHtmlTags();
+
 
 
             })
@@ -426,7 +440,6 @@ function drawHeatmapLegend() {
 //Define x-axis
     let xAxis = d3.axisBottom()
         .ticks(5)
-        //.tickFormat(formatPercent)
         .scale(xScale);
 
 //Set up X axis
@@ -531,6 +544,8 @@ let heatmapColor;
 
 function drawHeatmap(currentValue, species) {
 
+    heatmapSvg.selectAll("rect").remove();
+
     heatmapSvg.selectAll()
         .data(heatmapData, function (d) {
             return d.x + ':' + d.y;
@@ -609,11 +624,7 @@ function drawHeatmap(currentValue, species) {
 
 let selectedTime;
 
-
-//TODO hier weiterarbeiten!
-
-function changeVerticalLineData() {
-
+function changeVerticalLineData(selectedTime) {
 
     d3.select(".verticalLine")
         .attr("x1", x(time[selectedTime]))
@@ -622,6 +633,8 @@ function changeVerticalLineData() {
 
     let data  = summedNodeData[activeTrajectories[0]];
     data = data[selectedTime];
+
+
 
     d3.select(".verticalLineLabel")
         .datum(data)
@@ -639,25 +652,30 @@ function changeVerticalLineData() {
         });
 
 
-    let data2;
+    if (activeTrajectories[1] !== undefined){
 
-    data2 = summedNodeData[activeTrajectories[1]];
-    data2 = data2[selectedTime];
+        let data2;
 
-    d3.select(".verticalLineLabel2")
-        .datum(data2)
-        .attr("transform", function (d) {
-            return "translate(" + x(d.x) + "," + y1(d.y) + ")";
-        }).text(function (d) {
-        return d.y;
+        data2 = summedNodeData[activeTrajectories[1]];
+        data2 = data2[selectedTime];
 
-    });
+        d3.select(".verticalLineLabel2")
+            .datum(data2)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + y1(d.y) + ")";
+            }).text(function (d) {
+            return d.y;
 
-    d3.select(".verticalLineCircle2")
-        .datum(data2)
-        .attr("transform", function (d) {
-            return "translate(" + x(d.x) + "," + y1(d.y) + ")";
-        })
+        });
+
+        d3.select(".verticalLineCircle2")
+            .datum(data2)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + y1(d.y) + ")";
+            })
+
+    }
+
 
 
 }
@@ -682,14 +700,12 @@ function drawSilder(species) {
     heatmapColor = setHeatmapColor(compartment, species);
     drawHeatmap(selectedTime, species);
 
-    var moving = false;
-    var selectedTime = 0;
-    var targetValue = widthSlider;
+    let moving = false;
+     selectedTime = 0;
+    let targetValue = widthSlider;
 
-    var playButton = d3.select("#play-button");
-
-    var xtime = d3.scaleLinear()
-        .domain([0,time.length-1])
+    let xtime = d3.scaleLinear()
+        .domain([0,time.length-2])
         .range([0, targetValue])
         .clamp(true);
 
@@ -711,7 +727,6 @@ function drawSilder(species) {
             .on("start.interrupt", function() { slider.interrupt(); })
             .on("start drag", function() {
                 selectedTime = Math.trunc(d3.event.x);
-                console.log(selectedTime);
                update(selectedTime);
 
             })
@@ -749,23 +764,21 @@ function drawSilder(species) {
                 button.text("Play");
             } else {
                 moving = true;
-                timer = setInterval(step, 1);
+                timer = setInterval(step, 10);
                 button.text("Pause");
             }
-            console.log("Slider moving: " + moving);
+
         });
 
     function step() {
         update(selectedTime);
         selectedTime = selectedTime + (5);
-        console.log(selectedTime);
         if (selectedTime > time.length-1) {
             moving = false;
             selectedTime = 0;
             clearInterval(timer);
             // timer = 0;
             playButton.text("Play");
-            console.log("Slider moving: " + moving);
         }
     }
 
@@ -774,14 +787,14 @@ function drawSilder(species) {
         handle.attr("cx", xtime(h));
 
         label.attr("x", xtime(h))
-            .text(time[h]);
+            .text(d3.format(".3f")(time[h]));
 
         getHeatmapData(time[h], compartment, species);
         heatmapColor = setHeatmapColor(compartment, species);
         drawHeatmap(time[h], species);
         drawHeatmapLegend();
         if(activeTrajectories[0]!== undefined){
-            changeVerticalLineData();
+            changeVerticalLineData(h);
         }
     }
 }
@@ -803,7 +816,7 @@ function initializeLineDataView() {
         .attr("class","verticalLineLabel")
         .attr("x", 10)
         .attr("style", "font-size: 15px")
-        .attr("dy", 15)
+        .attr("dy", 5)
 
     svgMain.append("circle")
         .attr("class", "verticalLineCircle")
@@ -941,7 +954,7 @@ function prepareModal() {
     let compart;
     let title;
     let selector;
-    console.log(summedNodeData);
+
     compartments.forEach(function (comp) {
         let modDiv = d3.select("#allTrajectories")
             .append("div")
@@ -1117,15 +1130,11 @@ function checkEmptyCompartment() {
 
     compartments.forEach(function (comp) {
 
-        // console.log('#compartment_' + compartments.indexOf(comp));
-
         if ($(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1) {
 
-            //   console.log( "YES, the child element is inside the parent")
 
         } else {
 
-            // console.log("NO, it is not inside");
             d3.select('#compartment_' + compartments.indexOf(comp))
                 .append("h5")
                 .text("[Empty]")
@@ -1189,9 +1198,6 @@ function prepareGraph() {
         let data;
         let id;
         let scale = null;
-        console.log(searchButtonDataArray);
-        console.log(activeTrajectories);
-
 
         if (content.substr(0, content.indexOf("_")) === "search") {
             data = searchButtonDataArray[content.substr(content.indexOf("_") + 1)];
@@ -1250,7 +1256,7 @@ function setYAxis(name, color) {
     if (name === "y axis right") {
 
         d3.select(".y.axis.right").attr("transform", "translate(" + width + " ,0)")
-            .call(d3.axisRight(y1).tickFormat(d3.format('.2')))
+            .call(d3.axisRight(y1).tickFormat(d3.format('.3f')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -1259,7 +1265,7 @@ function setYAxis(name, color) {
     } else if (name === "y axis left outer") {
 
         d3.select(".y.axis.left.outer")
-            .call(d3.axisLeft(y0).tickFormat(d3.format('.2')))
+            .call(d3.axisLeft(y0).tickFormat(d3.format('.3f')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -1267,7 +1273,7 @@ function setYAxis(name, color) {
     } else if (name === "y axis left inner") {
 
         d3.select(".y.axis.left.inner")
-            .call(d3.axisRight(y2).tickFormat(d3.format('.2')))
+            .call(d3.axisRight(y2).tickFormat(d3.format('.3f')))
             .styles({
                 fill: "none", stroke: color
             })
@@ -1506,8 +1512,6 @@ function searchFilter() {
         even2.push(i);
     }
 
-    // console.log(even2);
-    //console.log(even2.keys());
     searchArray.forEach(function (d) {
 
         if (d[0] === "compartment") {
@@ -1530,7 +1534,6 @@ function searchFilter() {
     });
 
 
-    console.log(even2);
     highlightSpecies(even2);
 
 }
@@ -1542,8 +1545,6 @@ function highlightSpecies(filteredSpecies) {
     filteredSpecies.forEach(function (spec) {
 
         highlightedSpecies.push(spec.substr(spec.indexOf("_") + 1));
-
-        console.log(highlightedSpecies);
 
         $("li[id$=_" + allSpecies.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
 
