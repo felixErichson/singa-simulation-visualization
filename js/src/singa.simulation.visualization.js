@@ -51,13 +51,15 @@ let summedData = [],
     sliderSimple,
     gSimple,
     heatmapXRange = [],
-    heatmapYRange = [];
+    heatmapYRange = [],
+    playButton,
+    heatmapColor,
+    selectedTime,
+    gridSize = Math.floor(heatwidth / time.length);
 
 let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 
-
 //Functions to read and structure the data into a uniform data format (nestedData)
-
 
 $(document).ready(function () {
     $('input:checkbox').click(function () {
@@ -285,8 +287,6 @@ function getCompartmentFromSpecies(species) {
     }
 }
 
-let playButton;
-
 function appendPlayButton() {
 
    d3.select("#slider_div")
@@ -346,7 +346,6 @@ function setHeatmapDropdown() {
     }
 }
 
-
 function setHeatmapRange() {
 
     nestedData.keys().forEach(function (timestep) {
@@ -369,8 +368,6 @@ function setHeatmapRange() {
         return a - b;
     });
 }
-
-let gridSize = Math.floor(heatwidth / time.length);
 
 function drawHeatmapLegend() {
 
@@ -540,8 +537,6 @@ function setHeatmapColor(compartment, species) {
     }
 }
 
-let heatmapColor;
-
 function drawHeatmap(currentValue, species) {
 
     heatmapSvg.selectAll("rect").remove();
@@ -620,9 +615,6 @@ function drawHeatmap(currentValue, species) {
 
 
 }
-
-
-let selectedTime;
 
 function changeVerticalLineData(selectedTime) {
 
@@ -764,7 +756,7 @@ function drawSilder(species) {
                 button.text("Play");
             } else {
                 moving = true;
-                timer = setInterval(step, 10);
+                timer = setInterval(step, 50);
                 button.text("Pause");
             }
 
@@ -801,48 +793,53 @@ function drawSilder(species) {
 
 function initializeLineDataView() {
 
-    svgMain.append("line")
-        .attr("class", "verticalLine")
-        .attr("x1", 0)
-        .attr("y1", 0)
-        .attr("x2", 0)
-        .attr("y2", height)
-        .style("stroke-width", 1)
-        .style("stroke", "#808080")
-        .style("fill", "none");
+    if(activeTrajectories[0]!== undefined){
+
+        svgMain.append("line")
+            .attr("class", "verticalLine")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", height)
+            .style("stroke-width", 1)
+            .style("stroke", "#808080")
+            .style("fill", "none");
 
 
-    svgMain.append("text")
-        .attr("class","verticalLineLabel")
-        .attr("x", 10)
-        .attr("style", "font-size: 15px")
-        .attr("dy", 5)
+        svgMain.append("text")
+            .attr("class","verticalLineLabel")
+            .attr("x", 10)
+            .attr("style", "font-size: 15px")
+            .attr("dy", 5)
 
-    svgMain.append("circle")
-        .attr("class", "verticalLineCircle")
-        .attr("r", 7)
-        .style("stroke", color[0])
-        .attr("x", 0)
-        .attr("dy", 0)
-        .style("fill", "none")
-        .style("stroke-width", "1px")
-        .style("opacity", "1");
+        svgMain.append("circle")
+            .attr("class", "verticalLineCircle")
+            .attr("r", 7)
+            .style("stroke", color[0])
+            .attr("x", 0)
+            .attr("dy", 0)
+            .style("fill", "none")
+            .style("stroke-width", "1px")
+            .style("opacity", "1");
 
-    svgMain.append("text")
-        .attr("class","verticalLineLabel2")
-        .attr("x", 10)
-        .attr("style", "font-size: 15px")
-        .attr("dy", 15);
+        if(activeTrajectories[1]!== undefined){
+            svgMain.append("text")
+            .attr("class","verticalLineLabel2")
+            .attr("x", 10)
+            .attr("style", "font-size: 15px")
+            .attr("dy", 15);
 
-    svgMain.append("circle")
-        .attr("class", "verticalLineCircle2")
-        .attr("r", 7)
-        .style("stroke", color[1])
-        .attr("x", 0)
-        .attr("dy", 0)
-        .style("fill", "none")
-        .style("stroke-width", "1px")
-        .style("opacity", "1");
+            svgMain.append("circle")
+            .attr("class", "verticalLineCircle2")
+            .attr("r", 7)
+            .style("stroke", color[1])
+            .attr("x", 0)
+            .attr("dy", 0)
+            .style("fill", "none")
+            .style("stroke-width", "1px")
+            .style("opacity", "1");
+        }
+    }
 }
 
 function drawGraphFromNode(data) {
@@ -1100,6 +1097,7 @@ function addLineOnClick(id) {
     activeTrajectories.push(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
     $("#" + id).toggleClass("active");
     prepareGraph();
+    initializeLineDataView();
 }
 
 function removeLineOnClick(id) {
@@ -1112,6 +1110,12 @@ function removeLineOnClick(id) {
     }
     // $("#" + id));
     prepareGraph();
+    d3.select(".verticalLine").remove();
+    d3.select(".verticalLineLabel").remove();
+    d3.select(".verticalLineCircle").remove();
+    d3.select(".verticalLineLabel2").remove();
+    d3.select(".verticalLineCircle2").remove();
+
 }
 
 function getSpeciesFromId(id) {
