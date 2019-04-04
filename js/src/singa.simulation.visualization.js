@@ -48,14 +48,13 @@ let summedData = [],
     globalSearchIterator,
     searchButtonDataArray = [],
     heatmapData = [],
-    sliderSimple,
-    gSimple,
     heatmapXRange = [],
     heatmapYRange = [],
     playButton,
     heatmapColor,
     selectedTime,
-    gridSize = Math.floor(heatwidth / time.length);
+    sliderPosition,
+    currentSubstring = [];
 
 let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
 
@@ -68,10 +67,17 @@ $(document).ready(function () {
 });
 
 function resetGlobalArrays() {
+    summedData.length = 0;
+    summedNodeData.length = 0;
     activeTrajectories.length = 0;
     time.length = 0;
     compartments.length = 0;
     allSpecies.length = 0;
+    allCompartments.length = 0;
+    allNodes.length = 0;
+    heatmapData.length = 0;
+    heatmapXRange.length = 0;
+    heatmapYRange.length = 0;
 }
 
 function btnAllTrajectoriesVisible() {
@@ -91,6 +97,7 @@ function clearHtmlTags() {
     d3.select("#advanced_search_area").html("");
     d3.select("#search_button_area").html("");
     $("#search_buttons").hide();
+
 }
 
 function loadExampleCsv() {
@@ -98,6 +105,7 @@ function loadExampleCsv() {
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
+    d3.select('.heat').html('');
 
     d3.csv("js/src/example_trajectories.csv", function (data) {
         globalData = data;
@@ -115,6 +123,7 @@ function loadExampleJson() {
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
+    d3.select('.heat').html('');
 
 
     d3.json("js/src/example_trajectories.json", function (data) {
@@ -135,6 +144,7 @@ function loadFile() {
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
+    d3.select('.heat').html('');
 
     let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
@@ -289,11 +299,11 @@ function getCompartmentFromSpecies(species) {
 
 function appendPlayButton() {
 
-   d3.select("#slider_div")
+    d3.select("#slider_div")
         .append("button")
         .attr("id", "play-button")
         .attr("class", "btn btn-primary")
-       .text("Play")
+        .text("Play")
 
     playButton = d3.select("#play-button")
 
@@ -338,7 +348,6 @@ function setHeatmapDropdown() {
                 appendPlayButton();
                 drawSilder($(this).text());
                 clearHtmlTags();
-
 
 
             })
@@ -500,7 +509,6 @@ function getHeatmapData(currentTimeStep, compartment, species) {
             }
 
         } else {
-
             obj = {
                 //  name: compartment+ "_" + species,
                 x: node.split(regEx)[1],
@@ -623,28 +631,27 @@ function changeVerticalLineData(selectedTime) {
         .attr("x2", x(time[selectedTime]));
 
 
-    let data  = summedNodeData[activeTrajectories[0]];
+    let data = summedNodeData[activeTrajectories[0]];
     data = data[selectedTime];
-
 
 
     d3.select(".verticalLineLabel")
         .datum(data)
-        .attr("transform", function(d) {
+        .attr("transform", function (d) {
             return "translate(" + x(d.x) + "," + y0(d.y) + ")";
         }).text(function (d) {
-            return d.y;
+        return d.y;
 
     });
 
     d3.select(".verticalLineCircle")
         .datum(data)
-        .attr("transform", function(d) {
+        .attr("transform", function (d) {
             return "translate(" + x(d.x) + "," + y0(d.y) + ")";
         });
 
 
-    if (activeTrajectories[1] !== undefined){
+    if (activeTrajectories[1] !== undefined) {
 
         let data2;
 
@@ -669,72 +676,82 @@ function changeVerticalLineData(selectedTime) {
     }
 
 
-
 }
 
 function drawSilder(species) {
 
-    let marginSlider = {top:50, right:50, bottom:0, left:50},
+    let marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
         widthSlider = 600 - marginSlider.left - marginSlider.right,
         heightSlider = 200 - marginSlider.top - marginSlider.bottom;
 
     let svgSlider = d3.select("#slider_div")
         .append("svg")
-        .attr("style","margin-left: 20%")
+        .attr("style", "margin-left: 20%")
         .attr("width", widthSlider + marginSlider.left + marginSlider.right)
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
     let compartment = getCompartmentFromSpecies(species);
 
-        selectedTime = time[0];
+    selectedTime = time[0];
 
     getHeatmapData(selectedTime, compartment, species);
     heatmapColor = setHeatmapColor(compartment, species);
     drawHeatmap(selectedTime, species);
 
     let moving = false;
-     selectedTime = 0;
+    selectedTime = 0;
     let targetValue = widthSlider;
 
     let xtime = d3.scaleLinear()
-        .domain([0,time.length-2])
-        .range([0, targetValue])
+        .domain([0, time.length - 1])
+        .range([0, widthSlider])
         .clamp(true);
 
     let slider =
-    svgSlider
-        .append("g")
-        .attr("class", "slider")
-        .attr("transform", "translate(50,60)");
+        svgSlider
+            .append("g")
+            .attr("class", "slider")
+            .attr("transform", "translate(" + marginSlider.left + "," + heightSlider / 2 + ")");
+
 
     slider.append("line")
         .attr("class", "track")
         .attr("x1", xtime.range()[0])
         .attr("x2", xtime.range()[1])
-        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .select(function () {
+            return this.parentNode.appendChild(this.cloneNode(true));
+        })
         .attr("class", "track-inset")
-        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .select(function () {
+            return this.parentNode.appendChild(this.cloneNode(true));
+        })
         .attr("class", "track-overlay")
         .call(d3.drag()
-            .on("start.interrupt", function() { slider.interrupt(); })
-            .on("start drag", function() {
+            .on("start.interrupt", function () {
+                slider.interrupt();
+            })
+            .on("start drag", function () {
+
+                sliderPosition = d3.event.x;
                 selectedTime = Math.trunc(d3.event.x);
-               update(selectedTime);
+                update(selectedTime, xtime.invert(d3.event.x));
 
             })
         );
 
     slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
-        .attr("transform", "translate(0,0)")
+        .attr("transform", "translate(0," + 0 + ")")
         .selectAll("text")
         .data(xtime.ticks(10))
         .enter()
         .append("text")
         .attr("x", xtime)
-        .attr("y", 0)
+        .attr("y", 10)
         .attr("text-anchor", "middle")
-        .text(function(d) { d });
+        .text(function (d) {
+            d
+        });
 
     var handle = slider.insert("circle", ".track-overlay")
         .attr("class", "handle")
@@ -747,7 +764,7 @@ function drawSilder(species) {
         .attr("transform", "translate(0," + (-25) + ")");
 
     playButton
-        .on("click", function() {
+        .on("click", function () {
             var button = d3.select(this);
             if (button.text() === "Pause") {
                 moving = false;
@@ -756,36 +773,52 @@ function drawSilder(species) {
                 button.text("Play");
             } else {
                 moving = true;
-                timer = setInterval(step, 50);
+                timer = setInterval(step, 100);
                 button.text("Pause");
             }
 
         });
 
     function step() {
-        update(selectedTime);
-        selectedTime = selectedTime + (5);
-        if (selectedTime > time.length-1) {
+        update(selectedTime, x.invert(sliderPosition));
+        sliderPosition = sliderPosition + (5);
+        if (sliderPosition > targetValue) {
             moving = false;
+            sliderPosition = 0;
             selectedTime = 0;
             clearInterval(timer);
             // timer = 0;
             playButton.text("Play");
+            console.log("Slider moving: " + moving);
         }
     }
 
-    function update(h) {
-        // update position and text of label according to slider scale
-        handle.attr("cx", xtime(h));
+    // function step() {
+    //     update(selectedTime, xtime.invert(sliderPosition));
+    //     sliderPosition = sliderPosition + (5);
+    //     selectedTime = Math.trunc(sliderPosition);
+    //     selectedTime = Math.trunc(sliderPosition) +(5)
+    //     if (selectedTime > time.length-1) {
+    //         moving = false;
+    //         selectedTime = 0;
+    //         clearInterval(timer);
+    //         // timer = 0;
+    //         playButton.text("Play");
+    //     }
+    // }
 
-        label.attr("x", xtime(h))
+    function update(h, x) {
+        // update position and text of label according to slider scale
+        handle.attr("cx", xtime(x));
+
+        label.attr("x", xtime(x))
             .text(d3.format(".3f")(time[h]));
 
         getHeatmapData(time[h], compartment, species);
         heatmapColor = setHeatmapColor(compartment, species);
         drawHeatmap(time[h], species);
         drawHeatmapLegend();
-        if(activeTrajectories[0]!== undefined){
+        if (activeTrajectories[0] !== undefined) {
             changeVerticalLineData(h);
         }
     }
@@ -793,7 +826,7 @@ function drawSilder(species) {
 
 function initializeLineDataView() {
 
-    if(activeTrajectories[0]!== undefined){
+    if (activeTrajectories[0] !== undefined) {
 
         svgMain.append("line")
             .attr("class", "verticalLine")
@@ -807,7 +840,7 @@ function initializeLineDataView() {
 
 
         svgMain.append("text")
-            .attr("class","verticalLineLabel")
+            .attr("class", "verticalLineLabel")
             .attr("x", 10)
             .attr("style", "font-size: 15px")
             .attr("dy", 5)
@@ -822,22 +855,22 @@ function initializeLineDataView() {
             .style("stroke-width", "1px")
             .style("opacity", "1");
 
-        if(activeTrajectories[1]!== undefined){
+        if (activeTrajectories[1] !== undefined) {
             svgMain.append("text")
-            .attr("class","verticalLineLabel2")
-            .attr("x", 10)
-            .attr("style", "font-size: 15px")
-            .attr("dy", 15);
+                .attr("class", "verticalLineLabel2")
+                .attr("x", 10)
+                .attr("style", "font-size: 15px")
+                .attr("dy", 15);
 
             svgMain.append("circle")
-            .attr("class", "verticalLineCircle2")
-            .attr("r", 7)
-            .style("stroke", color[1])
-            .attr("x", 0)
-            .attr("dy", 0)
-            .style("fill", "none")
-            .style("stroke-width", "1px")
-            .style("opacity", "1");
+                .attr("class", "verticalLineCircle2")
+                .attr("r", 7)
+                .style("stroke", color[1])
+                .attr("x", 0)
+                .attr("dy", 0)
+                .style("fill", "none")
+                .style("stroke-width", "1px")
+                .style("opacity", "1");
         }
     }
 }
@@ -1135,8 +1168,6 @@ function checkEmptyCompartment() {
     compartments.forEach(function (comp) {
 
         if ($(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1) {
-
-
         } else {
 
             d3.select('#compartment_' + compartments.indexOf(comp))
@@ -1145,7 +1176,6 @@ function checkEmptyCompartment() {
 
         }
     })
-
 }
 
 //Functions that organize the main window. Create coordinate system and draw the trajectories.
@@ -1364,10 +1394,9 @@ function addListOfSpecies() {
             }
         }
     })
-
 }
 
-//advanced search area
+//custom search
 
 function addCompartmentSelection() {
 
@@ -1459,7 +1488,7 @@ function addAppendButton() {
 
             $("#search_buttons").show();
             appendButtonForSelection(buttonNumber);
-            searchFilter();
+            filterDataFromSearch();
             buttonNumber++;
 
         });
@@ -1501,45 +1530,57 @@ function appendButtonForSelection(buttonNumber) {
         });
 }
 
-function searchFilter() {
+function setSearchArray() {
 
-    let even2 = [];
     let searchArray = [];
-
     for (let i = 0; i < globalSearchIterator + 1; i++) {
         if ($("#input_first_" + i + " option:selected").text() !== "") {
-            searchArray.push([$("#input_first_" + i + " option:selected").text(), $("#input_second_" + i + " option:selected").text(), $("#input_string_" + i).val()])
+            let inputComponent = $("#input_first_" + i + " option:selected").text();
+            let inputContaining = $("#input_second_" + i + " option:selected").text();
+            let inputFilterText = $("#input_string_" + i).val();
+            searchArray.push([inputComponent, inputContaining, inputFilterText])
         }
     }
+    return searchArray;
+
+}
+
+function filterDataFromSearch() {
+
+    let searchArray = setSearchArray();
+    currentSubstring.length = 0;
 
     for (let i in summedData) {
-        even2.push(i);
+        currentSubstring.push(i);
     }
-
     searchArray.forEach(function (d) {
-
         if (d[0] === "compartment") {
-            if (d[1] === "not contains") {
-                even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === false)
-            } else if (d[1] === "contains") {
-                even2 = even2.filter(v => v.substr(0, v.indexOf("_")).includes(d[2]) === true)
-            }
+            filterComponent(d, "compartment");
         }
     });
-
     searchArray.forEach(function (d) {
         if (d[0] === "species") {
-            if (d[1] === "not contains") {
-                even2 = even2.filter(v => v.substr(v.indexOf("_") + 1).includes(d[2]) === false)
-            } else if (d[1] === "contains") {
-                even2 = even2.filter(v => v.substr(v.indexOf("_") + 1).includes(d[2]) === true)
-            }
+            filterComponent(d, "species");
         }
     });
+    highlightSpecies(currentSubstring);
+}
 
+function setFilterCondition(data, component, bool) {
 
-    highlightSpecies(even2);
+    if (component === "compartment") {
+        currentSubstring = currentSubstring.filter(v => v.substr(0, v.indexOf("_")).includes(data[2]) === bool);
+    } else {
+        currentSubstring = currentSubstring.filter(v => v.substr(v.indexOf("_") + 1).includes(data[2]) === bool);
+    }
+}
 
+function filterComponent(data, component) {
+    if (data[1] === "not contains") {
+        setFilterCondition(data, component, false)
+    } else if (data[1] === "contains") {
+        setFilterCondition(data, component, true)
+    }
 }
 
 function highlightSpecies(filteredSpecies) {
@@ -1551,7 +1592,6 @@ function highlightSpecies(filteredSpecies) {
         highlightedSpecies.push(spec.substr(spec.indexOf("_") + 1));
 
         $("li[id$=_" + allSpecies.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
-
 
     });
 
