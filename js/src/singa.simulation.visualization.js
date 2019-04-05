@@ -8,12 +8,15 @@ const margin = {top: 40, right: 25, bottom: 40, left: 25},
     width = parseInt(d3.select(".trajectory").style("width")) - margin.left - margin.right,
     height = parseInt(d3.select(".trajectory").style("height")) - margin.top - margin.bottom;
 
+let marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
+    widthSlider = 600 - marginSlider.left - marginSlider.right,
+    heightSlider = 200 - marginSlider.top - marginSlider.bottom;
+
 const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatwidth = 450 - heatMargin.left - heatMargin.right,
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
 const color = ['#d95f02', '#7570b3', '#e7298a'];
-
 
 const x = d3.scaleLinear().range([0, width]);
 let y0 = d3.scaleLinear().range([height, 0]),
@@ -25,7 +28,7 @@ let summedData = [],
     activeTrajectories = [],
     time = [],
     globalNode,
-    compartments = [],
+    nodeCompartments = [],
     allCompartments = [],
     allSpecies = [],
     allNodes = [],
@@ -43,9 +46,9 @@ let summedData = [],
     currentCompartment,
     currentNode,
     parent,
-    summedY = [],
     highlightedSpecies = [],
     globalSearchIterator,
+    buttonNumber,
     searchButtonDataArray = [],
     heatmapData = [],
     heatmapXRange = [],
@@ -71,7 +74,7 @@ function resetGlobalArrays() {
     summedNodeData.length = 0;
     activeTrajectories.length = 0;
     time.length = 0;
-    compartments.length = 0;
+    nodeCompartments.length = 0;
     allSpecies.length = 0;
     allCompartments.length = 0;
     allNodes.length = 0;
@@ -100,43 +103,35 @@ function clearHtmlTags() {
 
 }
 
-function loadExampleCsv() {
-
+function loadExample(fileEnding){
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
     d3.select('.heat').html('');
 
-    d3.csv("js/src/example_trajectories.csv", function (data) {
-        globalData = data;
-    });
-    setTimeout(function () {
-        prepareDataFromCsv();
-        prepareNestedDataFromCsv(globalData);
-        sumData();
-        setHeatmapDropdown();
-    }, 200);
-}
+    if (fileEnding === "csv"){
+        d3.csv("js/src/example_trajectories.csv", function (data) {
+            globalData = data;
+        });
+        setTimeout(function () {
+            prepareDataFromCsv();
+            prepareNestedDataFromCsv(globalData);
+            sumData();
+            setHeatmapDropdown();
+        },200)
 
-function loadExampleJson() {
+    }else if(fileEnding === "json" ){
+        d3.json("js/src/example_trajectories.json", function (data) {
+            globalData = data;
+        });
+        setTimeout(function () {
+            nestedData = d3.map();
+            prepareHeatmapData(globalData);
+            sumData();
+            setHeatmapDropdown();
+        }, 200);
+    }
 
-    resetGlobalArrays();
-    btnAllTrajectoriesVisible();
-    clearHtmlTags();
-    d3.select('.heat').html('');
-
-
-    d3.json("js/src/example_trajectories.json", function (data) {
-        globalData = data;
-    });
-    setTimeout(function () {
-        nestedData = d3.map();
-
-        prepareHeatmapData(globalData);
-        sumData();
-        setHeatmapDropdown();
-
-    }, 200);
 }
 
 function loadFile() {
@@ -179,16 +174,13 @@ function prepareDataFromCsv() {
         if (!time.includes(d.elapsed_time)) {
             time.push(d.elapsed_time)
         }
-
         if (!allCompartments.includes(d.compartment)) {
             allCompartments.push(d.compartment)
         }
-
         if (!allSpecies.includes(d.species)) {
             allSpecies.push(d.species)
         }
     });
-
 }
 
 function prepareNestedDataFromCsv(data) {
@@ -200,7 +192,6 @@ function prepareNestedDataFromCsv(data) {
             })
             .key(function (d) {
                 return "Node (0, 0)"
-
             })
             .key(function (d) {
                 return d.compartment;
@@ -224,12 +215,9 @@ function readDataFromJson() {
     prepareHeatmapData(globalData);
     sumData();
     setHeatmapDropdown();
-
-
 }
 
 function prepareHeatmapData(data) {
-
 
     for (let currentKey in data) {
 
@@ -284,8 +272,6 @@ function prepareHeatmapData(data) {
             }
         }
     }
-
-
 }
 
 function getCompartmentFromSpecies(species) {
@@ -303,10 +289,9 @@ function appendPlayButton() {
         .append("button")
         .attr("id", "play-button")
         .attr("class", "btn btn-primary")
-        .text("Play")
+        .text("Play");
 
     playButton = d3.select("#play-button")
-
 }
 
 function setHeatmapDropdown() {
@@ -348,10 +333,7 @@ function setHeatmapDropdown() {
                 appendPlayButton();
                 drawSilder($(this).text());
                 clearHtmlTags();
-
-
             })
-
     }
 }
 
@@ -384,12 +366,10 @@ function drawHeatmapLegend() {
     d3.select(".legendRect").remove();
     d3.select(".axislegend").remove();
 
-
     let countScale = d3.scaleLinear()
         .domain([0, d3.max(heatmapData, function (d) {
             return d.value
-        })
-        ])
+        })])
         .range([0, heatwidth]);
 
 //Calculate the variables for the temp gradient
@@ -399,9 +379,8 @@ function drawHeatmapLegend() {
     let countPoint = [];
     for (var i = 0; i < numStops; i++) {
         countPoint.push(i * countRange[2] / (numStops - 1) + countRange[0]);
-    }//for i
+    }
 
-//Create the gradient
     heatmapSvg.append("defs")
         .append("linearGradient")
         .attr("id", "legend-traffic")
@@ -417,14 +396,12 @@ function drawHeatmapLegend() {
             return heatmapColor(countPoint[i])
         });
 
-
     let legendWidth = Math.min(heatwidth, 400);
-//Color Legend container
+
     let legendsvg = heatmapSvg.append("g")
         .attr("class", "legendWrapper")
         .attr("transform", "translate(0,10)");
 
-//Draw the Rectangle
     legendsvg.append("rect")
         .attr("class", "legendRect")
         .attr("x", 0)
@@ -434,31 +411,24 @@ function drawHeatmapLegend() {
         .attr("height", 10)
         .style("fill", "url(#legend-traffic)");
 
-
-//Set scale for x-axis
     let xScale = d3.scaleLinear()
         .range([-legendWidth / 2, legendWidth / 2])
         .domain([0, d3.max(heatmapData, function (d) {
             return d.value
-
         })]);
 
-//Define x-axis
     let xAxis = d3.axisBottom()
         .ticks(5)
         .scale(xScale);
 
-//Set up X axis
     legendsvg.append("g")
         .attr("class", "axislegend")
         .attr("transform", "translate(195,400)")
         .call(xAxis);
-
 }
 
 function setHeatMapSvg() {
 
-// append the svg object to the body of the page
     heatmapSvg = d3.select(".heat")
         .append("svg")
         .attr("width", heatwidth + heatMargin.left + heatMargin.right)
@@ -467,15 +437,11 @@ function setHeatMapSvg() {
         .attr("transform",
             "translate(30,10)");
 
-
-// Build X scales and axis:
     heatmapX = d3.scaleBand()
         .range([0, heatwidth])
         .domain(heatmapXRange)
         .padding(0.01);
 
-
-// Build X scales and axis:
     heatmapY = d3.scaleBand()
         .range([heatheight, 0])
         .domain(heatmapYRange)
@@ -484,13 +450,10 @@ function setHeatMapSvg() {
 function getHeatmapData(currentTimeStep, compartment, species) {
 
     heatmapData.length = 0;
-
     let obj;
 
     nestedData.get(currentTimeStep).keys().forEach(function (node) {
-
         if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
-
             if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
                 obj = {
                     //  name: compartment+ "_" + species,
@@ -545,7 +508,45 @@ function setHeatmapColor(compartment, species) {
     }
 }
 
-function drawHeatmap(currentValue, species) {
+function mouseOverNode(currentNode, data, species, currentValue) {
+
+    d3.select(currentNode)
+        .style("stroke-width", "5");
+
+    d3.select("#data")
+        .append("p")
+        .attr("position", "absolute")
+        .attr("bottom", "0")
+        .text("Node (" + data.x + "," + data.y + ")");
+
+    d3.select("#data")
+        .append("p")
+        .attr("id", "showed_species")
+        .attr("position", "absolute")
+        .attr("bottom", "0");
+
+    if (data.value === 0) {
+        d3.select("#showed_species").text("species: nothing to find here")
+    } else {
+        d3.select("#showed_species").text("species: " + species)
+    }
+
+    d3.select("#data")
+        .append("p")
+        .attr("id", "showed_species")
+        .attr("position", "absolute")
+        .attr("bottom", "0")
+        .text("possible nodeCompartments: " + nestedData.get(currentValue).get("Node (" + data.x + ", " + data.y + ")").keys());
+
+
+    d3.select("#data")
+        .append("p")
+        .attr("position", "absolute")
+        .attr("bottom", "0")
+        .text("value: " + data.value)
+}
+
+function drawHeatmapRectangles(currentValue, species) {
 
     heatmapSvg.selectAll("rect").remove();
 
@@ -570,47 +571,12 @@ function drawHeatmap(currentValue, species) {
             return heatmapColor(d.value)
         })
         .on("mouseover", function (d) {
-            d3.select(this)
-                .style("stroke-width", "5")
-
-            d3.select("#data")
-                .append("p")
-                .attr("position", "absolute")
-                .attr("bottom", "0")
-                .text("Node (" + d.x + "," + d.y + ")")
-
-            d3.select("#data")
-                .append("p")
-                .attr("id", "showed_species")
-                .attr("position", "absolute")
-                .attr("bottom", "0");
-
-            if (d.value === 0) {
-                d3.select("#showed_species").text("species: nothing to find here")
-            } else {
-                d3.select("#showed_species").text("species: " + species)
-            }
-
-
-            d3.select("#data")
-                .append("p")
-                .attr("id", "showed_species")
-                .attr("position", "absolute")
-                .attr("bottom", "0")
-                .text("possible compartments: " + nestedData.get(currentValue).get("Node (" + d.x + ", " + d.y + ")").keys());
-
-
-            d3.select("#data")
-                .append("p")
-                .attr("position", "absolute")
-                .attr("bottom", "0")
-                .text("value: " + d.value)
+            mouseOverNode(this, d, species, currentValue);
         })
         .on("mouseleave", function () {
-
             d3.select(this)
                 .style("stroke-width", "2")
-                .style("stroke-opacity", 0.6)
+                .style("stroke-opacity", 0.6);
 
             d3.select("#data")
                 .selectAll("p").remove();
@@ -620,8 +586,6 @@ function drawHeatmap(currentValue, species) {
             clickButton(getId(getCompartmentFromSpecies(species), species));
             setChartTitle("Node (" + d.x + "," + d.y + ")");
         })
-
-
 }
 
 function changeVerticalLineData(selectedTime) {
@@ -630,21 +594,19 @@ function changeVerticalLineData(selectedTime) {
         .attr("x1", x(time[selectedTime]))
         .attr("x2", x(time[selectedTime]));
 
-
-    let data = summedNodeData[activeTrajectories[0]];
+    let id1 = activeTrajectories[0];
+    let data = summedNodeData[getCompartmentFromId(id1)+"_"+getSpeciesFromId(id1)];
     data = data[selectedTime];
 
-
-    d3.select(".verticalLineLabel")
+    d3.select(".verticalLine.Label")
         .datum(data)
         .attr("transform", function (d) {
             return "translate(" + x(d.x) + "," + y0(d.y) + ")";
         }).text(function (d) {
         return d.y;
-
     });
 
-    d3.select(".verticalLineCircle")
+    d3.select(".verticalLine.Circle")
         .datum(data)
         .attr("transform", function (d) {
             return "translate(" + x(d.x) + "," + y0(d.y) + ")";
@@ -653,12 +615,13 @@ function changeVerticalLineData(selectedTime) {
 
     if (activeTrajectories[1] !== undefined) {
 
+        let id2 = activeTrajectories[1];
         let data2;
 
-        data2 = summedNodeData[activeTrajectories[1]];
+        data2 = summedNodeData[getCompartmentFromId(id2)+"_"+getSpeciesFromId(id2)];
         data2 = data2[selectedTime];
 
-        d3.select(".verticalLineLabel2")
+        d3.select(".verticalLine.Label2")
             .datum(data2)
             .attr("transform", function (d) {
                 return "translate(" + x(d.x) + "," + y1(d.y) + ")";
@@ -667,22 +630,15 @@ function changeVerticalLineData(selectedTime) {
 
         });
 
-        d3.select(".verticalLineCircle2")
+        d3.select(".verticalLine.Circle2")
             .datum(data2)
             .attr("transform", function (d) {
                 return "translate(" + x(d.x) + "," + y1(d.y) + ")";
             })
-
     }
-
-
 }
 
 function drawSilder(species) {
-
-    let marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
-        widthSlider = 600 - marginSlider.left - marginSlider.right,
-        heightSlider = 200 - marginSlider.top - marginSlider.bottom;
 
     let svgSlider = d3.select("#slider_div")
         .append("svg")
@@ -696,7 +652,7 @@ function drawSilder(species) {
 
     getHeatmapData(selectedTime, compartment, species);
     heatmapColor = setHeatmapColor(compartment, species);
-    drawHeatmap(selectedTime, species);
+    drawHeatmapRectangles(selectedTime, species);
 
     let moving = false;
     selectedTime = 0;
@@ -711,7 +667,7 @@ function drawSilder(species) {
         svgSlider
             .append("g")
             .attr("class", "slider")
-            .attr("transform", "translate(" + marginSlider.left + "," + heightSlider / 2 + ")");
+            .attr("transform", "translate(" + marginSlider.left + "," + heightSlider / 3 + ")");
 
 
     slider.append("line")
@@ -731,17 +687,15 @@ function drawSilder(species) {
                 slider.interrupt();
             })
             .on("start drag", function () {
-
-                sliderPosition = d3.event.x;
-                selectedTime = Math.trunc(d3.event.x);
-                update(selectedTime, xtime.invert(d3.event.x));
+                selectedTime = Math.trunc(xtime.invert(d3.event.x));
+                update(selectedTime);
 
             })
         );
 
     slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
-        .attr("transform", "translate(0," + 0 + ")")
+        .attr("transform", "translate(0," + 10 + ")")
         .selectAll("text")
         .data(xtime.ticks(10))
         .enter()
@@ -750,14 +704,14 @@ function drawSilder(species) {
         .attr("y", 10)
         .attr("text-anchor", "middle")
         .text(function (d) {
-            d
+           return d3.format(".0f")(time[d])
         });
 
-    var handle = slider.insert("circle", ".track-overlay")
+    let handle = slider.insert("circle", ".track-overlay")
         .attr("class", "handle")
         .attr("r", 9);
 
-    var label = slider.append("text")
+    let label = slider.append("text")
         .attr("class", "label333")
         .attr("text-anchor", "middle")
         .text(time[0])
@@ -776,52 +730,54 @@ function drawSilder(species) {
                 timer = setInterval(step, 100);
                 button.text("Pause");
             }
-
         });
 
     function step() {
-        update(selectedTime, x.invert(sliderPosition));
-        sliderPosition = sliderPosition + (5);
-        if (sliderPosition > targetValue) {
+        update(selectedTime);
+        selectedTime = selectedTime + (5);
+        if (selectedTime > time.length-1) {
             moving = false;
-            sliderPosition = 0;
             selectedTime = 0;
             clearInterval(timer);
-            // timer = 0;
             playButton.text("Play");
-            console.log("Slider moving: " + moving);
         }
     }
 
-    // function step() {
-    //     update(selectedTime, xtime.invert(sliderPosition));
-    //     sliderPosition = sliderPosition + (5);
-    //     selectedTime = Math.trunc(sliderPosition);
-    //     selectedTime = Math.trunc(sliderPosition) +(5)
-    //     if (selectedTime > time.length-1) {
-    //         moving = false;
-    //         selectedTime = 0;
-    //         clearInterval(timer);
-    //         // timer = 0;
-    //         playButton.text("Play");
-    //     }
-    // }
-
-    function update(h, x) {
+    function update(h) {
         // update position and text of label according to slider scale
-        handle.attr("cx", xtime(x));
+        handle.attr("cx", xtime(h));
 
-        label.attr("x", xtime(x))
+        label.attr("x", xtime(h))
             .text(d3.format(".3f")(time[h]));
 
         getHeatmapData(time[h], compartment, species);
         heatmapColor = setHeatmapColor(compartment, species);
-        drawHeatmap(time[h], species);
+        drawHeatmapRectangles(time[h], species);
         drawHeatmapLegend();
         if (activeTrajectories[0] !== undefined) {
             changeVerticalLineData(h);
         }
     }
+}
+
+function appendDataViewLabel(className, dyPosition) {
+    svgMain.append("text")
+        .attr("class", "verticalLine "+ className)
+        .attr("x", 10)
+        .attr("style", "font-size: 15px")
+        .attr("dy", dyPosition)
+}
+
+function appendDataViewCircle(className, strokeColor) {
+    svgMain.append("circle")
+        .attr("class", "verticalLine "+className)
+        .attr("r", 7)
+        .style("stroke", strokeColor)
+        .attr("x", 0)
+        .attr("dy", 0)
+        .style("fill", "none")
+        .style("stroke-width", "1px")
+        .style("opacity", "1");
 }
 
 function initializeLineDataView() {
@@ -838,95 +794,62 @@ function initializeLineDataView() {
             .style("stroke", "#808080")
             .style("fill", "none");
 
-
-        svgMain.append("text")
-            .attr("class", "verticalLineLabel")
-            .attr("x", 10)
-            .attr("style", "font-size: 15px")
-            .attr("dy", 5)
-
-        svgMain.append("circle")
-            .attr("class", "verticalLineCircle")
-            .attr("r", 7)
-            .style("stroke", color[0])
-            .attr("x", 0)
-            .attr("dy", 0)
-            .style("fill", "none")
-            .style("stroke-width", "1px")
-            .style("opacity", "1");
+        appendDataViewLabel("Label", 5);
+        appendDataViewCircle("Circle", color[0]);
 
         if (activeTrajectories[1] !== undefined) {
-            svgMain.append("text")
-                .attr("class", "verticalLineLabel2")
-                .attr("x", 10)
-                .attr("style", "font-size: 15px")
-                .attr("dy", 15);
-
-            svgMain.append("circle")
-                .attr("class", "verticalLineCircle2")
-                .attr("r", 7)
-                .style("stroke", color[1])
-                .attr("x", 0)
-                .attr("dy", 0)
-                .style("fill", "none")
-                .style("stroke-width", "1px")
-                .style("opacity", "1");
+           appendDataViewLabel("Label2", 15);
+           appendDataViewCircle("Circle2", color[1]);
         }
     }
 }
 
-function drawGraphFromNode(data) {
-    compartments.length = 0;
-
-    globalNode = "Node (" + data.x + ", " + data.y + ")";
-
+function setNodeCompartments() {
     nestedData.keys().forEach(function (timestep) {
         nestedData.get(timestep).get(globalNode).keys().forEach(function (compartment) {
-            if (!compartments.includes(compartment)) {
-                compartments.push(compartment)
+            if (!nodeCompartments.includes(compartment)) {
+                nodeCompartments.push(compartment)
             }
         })
-    })
+    });
+}
 
-    //$(".btn-outline-secondary.active").removeClass("active");
+function drawGraphFromNode(data) {
+    nodeCompartments.length = 0;
     activeTrajectories.length = 0;
+    globalNode = "Node (" + data.x + ", " + data.y + ")";
+    setNodeCompartments();
     clearHtmlTags();
     summCurrentNodeData();
     initializeMainContent();
     initializeLineDataView();
-
-
 }
 
 function initializeMainContent() {
-    addSelectionButtons();
+    prepareSelectionButtons();
     initialMainSvg();
     prepareModal();
     addListOfSpecies();
     globalSearchIterator = 0;
+    buttonNumber = 0;
     searchButtonDataArray.length = 0;
-    addAppendButton();
+    addHeadOfSearchField();
     addCompartmentSelection();
 }
 
 function sumData() {
 
     let rememberSpecies = [];
-    allCompartments.forEach(function (comp) {
-
+    allCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timestep) {
-
             nestedData.get(timestep).keys().forEach(function (node) {
+                if (nestedData.get(timestep).get(node).get(compartment) !== undefined && nestedData.get(timestep).get(node).get(compartment).keys() !== undefined) {
+                    nestedData.get(timestep).get(node).get(compartment).keys().forEach(function (species) {
+                        if (!rememberSpecies.includes(species) && nestedData.get(timestep).get(node).get(compartment).get(species) !== 0 && nestedData.get(timestep).get(node).get(compartment).get(species) !== undefined) {
 
-                if (nestedData.get(timestep).get(node).get(comp) !== undefined && nestedData.get(timestep).get(node).get(comp).keys() !== undefined) {
-
-                    nestedData.get(timestep).get(node).get(comp).keys().forEach(function (spe) {
-
-                        if (!rememberSpecies.includes(spe) && nestedData.get(timestep).get(node).get(comp).get(spe) !== 0 && nestedData.get(timestep).get(node).get(comp).get(spe) !== undefined) {
-
-                            rememberSpecies.push(spe);
+                            rememberSpecies.push(species);
                             globalNode = node;
-                            summedData[comp + "_" + spe] = filterData(comp, spe);
+                            summedData[compartment + "_" + species] = filterData(compartment, species);
 
                         }
                     })
@@ -939,7 +862,7 @@ function sumData() {
 function summCurrentNodeData() {
 
     let rememberSpecies = [];
-    compartments.forEach(function (compartment) {
+    nodeCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timestep) {
             nestedData.get(timestep).get(globalNode).get(compartment).keys().forEach(function (species) {
                 if (!rememberSpecies.includes(species) && nestedData.get(timestep).get(globalNode).get(compartment).get(species) !== undefined && nestedData.get(timestep).get(globalNode).get(compartment).get(species) > 0) {
@@ -979,25 +902,22 @@ function filterData(compartment, spec) {
 
 function prepareModal() {
 
-
     let modalIterator = 0;
-    let compart;
+    let compartment;
     let title;
     let selector;
 
-    compartments.forEach(function (comp) {
+    nodeCompartments.forEach(function (compartment) {
         let modDiv = d3.select("#allTrajectories")
             .append("div")
-            .attr("id", "allTraj" + compartments.indexOf(comp))
+            .attr("id", "allTraj" + nodeCompartments.indexOf(compartment))
             .append("h2")
-            .text(comp);
-
-
+            .text(compartment);
     });
 
     for (let i in summedNodeData) {
-        compart = i.substr(0, i.indexOf("_"));
-        selector = "#allTraj" + compartments.indexOf(compart);
+        compartment = i.substr(0, i.indexOf("_"));
+        selector = "#allTraj" + nodeCompartments.indexOf(compartment);
         title = i.substr(i.indexOf("_") + 1);
         defineModalSvg(selector, title);
         defineModalAxes(i, modalIterator);
@@ -1040,7 +960,6 @@ function defineModalSvg(selector, text) {
         .attr("x", 30)
         .attr("font-size", 15)
         .text("[nmol/l]");
-
 }
 
 function defineModalAxes(i, modalIterator) {
@@ -1070,7 +989,6 @@ function defineModalAxes(i, modalIterator) {
         .style("stroke", getRandomColor())
         .attr("d", d3.line()
             .x(function (d) {
-
                 return modalX(d.x);
             })
             .y(function (d) {
@@ -1080,14 +998,13 @@ function defineModalAxes(i, modalIterator) {
 
 // Functions to create buttons and their click events and how to create the ID and get data from the ID
 
-function addSelectionButtons() {
+function prepareSelectionButtons() {
 
     let rememberSpecies = [];
-
-    compartments.forEach(function (comp) {
+    nodeCompartments.forEach(function (comp) {
         d3.select(".box")
             .append("div")
-            .attr("id", "compartment_" + compartments.indexOf(comp))
+            .attr("id", "compartment_" + nodeCompartments.indexOf(comp))
             .attr("class", "list " + comp)
             .append("h4")
             .text(comp);
@@ -1096,24 +1013,26 @@ function addSelectionButtons() {
             nestedData.get(element).get(globalNode).get(comp).keys().forEach(function (buttonSpecies) {
                 if (!rememberSpecies.includes(buttonSpecies) && nestedData.get(element).get(globalNode).get(comp).get(buttonSpecies) > 0) {
                     rememberSpecies.push(buttonSpecies);
-
-                    d3.select("#compartment_" + compartments.indexOf((comp)))
-                        .append("div")
-                        .attr("class", "col-md-4 center-block")
-                        .append("button")
-                        .attr("id", getId(comp, buttonSpecies))
-                        .attr("class", "btn btn-outline-secondary")
-                        .attr("type", "button")
-                        .text(buttonSpecies)
-                        .on("click", function () {
-                            clickButton(this.id)
-                        });
+                    appendSelectionButton(comp, buttonSpecies);
                 }
             })
         })
     });
-
     checkEmptyCompartment();
+}
+
+function appendSelectionButton(comp, buttonSpecies){
+    d3.select("#compartment_" + nodeCompartments.indexOf((comp)))
+        .append("div")
+        .attr("class", "col-md-4 center-block")
+        .append("button")
+        .attr("id", getId(comp, buttonSpecies))
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .text(buttonSpecies)
+        .on("click", function () {
+            clickButton(this.id)
+        });
 }
 
 function clickButton(id) {
@@ -1121,59 +1040,54 @@ function clickButton(id) {
         addLineOnClick(id);
     } else if ($("#" + id).attr("class") === "btn btn-outline-secondary active") {
         removeLineOnClick(id)
-
     }
-
 }
 
 function addLineOnClick(id) {
-    activeTrajectories.push(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
+    activeTrajectories.push(id);
     $("#" + id).toggleClass("active");
     prepareGraph();
-    initializeLineDataView();
 }
 
 function removeLineOnClick(id) {
     $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
     $("#" + id).removeClass('active');
-    //  $("#" + id + ".btn-outline-secondary:hover").css("background-color", "#6c757d");
-    let index = activeTrajectories.indexOf(getCompartmentFromId(id) + "_" + getSpeciesFromId(id));
+    let index = activeTrajectories.indexOf(id);
     if (index > -1) {
         activeTrajectories.splice(index, 1);
     }
-    // $("#" + id));
     prepareGraph();
-    d3.select(".verticalLine").remove();
-    d3.select(".verticalLineLabel").remove();
-    d3.select(".verticalLineCircle").remove();
-    d3.select(".verticalLineLabel2").remove();
-    d3.select(".verticalLineCircle2").remove();
-
-}
+   }
 
 function getSpeciesFromId(id) {
+    if (id.split("_")[0]=== "search"){
+        return id.split("_")[1]
+    }else{
     return allSpecies[parseInt(id.split("_")[1])]
+    }
 }
 
-function getCompartmentFromId(id) {
-    return compartments[parseInt(id.split("_")[0])]
+function getCompartmentFromId(id){
+if (id.split("_")[0]=== "search"){
+    return "search"
+}else {
+    return nodeCompartments[parseInt(id.split("_")[0])]
+}
 }
 
 function getId(selectedComp, selectedSpecies) {
-    return compartments.indexOf(selectedComp) + "_" + allSpecies.indexOf(selectedSpecies)
+    return nodeCompartments.indexOf(selectedComp) + "_" + allSpecies.indexOf(selectedSpecies)
 }
 
 function checkEmptyCompartment() {
 
-    compartments.forEach(function (comp) {
-
-        if ($(".col-md-4").parents('#compartment_' + compartments.indexOf(comp)).length === 1) {
+    nodeCompartments.forEach(function (comp) {
+        if ($(".col-md-4").parents('#compartment_' + nodeCompartments.indexOf(comp)).length === 1) {
         } else {
 
-            d3.select('#compartment_' + compartments.indexOf(comp))
+            d3.select('#compartment_' + nodeCompartments.indexOf(comp))
                 .append("h5")
                 .text("[Empty]")
-
         }
     })
 }
@@ -1208,6 +1122,7 @@ function removeElementsOfSvg() {
     d3.selectAll(".y.axis.left").remove();
     d3.selectAll(".y.axis.right").remove();
     d3.selectAll(".label").remove();
+    d3.selectAll(".verticalLine").remove();
 }
 
 function setPath(data, scale, axis, line, iterator, buttonId) {
@@ -1218,13 +1133,12 @@ function setPath(data, scale, axis, line, iterator, buttonId) {
     setYAxis(axis, color[iterator]);
     addLine(data, color[iterator], line);
     $(buttonId + ".btn-outline-secondary:not(:disabled):not(.disabled).active").css("background-color", color[iterator], "!important");
-
-
 }
 
 function prepareGraph() {
     let iterator = 0;
     removeElementsOfSvg();
+    initializeLineDataView();
     labelAxis();
     x.domain(d3.extent(time));
     setXAxis();
@@ -1237,8 +1151,8 @@ function prepareGraph() {
             data = searchButtonDataArray[content.substr(content.indexOf("_") + 1)];
             id = "#search_" + content.substr(content.indexOf("_") + 1);
         } else {
-            let comp = activeTrajectories[iterator].split("_")[0];
-            let spec = activeTrajectories[iterator].split("_")[1];
+            let comp = getCompartmentFromId(activeTrajectories[iterator]);
+            let spec = getSpeciesFromId(activeTrajectories[iterator]);
             data = filterData(comp, spec);
             id = "#" + getId(comp, spec);
         }
@@ -1339,26 +1253,25 @@ function addLine(data, color, name) {
 // Functions that realize data selection from input
 
 function sumSelectedData() {
-    summedY.length = 0;
+    let summedYValues = [];
     nestedData.keys().forEach(function (timestep) {
         let sum = 0;
-        compartments.forEach(function (comp) {
+        nodeCompartments.forEach(function (comp) {
             highlightedSpecies.forEach(function (spec) {
-
                 if (nestedData.get(timestep).get(globalNode).get(comp).get(spec) !== undefined) {
-
                     sum += nestedData.get(timestep).get(globalNode).get(comp).get(spec);
                 }
             })
         });
-        summedY.push(sum);
+        summedYValues.push(sum);
     });
-    getLineObjectFromSummedY();
+    return summedYValues;
 }
 
 function getLineObjectFromSummedY() {
     let summedLineObject;
     let summedLineArray = [];
+    let summedY = sumSelectedData();
 
     for (let i = 0; i < time.length; i++) {
         summedLineObject = {
@@ -1368,6 +1281,7 @@ function getLineObjectFromSummedY() {
         summedLineArray.push(summedLineObject);
     }
     searchButtonDataArray.push(summedLineArray);
+    summedNodeData["search_"+ buttonNumber]= summedLineArray;
 }
 
 function addListOfSpecies() {
@@ -1376,7 +1290,7 @@ function addListOfSpecies() {
         .attr("class", "list-group")
         .attr("id", "search_list");
 
-    compartments.forEach(function (compartment) {
+    nodeCompartments.forEach(function (compartment) {
         d3.select("#search_list")
             .append("li")
             .attr("class", "list-group-item list-group-item-success")
@@ -1398,6 +1312,12 @@ function addListOfSpecies() {
 
 //custom search
 
+function appendOptionField(selector, text){
+    d3.select(selector + globalSearchIterator)
+        .append("option")
+        .text(text);
+}
+
 function addCompartmentSelection() {
 
     d3.select("#advanced_search_area")
@@ -1410,16 +1330,11 @@ function addCompartmentSelection() {
         .attr("class", "form-group col-md-4")
         .attr("id", "initial_selection")
         .append("select")
-        .attr("id", "input_first_" + globalSearchIterator)
+        .attr("id", "input_spec_or_comp_" + globalSearchIterator)
         .attr("class", "form-control");
 
-    d3.select("#input_first_" + globalSearchIterator)
-        .append("option")
-        .text("species");
-
-    d3.select("#input_first_" + globalSearchIterator)
-        .append("option")
-        .text("compartment");
+    appendOptionField("#input_spec_or_comp_", "species");
+    appendOptionField("#input_spec_or_comp_", "compartment");
 
     d3.select("#container_" + globalSearchIterator)
         .append("div")
@@ -1428,15 +1343,10 @@ function addCompartmentSelection() {
         .attr("class", "form-group col-2")
         .append("select")
         .attr("class", "form-control")
-        .attr("id", "input_second_" + globalSearchIterator);
+        .attr("id", "input_contained_" + globalSearchIterator);
 
-    d3.select("#input_second_" + globalSearchIterator)
-        .append("option")
-        .text("contains");
-
-    d3.select("#input_second_" + globalSearchIterator)
-        .append("option")
-        .text("not contains");
+    appendOptionField("#input_contained_", "contains");
+    appendOptionField("#input_contained_", "not contains");
 
     d3.select(".form-row.nr" + globalSearchIterator)
         .append("div")
@@ -1444,7 +1354,7 @@ function addCompartmentSelection() {
         .append("input")
         .attr("type", "text")
         .attr("class", "form-control")
-        .attr("id", "input_string_" + globalSearchIterator);
+        .attr("id", "input_user_input_" + globalSearchIterator);
 
     d3.select(".form-row.nr" + globalSearchIterator)
         .append("button")
@@ -1455,15 +1365,13 @@ function addCompartmentSelection() {
         // .attr("style", "margin-bottom : 10px !important")
         .text("remove")
         .on("click", function () {
-
             let identifier = $(this).attr("id").split("_")[3];
             d3.select("#container_" + identifier).html("");
-            // globalSearchIterator--;
         });
 }
 
-function addAppendButton() {
-    let buttonNumber = 0;
+function addHeadOfSearchField() {
+
 
     d3.select("#advanced_search_area")
         .append("button")
@@ -1485,12 +1393,10 @@ function addAppendButton() {
         .attr("style", "margin-left : 10px !important")
         .text("submit search ")
         .on("click", function () {
-
             $("#search_buttons").show();
             appendButtonForSelection(buttonNumber);
             filterDataFromSearch();
             buttonNumber++;
-
         });
 
     d3.select("#advanced_search_area")
@@ -1510,23 +1416,7 @@ function appendButtonForSelection(buttonNumber) {
         .attr("type", "button")
         .text($("#search_name").val())
         .on("click", function () {
-
-            let id = this.id;
-
-            if (activeTrajectories.length < 2 && $("#" + id).attr("class") === "btn btn-outline-secondary") {
-                activeTrajectories.push(id);
-                $("#" + id).toggleClass("active");
-                prepareGraph();
-            } else if ($("#" + id).attr("class") === "btn btn-outline-secondary active") {
-                $("#" + id + ".btn-outline-secondary.active").removeAttr("style");
-                $("#" + id).removeClass('active');
-                let index = activeTrajectories.indexOf(id);
-                if (index > -1) {
-                    activeTrajectories.splice(index, 1);
-                }
-                prepareGraph();
-
-            }
+            clickButton(this.id);
         });
 }
 
@@ -1534,15 +1424,14 @@ function setSearchArray() {
 
     let searchArray = [];
     for (let i = 0; i < globalSearchIterator + 1; i++) {
-        if ($("#input_first_" + i + " option:selected").text() !== "") {
-            let inputComponent = $("#input_first_" + i + " option:selected").text();
-            let inputContaining = $("#input_second_" + i + " option:selected").text();
-            let inputFilterText = $("#input_string_" + i).val();
+        if ($("#input_spec_or_comp_" + i + " option:selected").text() !== "") {
+            let inputComponent = $("#input_spec_or_comp_" + i + " option:selected").text();
+            let inputContaining = $("#input_contained_" + i + " option:selected").text();
+            let inputFilterText = $("#input_user_input_" + i).val();
             searchArray.push([inputComponent, inputContaining, inputFilterText])
         }
     }
     return searchArray;
-
 }
 
 function filterDataFromSearch() {
@@ -1588,18 +1477,13 @@ function highlightSpecies(filteredSpecies) {
     $(".list-group-item").removeClass("list-group-item-info");
     highlightedSpecies.length = 0;
     filteredSpecies.forEach(function (spec) {
-
         highlightedSpecies.push(spec.substr(spec.indexOf("_") + 1));
-
         $("li[id$=_" + allSpecies.indexOf(spec.substr(spec.indexOf("_") + 1)) + "]").toggleClass("list-group-item-info");
-
     });
-
-    sumSelectedData();
+    getLineObjectFromSummedY()
 }
 
 // Other
-
 function getRandomColor() {
     let letters = '0123456789ABCDEF';
     let color = '#';
@@ -1608,6 +1492,3 @@ function getRandomColor() {
     }
     return color;
 }
-
-
-
