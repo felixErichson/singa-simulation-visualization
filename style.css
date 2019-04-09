@@ -12,7 +12,7 @@ body {
     padding-top: 100px; /* Location of the box */
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
+    width: 100%; /* Full trajectoryPlotWidth */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
@@ -23,7 +23,7 @@ body {
 /* Modal Content */
 .modal-content {
     background-color: #fefefe;
-    /*margin: auto;*/
+    /*trajectoryPlotMargin: auto;*/
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -82,8 +82,8 @@ body {
     stroke: #0cac79!important;
 }
 
-.content {
-    margin-left: 250px; /* Same as the width of the sidenav */
+.trajectory-view-menu-container {
+    margin-left: 250px; /* Same as the trajectoryPlotWidth of the sidenav */
     font-size: 20px; /* Increased text to enable scrolling */
     font-family: Helvetica;
     padding: 0px 0px;
@@ -141,7 +141,7 @@ body {
 
 }
 
-.heat{
+#trajectory-view-heatmap{
 
     height: 520px;
     width: 480px;
@@ -157,18 +157,6 @@ body {
 
 }
 
-.graph{
-    width: 800px;
-
-    margin: 25px 25px 10px 500px;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-align: justify;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
 
 #slider_div{
     width: 1290px;
@@ -196,8 +184,17 @@ body {
     border-top-right-radius: 3px;
 }
 
-.trajectory {
+#trajectory-view-graph {
+    width: 800px;
     height: 520px;
+    margin: 25px 25px 10px 500px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: justify;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .btn-file {
@@ -240,10 +237,6 @@ body {
 text-align: center;
 }
 
-.Boxes{
-    margin-top: auto;
-    background-color: #777f5d;
-}
 
 path {
     stroke-width: 2;

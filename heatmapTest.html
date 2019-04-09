@@ -52,7 +52,7 @@
 
     var margin = {top:40, right:50, bottom:70, left:50};
 
-    // calculate width and height based on window size
+    // calculate trajectoryPlotWidth and height based on window size
     var w = Math.max(Math.min(window.innerWidth, 1000), 500) - margin.left - margin.right - 20,
         gridSize = Math.floor(w / times.length),
         h = gridSize * (days.length+2);
@@ -64,7 +64,7 @@
     // svg container
     var svg = d3.select("#heatmap")
         .append("svg")
-        .attr("width", w + margin.top + margin.bottom)
+        .attr("trajectoryPlotWidth", w + margin.top + margin.bottom)
         .attr("height", h + margin.left + margin.right)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -143,7 +143,7 @@
                 .attr("x", function(d) { return (d.hour-1) * gridSize; })
                 .attr("y", function(d) { return (d.day-1) * gridSize; })
                 .attr("class", "hour bordered")
-                .attr("width", gridSize)
+                .attr("trajectoryPlotWidth", gridSize)
                 .attr("height", gridSize)
                 .style("stroke", "white")
                 .style("stroke-opacity", 0.6)

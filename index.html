@@ -78,65 +78,26 @@
 
 <!--Content-->
 
-<div class="content">
-    <div class="heat">
-        <!--show heatmap (with svg picture)-->
-<!--        <h3  id="heat_map" >-->
+<div class="trajectory-view-menu-container">
 
-<!--            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 30 200 70" style="margin-right: 10px" >-->
+        <div id="trajectory-view-heatmap"></div>
+        <div id="trajectory-view-graph"></div>
+        <div id="slider_div"></div>
 
-<!--                <path-->
-<!--                        d="M 192.32335,-2.0912561 V 124.53078"-->
-<!--                        style="fill:none;stroke:#000000;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 100.38263,-2.0912561 V 124.53078"-->
-<!--                        style="fill:none;stroke:#000000;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 54.412278,-2.0912561 V 124.53078"-->
-<!--                        style="fill:none;stroke:#000000;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 8.4419231,-2.0912561 V 124.53078"-->
-<!--                        style="fill:none;stroke:#000000;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 146.35299,-2.0912561 V 124.53079"-->
-<!--                        style="fill:none;stroke:#000000;stroke-width:13.90898895;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 1.4874286,4.5012773 H 199.26528"-->
-<!--                        style="opacity:0.95;fill:none;stroke:#000000;stroke-width:13.18506145;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 1.4874286,80.125924 H 199.26528"-->
-<!--                        style="opacity:0.95;fill:none;stroke:#000000;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 1.4874286,42.313601 H 199.26528"-->
-<!--                        style="opacity:0.95;fill:none;stroke:#000000;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-<!--                <path-->
-<!--                        d="M 1.4999825,117.93825 H 199.27784"-->
-<!--                        style="opacity:0.95;fill:none;stroke:#000000;stroke-width:13.18506241;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
-
-<!--            </svg>Heatmap</h3>-->
-
-    </div>
-    <div class="graph">
-        <div class="trajectory"></div>
-    </div>
-
-    <div id="slider_div">
-    </div>
-
-    <ul class="nav nav-tabs justify-content-center invisible" id="myTab" role="tablist">
+    <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
 
         <li>
-            <a class="nav-link" id="data-tab" data-toggle="tab" href="#data" role="tab" aria-controls="data"
+            <a class="nav-link" id="data-tab" data-toggle="tab" href="#menu-heatmap-data" role="tab" aria-controls="data"
                aria-selected="true">Node data</a>
         </li>
 
         <li>
-            <a class="nav-link" id="option-tab" data-toggle="tab" href="#options" role="tab" aria-controls="option"
+            <a class="nav-link" id="option-tab" data-toggle="tab" href="#menu-heatmap-options" role="tab" aria-controls="option"
                aria-selected="false">options</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#buttons" role="tab" aria-controls="home"
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab" aria-controls="home"
                aria-selected="true">species selection</a>
         </li>
 
@@ -157,14 +118,12 @@
 
     <div class="tab-content" id="myTabContent">
 
-        <div class="tab-pane fade " id="data" role="tabpanel" aria-labelledby="data-tab"></div>
+        <div class="tab-pane fade " id="menu-heatmap-data" role="tabpanel" aria-labelledby="data-tab"></div>
 
 
-        <div class="tab-pane fade show active " id="buttons" role="tabpanel" aria-labelledby="home-tab">
-            <div id="search_buttons">
-                <div id="search_button_area"></div>
-            </div>
-            <div class="box"></div>
+        <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel" aria-labelledby="home-tab">
+                <div id="menu-species-selection-search-buttons"></div>
+            <div id="menu-species-selection-species-buttons"></div>
         </div>
 
 
@@ -189,7 +148,7 @@
         <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
 
 
-        <div class="tab-pane fade" id="options" role="tabpanel" aria-labelledby="option-tab">
+        <div class="tab-pane fade" id="menu-heatmap-options" role="tabpanel" aria-labelledby="option-tab">
             <div class="input-group mb-3">
                 <div class="input-group-prepend" style="margin: 20px 0 0 30%" >
                     <div class="input-group-text">
@@ -238,6 +197,8 @@
 <script src="js/src/singa.simulation.visualization.js"></script>
 <script src="js/src/all-trajectories.js"></script>
 <script src="js/src/custom-search.js"></script>
+<script src="js/src/species-selection.js"></script>
+<script src="js/src/trajectory-view.js"></script>
 
 
 </body>

@@ -1,9 +1,18 @@
 let selectedSpecies = [],
     filteredComponentsCombinations = [];
 
-const selectedComponent = 0;
-const selectedContainment = 1;
-const searchTermIndex = 2;
+function createCustomSearchMenu(){
+   let globalSearchIterator = 0,
+    buttonNumber = 0;
+
+const   selectedComponent = 0,
+        selectedContainment = 1,
+        searchTermIndex = 2;
+
+addHeadOfSearchField();
+addListOfSpecies();
+    addCompartmentSelection();
+
 
 function addHeadOfSearchField() {
 
@@ -11,7 +20,7 @@ function addHeadOfSearchField() {
         .append("button")
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "margin-left : 10px !important")
+        .attr("style", "trajectoryPlotMargin-left : 10px !important")
         .text("add refinement")
         .on("click", function () {
             globalSearchIterator++;
@@ -22,10 +31,10 @@ function addHeadOfSearchField() {
         .append("button")
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "margin-left : 10px !important")
+        .attr("style", "trajectoryPlotMargin-left : 10px !important")
         .text("submit search ")
         .on("click", function () {
-            $("#search_buttons").show();
+            $("#menu-species-selection-search-buttons").show();
             appendButtonForSelection(buttonNumber);
             clearSearch();
             filterComponents();
@@ -36,7 +45,7 @@ function addHeadOfSearchField() {
         .append("input")
         .attr("type", "text")
         .attr("class", "form-control")
-        .attr("style", "width : 300px !important ;margin-left : 10px !important ; display : -webkit-inline-box !important")
+        .attr("style", "trajectoryPlotWidth : 300px !important ;trajectoryPlotMargin-left : 10px !important ; display : -webkit-inline-box !important")
         .attr("id", "menu-custom-search-title");
 }
 
@@ -82,7 +91,7 @@ function addCompartmentSelection() {
         .attr("id", "menu-custom-search-remove-refinement-" + globalSearchIterator)
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "margin-left : 10px !important; margin-bottom : 15px !important ")
+        .attr("style", "trajectoryPlotMargin-left : 10px !important; trajectoryPlotMargin-bottom : 15px !important ")
         .text("remove")
         .on("click", function () {
             let attributeText = $(this).attr("id");
@@ -109,7 +118,8 @@ function addListOfSpecies() {
             .attr("class", "list-group-item list-group-item-success")
             .text(compartment);
 
-        for (let identifier in componentCombinations) {
+
+        componentCombinations.forEach(function (identifier) {
             if (getCompartmentFromStringIdentifier(identifier) === compartment) {
 
                 let indexIdentifier = getIndexIdentifier(getCompartmentFromStringIdentifier(identifier), getSpeciesFromStringIdentifier(identifier));
@@ -119,7 +129,8 @@ function addListOfSpecies() {
                     .attr("id", "menu-custom-search-component-list-item-" + indexIdentifier)
                     .text(getSpeciesFromStringIdentifier(identifier))
             }
-        }
+
+        })
     })
 }
 
@@ -144,9 +155,9 @@ function filterComponents() {
 
     let refinements = generateRefinements();
 
-    for (let component in componentCombinations) {
+    componentCombinations.forEach(function (component) {
         filteredComponentsCombinations.push(component);
-    }
+    });
 
     refinements.forEach(function (refinement) {
         let containment = determineContainment(refinement[selectedContainment]);
@@ -157,7 +168,6 @@ function filterComponents() {
             filterSpecies(refinement[searchTermIndex], containment);
         }
     });
-
     highlightSpecies(filteredComponentsCombinations);
 }
 
@@ -203,12 +213,12 @@ function sumSelectedData() {
 function getLineObjectFromSummedY() {
     let summedLineObject;
     let summedLineArray = [];
-    let summedY = sumSelectedData();
+    let summedYValues = sumSelectedData();
 
     for (let i = 0; i < time.length; i++) {
         summedLineObject = {
             x: time[i],
-            y: summedY[i]
+            y: summedYValues[i]
         };
         summedLineArray.push(summedLineObject);
     }
@@ -218,7 +228,7 @@ function getLineObjectFromSummedY() {
 
 function appendButtonForSelection(buttonNumber) {
 
-    d3.select("#search_button_area")
+    d3.select("#menu-species-selection-search-buttons")
         .append("button")
         .attr("id", "search_" + buttonNumber)
         .attr("class", "btn btn-outline-secondary")
@@ -233,4 +243,5 @@ function clearSearch() {
     filteredComponentsCombinations.length = 0;
     selectedSpecies.length = 0;
     $(".list-group-item").removeClass("list-group-item-info");
+}
 }
