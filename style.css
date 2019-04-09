@@ -15,8 +15,8 @@ body {
     width: 100%; /* Full trajectoryPlotWidth */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
     max-width: 1000000px;
 }
 
@@ -62,7 +62,6 @@ body {
     padding: 6px 8px 6px 16px;
     text-decoration: none;
     font-size: 20px;
-    font-family: Helvetica;
     color: #000000;
     display: block;
 }
@@ -79,44 +78,27 @@ body {
 }
 
 .sidenav a:hover svg path {
-    stroke: #0cac79!important;
+    stroke: #0cac79 !important;
 }
 
 .trajectory-view-menu-container {
     margin-left: 250px; /* Same as the trajectoryPlotWidth of the sidenav */
     font-size: 20px; /* Increased text to enable scrolling */
-    font-family: Helvetica;
-    padding: 0px 0px;
+    padding: 0 0;
 }
 
 @media screen and (max-height: 450px) {
-    .sidenav {padding-top: 15px;}
-    .sidenav a {font-size: 18px;}
+    .sidenav {
+        padding-top: 15px;
+    }
+
+    .sidenav a {
+        font-size: 18px;
+    }
 }
 
 
-
-
-#header{
-    width: 100%;
-    background-color: #f5f5f5;
-}
-
-#contents{
-    margin-top: 60px;
-}
-
-#nav {
-    width: 100%;
-    height: 60px;
-    padding: 10px 10px;
-    border-bottom: 1px solid #ddd;
-    z-index: 1;
-    position: relative;
-    text-align: center;
-}
-
-#singa_logo{
+#singa_logo {
     margin-top: 10px;
     margin-bottom: 50px;
     width: 200px;
@@ -124,29 +106,12 @@ body {
 
 }
 
-#folder{
-    width: 25px;
-    height: auto;
-}
-
-#file{
-    vertical-align: sub;
-    width: auto;
-    height: 25px;
-}
-
-#headmap_icon{
-    width: 25px;
-    height: auto;
-
-}
-
-#trajectory-view-heatmap{
+#trajectory-view-heatmap {
 
     height: 520px;
     width: 480px;
     position: absolute;
-    margin: 0px 0px 10px 10px;
+    margin: 0 0 10px 10px;
     background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -157,8 +122,7 @@ body {
 
 }
 
-
-#slider_div{
+#slider_div {
     width: 1290px;
     height: 100px;
     margin: 5px 25px 25px 10px;
@@ -171,17 +135,6 @@ body {
     box-sizing: border-box;
 
 
-}
-
-.titleDiv{
-    text-align: center;
-    color: #333;
-    background-color: #F5F5F5;
-    border-color: #DDD;
-    /*padding: 10px 15px;*/
-    border-bottom: 1px solid #DDD;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
 }
 
 #trajectory-view-graph {
@@ -218,23 +171,16 @@ body {
     display: block;
 }
 
-.container{
-    margin-top: 10%;
-    margin-left: auto;
-    width: 50%;
-    padding: 2%;
-    background-color: #999999;
-}
 
-.list{
+.list {
     float: left;
     width: 33%;
     margin-left: auto;
     padding: 20px;
 }
 
-.list p{
-text-align: center;
+.list p {
+    text-align: center;
 }
 
 
@@ -251,7 +197,7 @@ path {
     shape-rendering: crispEdges;
 }
 
-.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited , .btn-primary:focus{
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-primary:focus {
     background-color: #0cac79 !important;
     border-color: #0cac79 !important;
     margin-left: 5px;
@@ -259,14 +205,8 @@ path {
     border-top-right-radius: 0.25rem !important;
 }
 
-.btn-outline-cool, .btn-outline-cool:hover, .btn-outline-cool:active, .btn-outline-cool:visited , .btn-outline-cool:focus{
-    /*background-color: #c734d3 ;*/
-    border-color: #219c68;
-    margin-left: 10px;
-}
-
 .btn.btn-primary:focus {
-     box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63) !important;
+    box-shadow: 0 0 0 0.2rem rgba(12, 192, 135, 0.63) !important;
 }
 
 a.nav-link, a.nav-link:hover {
@@ -274,44 +214,43 @@ a.nav-link, a.nav-link:hover {
     font-size: 1.3rem;
 }
 
-.col-md-4{
+.col-md-4 {
     width: unset !important;
     padding: 0 !important;
 
 }
 
-.card{
-    border: 1px solid rgba(0,0,0,.125) !important;
+.card {
+    border: 1px solid rgba(0, 0, 0, .125) !important;
 }
 
-.card.card-body{
+.card.card-body {
     border-radius: unset;
 }
-.list-group-item:first-child{
+
+.list-group-item:first-child {
     border-top-left-radius: unset !important;
     border-bottom-right-radius: unset !important;
 }
 
-.search_div{
+#menu-custom-search {
     margin: 10px;
 }
 
-.btn-outline-secondary{
-
+.btn-outline-secondary {
     margin-left: 10px;
 }
 
-.list-group-item.list-group-item-action.list-group-item-success{
-
-    color: #155724;
+.list-group-item.list-group-item-action.list-group-item-success {
+    color: #0cac79;
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem;
-    margin-top: 20px ;
+    margin-top: 20px;
 
 }
 
-.nav.nav-tabs.justify-content-center.visible{
-justify-content:end !important;
+.nav.nav-tabs.justify-content-center.visible {
+    justify-content: end !important;
 
 }
 
@@ -347,11 +286,8 @@ justify-content:end !important;
     fill: #fff;
     stroke: #000;
     stroke-opacity: 0.5;
-    stroke-width: 1.25px;
+    stroke-width: 1px;
 }
-
-
-
 
 #play-button {
 

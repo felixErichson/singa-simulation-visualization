@@ -20,7 +20,7 @@ function addHeadOfSearchField() {
         .append("button")
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "trajectoryPlotMargin-left : 10px !important")
+        .attr("style", "margin-left : 10px !important")
         .text("add refinement")
         .on("click", function () {
             globalSearchIterator++;
@@ -31,7 +31,7 @@ function addHeadOfSearchField() {
         .append("button")
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "trajectoryPlotMargin-left : 10px !important")
+        .attr("style", "margin-left : 10px !important")
         .text("submit search ")
         .on("click", function () {
             $("#menu-species-selection-search-buttons").show();
@@ -45,7 +45,7 @@ function addHeadOfSearchField() {
         .append("input")
         .attr("type", "text")
         .attr("class", "form-control")
-        .attr("style", "trajectoryPlotWidth : 300px !important ;trajectoryPlotMargin-left : 10px !important ; display : -webkit-inline-box !important")
+        .attr("style", "width : 300px !important ;margin-left : 10px !important ; display : -webkit-inline-box !important")
         .attr("id", "menu-custom-search-title");
 }
 
@@ -91,7 +91,7 @@ function addCompartmentSelection() {
         .attr("id", "menu-custom-search-remove-refinement-" + globalSearchIterator)
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .attr("style", "trajectoryPlotMargin-left : 10px !important; trajectoryPlotMargin-bottom : 15px !important ")
+        .attr("style", "margin-left : 10px !important; margin-bottom : 15px !important ")
         .text("remove")
         .on("click", function () {
             let attributeText = $(this).attr("id");

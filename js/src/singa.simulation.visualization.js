@@ -792,7 +792,6 @@ function drawSilder(species) {
 
     let moving = false;
     selectedTime = 0;
-    let targetValue = widthSlider;
 
     let xtime = d3.scaleLinear()
         .domain([0, time.length - 1])
