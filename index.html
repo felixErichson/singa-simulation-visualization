@@ -20,8 +20,6 @@
 
     <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 
-    <script src="https://unpkg.com/d3-simple-slider"></script>
-
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
@@ -37,22 +35,25 @@
 
 <body>
 
-<!--Sidebar-->
 <div class="sidenav">
 
     <!--singa picture-->
-    <a  href="https://github.com/singa-bio" target="_blank"><img id="singa_logo" src="singa_logo_website.png"> </a>
+    <a  href="https://github.com/singa-bio" target="_blank"><img id="singa_logo" src="singa_logo_website.png" alt="Hello you! Click here!"> </a>
 
     <!--upload file (with svg picture)-->
-    <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px" onchange="loadFile()"
-           accept=".csv, .json" style="display: none;"/>
+    <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="realizeDataProcessing()"
+           accept=".csv, .json"/>
     <a  id="fileBrowser" href="" onclick="document.getElementById('upload').click(); return false">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 400 70" fill="none" stroke="#0cac79" style="margin-right: 10px" >
 
-            <path
-                    style="fill:none;stroke:#0cac79;stroke-width:19.66500092;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-                    d="m 13.722721,286.20176 0.80967,-185.01568 c -0.54749,-17.419352 6.65016,-25.922774 21.42608,-25.702381 l 71.104019,-0.885653 c 16.2752,-0.936533 21.21125,6.724752 21.33435,18.035412 l 0.50965,25.904112 c -0.59857,5.07339 -0.70593,9.32002 14.17483,8.23686 l 128.81026,-0.91056 c 17.08894,-0.12763 20.66342,8.85231 21.53352,19.65477 v 19.73073 h 19.65476 c 13.21723,-0.55148 21.8607,1.68107 12.09524,15.11906 L 252.60367,286.20176 H 13.722721 l 31.122,-120.36225 99.970889,-0.75782 148.60949,0.16768 -148.60949,-0.16768 -99.970889,0.75782 z"
-                    />
+            <path style="fill:none;stroke:#0cac79;stroke-width:19.66500092;stroke-linecap:butt;stroke-linejoin:miter;
+            stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                  d="m 13.722721,286.20176 0.80967,-185.01568 c -0.54749,-17.419352 6.65016,-25.922774 21.42608,
+                  -25.702381 l 71.104019,-0.885653 c 16.2752,-0.936533 21.21125,6.724752 21.33435,18.035412 l 0.50965,
+                  25.904112 c -0.59857,5.07339 -0.70593,9.32002 14.17483,8.23686 l 128.81026,-0.91056 c 17.08894,
+                  -0.12763 20.66342,8.85231 21.53352,19.65477 v 19.73073 h 19.65476 c 13.21723,-0.55148 21.8607,
+                  1.68107 12.09524,15.11906 L 252.60367,286.20176 H 13.722721 l 31.122,-120.36225 99.970889,
+                  -0.75782 148.60949,0.16768 -148.60949,-0.16768 -99.970889,0.75782 z"></path>
         </svg>load file</a>
 
     <!--load example (with svg picture)-->
@@ -75,8 +76,6 @@
         </svg>example</a>
 
 </div>
-
-<!--Content-->
 
 <div class="trajectory-view-menu-container">
 
@@ -117,15 +116,11 @@
     </ul>
 
     <div class="tab-content" id="myTabContent">
-
         <div class="tab-pane fade " id="menu-heatmap-data" role="tabpanel" aria-labelledby="data-tab"></div>
-
-
         <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel" aria-labelledby="home-tab">
                 <div id="menu-species-selection-search-buttons"></div>
             <div id="menu-species-selection-species-buttons"></div>
         </div>
-
 
         <div class="tab-pane fade" id="menu-custom-search" role="tabpanel" aria-labelledby="profile-tab">
             <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
@@ -165,11 +160,8 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
-
 
 <div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
      aria-hidden="true">
@@ -193,13 +185,13 @@
     </div>
 </div>
 
-
 <script src="js/src/singa.simulation.visualization.js"></script>
 <script src="js/src/all-trajectories.js"></script>
 <script src="js/src/custom-search.js"></script>
 <script src="js/src/species-selection.js"></script>
 <script src="js/src/trajectory-view.js"></script>
-
+<script src="js/src/heatmap-view.js"></script>
+<script src="js/src/load-prepare-data.js"></script>
 
 </body>
 </html>
