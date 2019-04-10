@@ -1,4 +1,12 @@
 
+const marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
+      widthSlider = 600 - marginSlider.left - marginSlider.right,
+      heightSlider = 200 - marginSlider.top - marginSlider.bottom;
+
+const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
+      heatwidth = 450 - heatMargin.left - heatMargin.right,
+      heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
 function setHeatmapDropdown() {
 
     d3.select("#trajectory-view-heatmap")
@@ -28,24 +36,28 @@ function setHeatmapDropdown() {
             .attr("id", i)
             .text(allSpecies[i])
             .on("click", function () {
-
-                $("#dropdown_button").text("species: " + $(this).text());
-                d3.selectAll('#trajectory-view-heatmap svg').remove();
-                d3.select("#slider_div").html("");
-                d3.selectAll('#slider_div svg').remove();
-
-                setHeatmapRange();
-                setHeatMapSvg();
-                appendPlayButton();
-                drawSilder($(this).text());
-                clearHtmlTags();
+                let clickedSpeciesText = $(this).text();
+                onClickHeatmapDropdown(clickedSpeciesText);
             })
     }
 }
 
+function onClickHeatmapDropdown(clickedSpeciesText){
+    $("#dropdown_button").text("species: " + clickedSpeciesText);
+    d3.selectAll('#trajectory-view-heatmap svg').remove();
+    d3.select("#heatmap-view-slider").html("");
+    d3.selectAll('#heatmap-view-slider svg').remove();
+
+    setHeatmapRange();
+    setHeatMapSvg();
+    appendPlayButton();
+    drawSilder(clickedSpeciesText);
+    clearHtmlTags();
+}
+
 function appendPlayButton() {
 
-    d3.select("#slider_div")
+    d3.select("#heatmap-view-slider")
         .append("button")
         .attr("id", "play-button")
         .attr("class", "btn btn-primary")
@@ -54,43 +66,43 @@ function appendPlayButton() {
     playButton = d3.select("#play-button")
 }
 
-function drawSilder(species) {
-    let maximumValue = getMaximumValueOfSpecies(species);
+let dragedTime;
+let slideControl;
+let dragedTimeLabel;
+let xTimeScale;
+let concentrationRange;
+let svgSlider;
+let moving = false;
 
 
-    let svgSlider = d3.select("#slider_div")
+function initilizeSlider(species){
+    concentrationRange = getRangeOfSpecies(species);
+    let compartment = getCompartmentFromSpecies(species);
+    dragedTime = time[0];
+
+    svgSlider = d3.select("#heatmap-view-slider")
         .append("svg")
         .attr("style", "margin-left: 20%")
         .attr("width", widthSlider + marginSlider.left + marginSlider.right)
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
-    let compartment = getCompartmentFromSpecies(species);
+    getHeatmapData(dragedTime, compartment, species);
+    heatmapColor = setHeatmapColor(compartment, species, concentrationRange);
+    drawHeatmapRectangles(dragedTime, species);
 
-    selectedTime = time[0];
-
-    getHeatmapData(selectedTime, compartment, species);
-    heatmapColor = setHeatmapColor(compartment, species, maximumValue);
-    drawHeatmapRectangles(selectedTime, species);
-
-    let moving = false;
-    selectedTime = 0;
-
-    let xtime = d3.scaleLinear()
+    xTimeScale = d3.scaleLinear()
         .domain([0, time.length - 1])
         .range([0, widthSlider])
         .clamp(true);
 
-    let slider =
-        svgSlider
-            .append("g")
-            .attr("class", "slider")
-            .attr("transform", "translate(" + marginSlider.left + "," + heightSlider / 3 + ")");
 
+}
 
+function drawTrack(slider, compartment, species){
     slider.append("line")
         .attr("class", "track")
-        .attr("x1", xtime.range()[0])
-        .attr("x2", xtime.range()[1])
+        .attr("x1", xTimeScale.range()[0])
+        .attr("x2", xTimeScale.range()[1])
         .select(function () {
             return this.parentNode.appendChild(this.cloneNode(true));
         })
@@ -104,39 +116,63 @@ function drawSilder(species) {
                 slider.interrupt();
             })
             .on("start drag", function () {
-                selectedTime = Math.trunc(xtime.invert(d3.event.x));
-                update(selectedTime);
+                dragedTime = Math.trunc(xTimeScale.invert(d3.event.x));
+                update(dragedTime, compartment, species);
 
             })
         );
 
+
+}
+
+function drawTrackOverlay(slider) {
     slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 10 + ")")
         .selectAll("text")
-        .data(xtime.ticks(10))
+        .data(xTimeScale.ticks(10))
         .enter()
         .append("text")
-        .attr("x", xtime)
+        .attr("x", xTimeScale)
         .attr("y", 10)
         .attr("text-anchor", "middle")
         .text(function (d) {
             return d3.format(".0f")(time[d])
         });
 
-    let handle = slider.insert("circle", ".track-overlay")
-        .attr("class", "handle")
+    slideControl = slider.insert("circle", ".track-overlay")
+        .attr("class", "slideControl")
         .attr("r", 9);
 
-    let label = slider.append("text")
+    dragedTimeLabel = slider.append("text")
         .attr("class", "label333")
         .attr("text-anchor", "middle")
         .text(time[0])
         .attr("transform", "translate(0," + (-25) + ")");
 
+
+}
+
+function drawSilder(species) {
+
+    let compartment = getCompartmentFromSpecies(species);
+
+    initilizeSlider(species);
+    dragedTime = 0;
+    let slider =
+        svgSlider
+            .append("g")
+            .attr("class", "slider")
+            .attr("transform", "translate(" + marginSlider.left + "," + heightSlider / 3 + ")");
+
+
+    drawTrack(slider, compartment, species);
+    drawTrackOverlay(slider);
+
     playButton
         .on("click", function () {
             let button = d3.select(this);
+
             if (button.text() === "Pause") {
                 moving = false;
                 clearInterval(timer);
@@ -144,38 +180,40 @@ function drawSilder(species) {
                 button.text("Play");
             } else {
                 moving = true;
-                timer = setInterval(step, 100);
+                timer = setInterval(step(compartment, species), 10);
                 button.text("Pause");
             }
         });
 
-    function step() {
-        update(selectedTime);
-        selectedTime = selectedTime + (5);
-        if (selectedTime > time.length - 1) {
-            moving = false;
-            selectedTime = 0;
-            clearInterval(timer);
-            playButton.text("Play");
-        }
-    }
+}
 
-    function update(h) {
-        // update position and text of label according to slider scale
-        handle.attr("cx", xtime(h));
-
-        label.attr("x", xtime(h))
-            .text(d3.format(".3f")(time[h]));
-
-        getHeatmapData(time[h], compartment, species);
-        heatmapColor = setHeatmapColor(compartment, species, maximumValue);
-        drawHeatmapRectangles(time[h], species);
-        drawHeatmapLegend();
-        if (activeComponentIdentifiers[0] !== undefined) {
-            changeVerticalLineData(h);
-        }
+function step(compartment, species) {
+    update(dragedTime, compartment, species);
+    dragedTime = dragedTime + (5);
+    if (dragedTime > time.length - 1) {
+        moving = false;
+        dragedTime = 0;
+        clearInterval(timer);
+        playButton.text("Play");
     }
 }
+
+function update(h, compartment, species) {
+    slideControl.attr("cx", xTimeScale(h));
+
+    dragedTimeLabel.attr("x", xTimeScale(h))
+        .text(d3.format(".3f")(time[h]));
+
+    getHeatmapData(time[h], compartment, species);
+    heatmapColor = setHeatmapColor(compartment, species, concentrationRange);
+    drawHeatmapRectangles(time[h], species);
+    drawHeatmapLegend();
+    if (activeComponentIdices[0] !== undefined) {
+        changeVerticalLineData(h);
+    }
+}
+
+
 
 function setHeatmapRange() {
 
@@ -305,8 +343,9 @@ function getHeatmapData(currentTimeStep, compartment, species) {
     });
 }
 
-function getMaximumValueOfSpecies(species) {
+function getRangeOfSpecies(species) {
     let maxValue = 0.0;
+    let minValue = Number.MAX_VALUE;
     nestedData.values().forEach(function (node) {
         node.values().forEach(function (currentSpecies) {
             currentSpecies.values().forEach(function (currentValues) {
@@ -314,22 +353,25 @@ function getMaximumValueOfSpecies(species) {
                     if (currentEntry.key === species) {
                         if (maxValue < currentEntry.value)
                             maxValue = currentEntry.value;
+                        if(minValue > currentEntry.value){
+                            minValue = currentEntry.value;
+                        }
                     }
                 })
             })
         })
     });
-    return maxValue;
+    return [minValue, maxValue];
 
 }
 
-function setHeatmapColor(compartment, species, maxValue) {
+function setHeatmapColor(compartment, species, concentrationRange) {
 
     if ($('input[name="check"]:checked').val() === "relative") {
 
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
-            .domain([0, d3.max(heatmapData, function (d) {
+            .domain([concentrationRange[0], d3.max(heatmapData, function (d) {
                 return d.value
 
             })
@@ -339,7 +381,7 @@ function setHeatmapColor(compartment, species, maxValue) {
 
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
-            .domain([0, maxValue])
+            .domain(concentrationRange)
     }
 }
 
@@ -400,7 +442,7 @@ function drawHeatmapRectangles(currentValue, species) {
         })
         .on("click", function (d) {
             drawGraphFromNode(d);
-            clickButton(getIndexIdentifier(getCompartmentFromSpecies(species), species));
+            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
             setChartTitle("Node (" + d.x + "," + d.y + ")");
         })
 }
@@ -449,8 +491,8 @@ function changeVerticalLineData(selectedTime) {
         .attr("x1", x(time[selectedTime]))
         .attr("x2", x(time[selectedTime]));
 
-    let id1 = activeComponentIdentifiers[0];
-    let data = summedNodeData[getCompartmentFromIndexIdentifier(id1) + "_" + getSpeciesFromIndexIdentifier(id1)];
+    let id1 = activeComponentIdices[0];
+    let data = reducedNodeData[getCompartmentFromIndexIdentifier(id1) + "_" + getSpeciesFromIndexIdentifier(id1)];
     data = data[selectedTime];
 
     d3.select(".trajectory.view.graph.verticalLine.valueLabel")
@@ -468,12 +510,12 @@ function changeVerticalLineData(selectedTime) {
         });
 
 
-    if (activeComponentIdentifiers[1] !== undefined) {
+    if (activeComponentIdices[1] !== undefined) {
 
-        let id2 = activeComponentIdentifiers[1];
+        let id2 = activeComponentIdices[1];
         let data2;
 
-        data2 = summedNodeData[getCompartmentFromIndexIdentifier(id2) + "_" + getSpeciesFromIndexIdentifier(id2)];
+        data2 = reducedNodeData[getCompartmentFromIndexIdentifier(id2) + "_" + getSpeciesFromIndexIdentifier(id2)];
         data2 = data2[selectedTime];
 
         d3.select(".trajectory.view.graph.verticalLine.valueLabel2")
@@ -505,7 +547,7 @@ function setNodeCompartments() {
 
 function drawGraphFromNode(data) {
     compartmentsOfSelectedNode.length = 0;
-    activeComponentIdentifiers.length = 0;
+    activeComponentIdices.length = 0;
     selectedNode = "Node (" + data.x + ", " + data.y + ")";
     setNodeCompartments();
     clearHtmlTags();

@@ -1,19 +1,27 @@
-
-const   trajectoryPlotMargin = {top: 40, right: 25, bottom: 40, left: 25},
-        trajectoryPlotWidth = parseInt(d3.select("#trajectory-view-graph").style("width")) - trajectoryPlotMargin.left - trajectoryPlotMargin.right,
-        trajectoryPlotHeight = parseInt(d3.select("#trajectory-view-graph").style("height")) - trajectoryPlotMargin.top - trajectoryPlotMargin.bottom;
+const trajectoryPlotMargin = {top: 40, right: 25, bottom: 40, left: 25},
+    trajectoryPlotWidth = parseInt(d3.select("#trajectory-view-graph").style("width")) - trajectoryPlotMargin.left - trajectoryPlotMargin.right,
+    trajectoryPlotHeight = parseInt(d3.select("#trajectory-view-graph").style("height")) - trajectoryPlotMargin.top - trajectoryPlotMargin.bottom;
 
 let x = d3.scaleLinear().range([0, trajectoryPlotWidth]),
     y0 = d3.scaleLinear().range([trajectoryPlotHeight, 0]),
     y1 = d3.scaleLinear().range([trajectoryPlotHeight, 0]),
     y2 = d3.scaleLinear().range([trajectoryPlotHeight, 0]);
 
-    let trajectoryPlot;
+let trajectoryPlot;
 
-function initialMainSvg() {
+let lines = [];
+let scales = [];
+let axes = [];
 
-   let currentDivWidth = parseInt(d3.select("#trajectory-view-graph").style("width"));
-   let currentDivHeight = parseInt(d3.select("#trajectory-view-graph").style("height"));
+const LEFT = 0,
+    RIGHT = 1;
+
+function initializePlotSvg() {
+
+    scales = [y0, y1, y2];
+
+    let currentDivWidth = parseInt(d3.select("#trajectory-view-graph").style("width"));
+    let currentDivHeight = parseInt(d3.select("#trajectory-view-graph").style("height"));
 
     trajectoryPlot = d3.select("#trajectory-view-graph")
         .append("svg")
@@ -25,10 +33,16 @@ function initialMainSvg() {
         .attr('transform', `translate(${trajectoryPlotMargin.left}, ${trajectoryPlotMargin.top})`)
 }
 
+function initializeAxis() {
+
+
+
+}
+
 function setChartTitle(node) {
     trajectoryPlot.append("text")
         .attr("x", (trajectoryPlotWidth / 2))
-        .attr("y", 0 - (trajectoryPlotMargin.top / 2))
+        .attr("y", -(trajectoryPlotMargin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "24px")
         .style("text-decoration", "underline")
@@ -37,38 +51,65 @@ function setChartTitle(node) {
 
 
 function createTrajectoryPlot() {
-    prepareGraph();
 
-    function prepareGraph() {
-        let trajectoryCounter = 0;
-        removeElementsOfSvg();
-        initializeLineDataView();
-        initializeAxisLabel();
-        setPlotXAxis();
+    let trajectoryCounter = 0;
+    removeElementsOfSvg();
+    initializeLineDataView();
+    initializeAxisLabel();
+    setPlotXAxis();
 
-        activeComponentIdentifiers.forEach(function (identifiers) {
-            let data;
-            let id;
-            let scale;
+    console.log(reducedNodeData);
+    activeComponentIdices.forEach(function (indexIdentifier) {
+        let data;
+        let id;
+        let scale;
 
-            if (getCompartmentFromStringIdentifier(identifiers) === "search") {
-                data = searchButtonDataArray[identifiers.substr(identifiers.indexOf("_") + 1)];
-                id = "#search_" + identifiers.substr(identifiers.indexOf("_") + 1);
-            } else {
-                let comp = getCompartmentFromIndexIdentifier(activeComponentIdentifiers[trajectoryCounter]);
-                let spec = getSpeciesFromIndexIdentifier(activeComponentIdentifiers[trajectoryCounter]);
-                data = filterData(comp, spec);
-                id = "#" + getIndexIdentifier(comp, spec);
-            }
-            if (trajectoryCounter === 0) {
-                scale = y0;
-                setPath(data, scale, "y axis left outer", "valueline1", trajectoryCounter, id);
-            } else if (trajectoryCounter === 1) {
-                scale = y1;
-                setPath(data, scale, "y axis right", "", trajectoryCounter, id);
-            }
-            trajectoryCounter++
-        })
+        let compartment = getCompartmentFromIndexIdentifier(indexIdentifier);
+        let species = getSpeciesFromIndexIdentifier(indexIdentifier);
+        data = reducedNodeData[compartment + "_" + species];
+        id = "#" + indexIdentifier;
+        if (trajectoryCounter === 0) {
+            //createLine(indexIdentifier);
+            scale = y0;
+            setPath(data, scale, "y axis left outer", "valueline1", trajectoryCounter, id);
+        } else if (trajectoryCounter === 1) {
+            scale = y1;
+            setPath(data, scale, "y axis right", "", trajectoryCounter, id);
+        }
+        trajectoryCounter++
+    });
+
+    function createLine(indexIdentifier) {
+        let compartment = getCompartmentFromIndexIdentifier(indexIdentifier);
+        let species = getSpeciesFromIndexIdentifier(indexIdentifier);
+
+        let data = reducedNodeData[compartment + "_" + species];
+
+        let scale = getScale();
+        scale.domain([0, d3.max(data, function (d) {
+            return d.y;
+        })]);
+
+        let line = trajectoryPlot.append('path');
+        line.datum(data)
+            .attr("id", "line_" + indexIdentifier)
+            .style("stroke", getLineColor())
+            .attr("d", d3.line()
+                .x(function (d) {
+                    return x(d.x);
+                })
+                .y(function (d) {
+                    scale(d.y);
+                }));
+        lines.push(line);
+    }
+
+    function getLineColor() {
+        return color[lines.length];
+    }
+
+    function getScale() {
+        return scales[lines.length];
     }
 
     function removeElementsOfSvg() {
@@ -82,7 +123,7 @@ function createTrajectoryPlot() {
 
     function initializeLineDataView() {
 
-        if (activeComponentIdentifiers[0] !== undefined) {
+        if (activeComponentIdices[0] !== undefined) {
 
             trajectoryPlot.append("line")
                 .attr("class", "trajectory view graph verticalLine")
@@ -97,7 +138,7 @@ function createTrajectoryPlot() {
             appendDataViewLabel("valueLabel", 5);
             appendDataViewCircle("circle", color[0]);
 
-            if (activeComponentIdentifiers[1] !== undefined) {
+            if (activeComponentIdices[1] !== undefined) {
                 appendDataViewLabel("valueLabel2", 15);
                 appendDataViewCircle("circle2", color[1]);
             }
@@ -124,6 +165,19 @@ function createTrajectoryPlot() {
             .text("Concentration [nmol/l]");
     }
 
+    function alignAxis(position, orientation) {
+        let axis;
+        if (orientation == LEFT) {
+            axis = d3.axisLeft()
+        } else {
+            axis = d3.axisRight();
+        }
+
+        if (position = RIGHT) {
+            // move to right
+        }
+    }
+
     function setPlotYAxis(axisClassName, color) {
 
         trajectoryPlot.append("g")
@@ -144,7 +198,7 @@ function createTrajectoryPlot() {
         }
     }
 
-    function callRightYAxis (axisClassName, call, color){
+    function callRightYAxis(axisClassName, call, color) {
         d3.select(".y.axis.right").attr("transform", "translate(" + trajectoryPlotWidth + " ,0)")
             .call(call.tickFormat(d3.format('.3f')))
             .styles({
@@ -154,9 +208,9 @@ function createTrajectoryPlot() {
 
     }
 
-    function callLeftYAxis(axisClassName, call, color){
+    function callLeftYAxis(axisClassName, call, color) {
 
-        d3.select("." + axisClassName.split(" ").join(".") )
+        d3.select("." + axisClassName.split(" ").join("."))
             .call(call.tickFormat(d3.format('.3f')))
             .styles({
                 fill: "none", stroke: color
@@ -175,7 +229,6 @@ function createTrajectoryPlot() {
     }
 
     function setPath(data, scale, axis, line, iterator, buttonId) {
-
         scale.domain([0, d3.max(data, function (d) {
             return d.y;
         })]);

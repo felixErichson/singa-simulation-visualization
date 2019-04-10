@@ -17,7 +17,7 @@ function createAllTrajectoriesMenu() {
                 .text(compartment);
         });
 
-        for (let identifier in summedNodeData) {
+        for (let identifier in reducedNodeData) {
             let compartment = getCompartmentFromStringIdentifier(identifier);
             let species = getSpeciesFromStringIdentifier(identifier);
             let selector = "#trajectories-compartment-" + compartmentsOfSelectedNode.indexOf(compartment);
@@ -73,13 +73,13 @@ function createAllTrajectoriesMenu() {
     function addPlotData(identifier) {
 
         let xAxisScale = d3.scaleLinear()
-            .domain(d3.extent(summedNodeData[identifier], function (d) {
+            .domain(d3.extent(reducedNodeData[identifier], function (d) {
                 return d.x;
             }))
             .range([0, allTrajectoriesPlotWidth]);
 
         let yAxisScale = d3.scaleLinear()
-            .domain([0, d3.max(summedNodeData[identifier], function (d) {
+            .domain([0, d3.max(reducedNodeData[identifier], function (d) {
                 return d.y;
             })])
             .range([allTrajectoriesPlotHeight, 0]);
@@ -93,7 +93,7 @@ function createAllTrajectoriesMenu() {
             .call(d3.axisLeft(yAxisScale).ticks(5));
 
         allTrajectoriesContext.append("path")
-            .datum(summedNodeData[identifier])
+            .datum(reducedNodeData[identifier])
             .style("stroke", getRandomColor())
             .attr("d", d3.line()
                 .x(function (d) {

@@ -1,18 +1,11 @@
 //Global variables
 
-const marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
-    widthSlider = 600 - marginSlider.left - marginSlider.right,
-    heightSlider = 200 - marginSlider.top - marginSlider.bottom;
-
-const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
-    heatwidth = 450 - heatMargin.left - heatMargin.right,
-    heatheight = 450 - heatMargin.top - heatMargin.bottom;
-
 const color = ['#d95f02', '#7570b3', '#e7298a'];
 
 let componentCombinations = [],
-    summedNodeData = [],
-    activeComponentIdentifiers = [],
+    nodeComponentCombinations = [],
+    reducedNodeData = [],
+    activeComponentIdices = [],
     time = [],
     selectedNode,
     compartmentsOfSelectedNode = [],
@@ -116,8 +109,8 @@ $(document).ready(function () {
 
 function resetGlobalArrays() {
     componentCombinations.length = 0;
-    summedNodeData.length = 0;
-    activeComponentIdentifiers.length = 0;
+    reducedNodeData.length = 0;
+    activeComponentIdices.length = 0;
     time.length = 0;
     compartmentsOfSelectedNode.length = 0;
     allSpecies.length = 0;
@@ -151,7 +144,7 @@ function clearHtmlTags() {
 function initializeMainContent() {
     searchButtonDataArray.length = 0;
     createSpeciesSelectionMenu();
-    initialMainSvg();
+    initializePlotSvg();
     createAllTrajectoriesMenu();
     createCustomSearchMenu();
 

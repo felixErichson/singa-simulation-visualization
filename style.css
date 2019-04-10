@@ -122,7 +122,7 @@ body {
 
 }
 
-#slider_div {
+#heatmap-view-slider {
     width: 1290px;
     height: 100px;
     margin: 5px 25px 25px 10px;
@@ -282,8 +282,7 @@ a.nav-link, a.nav-link:hover {
     cursor: crosshair;
 }
 
-.handle {
-    fill: #fff;
+.slideControl {fill: #fff;
     stroke: #000;
     stroke-opacity: 0.5;
     stroke-width: 1px;

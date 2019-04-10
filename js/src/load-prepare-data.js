@@ -1,4 +1,3 @@
-
 function loadExample(fileEnding) {
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
@@ -37,7 +36,7 @@ function realizeDataProcessing() {
         currentNode,
         parent;
 
-    loadFile()
+    loadFile();
 
     function loadFile() {
 
@@ -117,11 +116,13 @@ function realizeDataProcessing() {
 
                     if (parent === "concentration-data") {
                         currentNode = currentKey;
-                        if (!allNodes.includes(currentKey)) {
-                            allNodes.push(currentKey)
+                        if (!currentNode.startsWith("v")) { //TODO vesicle is ignored here
+                            if (!allNodes.includes(currentKey)) {
+                                allNodes.push(currentKey)
 
+                            }
+                            nestedData.get(currentTime).set(currentNode, d3.map())
                         }
-                        nestedData.get(currentTime).set(currentNode, d3.map())
                     }
 
                     if (parent === "concentrations") {
@@ -130,7 +131,9 @@ function realizeDataProcessing() {
                             allCompartments.push(currentKey);
 
                         }
-                        nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
+                        if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                            nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
+                        }
                     }
                     const grandparent = parent;
                     parent = currentKey;
@@ -150,7 +153,9 @@ function realizeDataProcessing() {
                         if (!allSpecies.includes(currentKey)) {
                             allSpecies.push(currentKey);
                         }
-                        nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                        if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                            nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                        }
                     }
                 }
             }
@@ -204,15 +209,15 @@ function realizeDataProcessing() {
 }
 
 function sumCurrentNodeData() {
-
+    nodeComponentCombinations.length = 0;
     let rememberSpecies = [];
     compartmentsOfSelectedNode.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
                 if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
                     rememberSpecies.push(species);
-                    summedNodeData[compartment + "_" + species] = filterData(compartment, species);
-
+                    reducedNodeData[compartment + "_" + species] = filterData(compartment, species);
+                    nodeComponentCombinations.push(compartment + "_" + species);
                 }
             })
         })
