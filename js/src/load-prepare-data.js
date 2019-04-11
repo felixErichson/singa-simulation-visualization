@@ -16,7 +16,7 @@ function loadExample(fileEnding) {
         }, 200)
 
     } else if (fileEnding === "json") {
-        d3.json("js/src/example_trajectories.json", function (data) {
+        d3.json("js/src/example_simulation.json", function (data) {
             globalData = data;
         });
         setTimeout(function () {
@@ -29,37 +29,35 @@ function loadExample(fileEnding) {
 
 }
 
-function realizeDataProcessing() {
+
+function loadFile() {
+
+    resetGlobalArrays();
+    btnAllTrajectoriesVisible();
+    clearHtmlTags();
+    d3.select('#trajectory-view-heatmap').html('');
+
+    let file = document.querySelector('input[type=file]').files[0];
+    reader = new FileReader();
+    if (file.name.endsWith(".json")) {
+        reader.addEventListener("load", readDataFromJson, false);
+    } else if (file.name.endsWith(".csv")) {
+        reader.addEventListener("load", readDataFromCsv, false);
+    } else {
+        alert("only json and csv allowed");
+    }
+    if (file) {
+        reader.readAsText(file);
+    }
+    $('#fileBrowserModal').modal('toggle');
+
+}
+
 
     let currentTime,
         currentCompartment,
         currentNode,
         parent;
-
-    loadFile();
-
-    function loadFile() {
-
-        resetGlobalArrays();
-        btnAllTrajectoriesVisible();
-        clearHtmlTags();
-        d3.select('#trajectory-view-heatmap').html('');
-
-        let file = document.querySelector('input[type=file]').files[0];
-        reader = new FileReader();
-        if (file.name.endsWith(".json")) {
-            reader.addEventListener("load", readDataFromJson, false);
-        } else if (file.name.endsWith(".csv")) {
-            reader.addEventListener("load", readDataFromCsv, false);
-        } else {
-            alert("only json and csv allowed");
-        }
-        if (file) {
-            reader.readAsText(file);
-        }
-        $('#fileBrowserModal').modal('toggle');
-
-    }
 
     function readDataFromCsv() {
         globalData = d3.csvParse(reader.result);
@@ -114,7 +112,7 @@ function realizeDataProcessing() {
                         }
                     }
 
-                    if (parent === "concentration-data") {
+                    if (parent === "data") {
                         currentNode = currentKey;
                         if (!currentNode.startsWith("v")) { //TODO vesicle is ignored here
                             if (!allNodes.includes(currentKey)) {
@@ -170,7 +168,7 @@ function realizeDataProcessing() {
                     return d.elapsed_time;
                 })
                 .key(function () {
-                    return "Node (0, 0)"
+                    return "n(0,0)"
                 })
                 .key(function (d) {
                     return d.compartment;
@@ -206,7 +204,7 @@ function realizeDataProcessing() {
         });
         //  console.log(componentCombinations);
     }
-}
+
 
 function sumCurrentNodeData() {
     nodeComponentCombinations.length = 0;

@@ -41,7 +41,7 @@
     <a  href="https://github.com/singa-bio" target="_blank"><img id="singa_logo" src="singa_logo_website.png" alt="Hello you! Click here!"> </a>
 
     <!--upload file (with svg picture)-->
-    <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="realizeDataProcessing()"
+    <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="loadFile()"
            accept=".csv, .json"/>
     <a  id="fileBrowser" href="" onclick="document.getElementById('upload').click(); return false">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 400 70" fill="none" stroke="#0cac79" style="margin-right: 10px" >
@@ -141,7 +141,6 @@
 
 
         <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
-
 
         <div class="tab-pane fade" id="menu-heatmap-options" role="tabpanel" aria-labelledby="option-tab">
             <div class="input-group mb-3">

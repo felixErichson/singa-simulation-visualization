@@ -28,7 +28,7 @@ let componentCombinations = [],
     selectedTime,
     nestedData;
 
-let regEx = new RegExp("\\((\\d+), (\\d+)\\)", "g");
+let regEx = new RegExp("\\((\\d+),(\\d+)\\)", "g");
 
 //Functions to read and structure the data into a uniform data format (nestedData)
 

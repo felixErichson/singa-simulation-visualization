@@ -73,11 +73,20 @@ let xTimeScale;
 let concentrationRange;
 let svgSlider;
 let moving = false;
+let timer;
+let comp;
+let spec;
 
 
-function initilizeSlider(species){
+function initializeSlider(species){
     concentrationRange = getRangeOfSpecies(species);
     let compartment = getCompartmentFromSpecies(species);
+
+    spec = species;
+    comp = compartment;
+
+
+
     dragedTime = time[0];
 
     svgSlider = d3.select("#heatmap-view-slider")
@@ -94,7 +103,6 @@ function initilizeSlider(species){
         .domain([0, time.length - 1])
         .range([0, widthSlider])
         .clamp(true);
-
 
 }
 
@@ -153,11 +161,13 @@ function drawTrackOverlay(slider) {
 
 }
 
+
+
 function drawSilder(species) {
 
     let compartment = getCompartmentFromSpecies(species);
 
-    initilizeSlider(species);
+    initializeSlider(species);
     dragedTime = 0;
     let slider =
         svgSlider
@@ -172,7 +182,6 @@ function drawSilder(species) {
     playButton
         .on("click", function () {
             let button = d3.select(this);
-
             if (button.text() === "Pause") {
                 moving = false;
                 clearInterval(timer);
@@ -180,16 +189,18 @@ function drawSilder(species) {
                 button.text("Play");
             } else {
                 moving = true;
-                timer = setInterval(step(compartment, species), 10);
+                timer = setInterval("step()", 100);
+                console.log(timer);
                 button.text("Pause");
             }
         });
 
 }
 
-function step(compartment, species) {
-    update(dragedTime, compartment, species);
+function step() {
+    update(dragedTime, comp, spec);
     dragedTime = dragedTime + (5);
+    console.log (dragedTime);
     if (dragedTime > time.length - 1) {
         moving = false;
         dragedTime = 0;
@@ -199,6 +210,8 @@ function step(compartment, species) {
 }
 
 function update(h, compartment, species) {
+
+
     slideControl.attr("cx", xTimeScale(h));
 
     dragedTimeLabel.attr("x", xTimeScale(h))
@@ -208,11 +221,12 @@ function update(h, compartment, species) {
     heatmapColor = setHeatmapColor(compartment, species, concentrationRange);
     drawHeatmapRectangles(time[h], species);
     drawHeatmapLegend();
+    d3.select("#menu-heatmap-data")
+        .selectAll("p").remove();
     if (activeComponentIdices[0] !== undefined) {
         changeVerticalLineData(h);
     }
 }
-
 
 
 function setHeatmapRange() {
@@ -371,11 +385,10 @@ function setHeatmapColor(compartment, species, concentrationRange) {
 
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
-            .domain([concentrationRange[0], d3.max(heatmapData, function (d) {
+            .domain(d3.extent(heatmapData, function (d) {
                 return d.value
-
             })
-            ])
+            )
     } else {
 
 
@@ -447,7 +460,7 @@ function drawHeatmapRectangles(currentValue, species) {
         })
 }
 
-function mouseOverNode(currentNode, data, species, currentValue) {
+function mouseOverNode(currentNode, CurrentNodeObject, species, dragedTime) {
 
     d3.select(currentNode)
         .style("stroke-width", "5");
@@ -456,7 +469,7 @@ function mouseOverNode(currentNode, data, species, currentValue) {
         .append("p")
         .attr("position", "absolute")
         .attr("bottom", "0")
-        .text("Node (" + data.x + "," + data.y + ")");
+        .text("Node (" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")");
 
     d3.select("#menu-heatmap-data")
         .append("p")
@@ -464,7 +477,7 @@ function mouseOverNode(currentNode, data, species, currentValue) {
         .attr("position", "absolute")
         .attr("bottom", "0");
 
-    if (data.value === 0) {
+    if (CurrentNodeObject.value === 0) {
         d3.select("#showed_species").text("species: nothing to find here")
     } else {
         d3.select("#showed_species").text("species: " + species)
@@ -475,14 +488,14 @@ function mouseOverNode(currentNode, data, species, currentValue) {
         .attr("id", "showed_species")
         .attr("position", "absolute")
         .attr("bottom", "0")
-        .text("possible nodeCompartments: " + nestedData.get(currentValue).get("Node (" + data.x + ", " + data.y + ")").keys());
+        .text("possible nodeCompartments: " + nestedData.get(dragedTime).get("n(" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")").keys());
 
 
     d3.select("#menu-heatmap-data")
         .append("p")
         .attr("position", "absolute")
         .attr("bottom", "0")
-        .text("value: " + data.value)
+        .text("value: " + CurrentNodeObject.value)
 }
 
 function changeVerticalLineData(selectedTime) {
@@ -495,10 +508,20 @@ function changeVerticalLineData(selectedTime) {
     let data = reducedNodeData[getCompartmentFromIndexIdentifier(id1) + "_" + getSpeciesFromIndexIdentifier(id1)];
     data = data[selectedTime];
 
-    d3.select(".trajectory.view.graph.verticalLine.valueLabel")
+    if(time[selectedTime] > time[time.length/1.5]){
+        d3.selectAll(".trajectory.view.graph.verticalLine.valueLabel")
+            .attr("x", -150)
+
+    }else{
+
+        d3.selectAll(".trajectory.view.graph.verticalLine.valueLabel")
+            .attr("x", 0)
+    }
+
+    d3.select(".trajectory.view.graph.verticalLine.valueLabel.one")
         .datum(data)
         .attr("transform", function (d) {
-            return "translate(" + x(d.x) + "," + y0(d.y) + ")";
+            return "translate(" + x(d.x) + "," + scales[0](d.y) + ")";
         }).text(function (d) {
         return d.y;
     });
@@ -506,7 +529,7 @@ function changeVerticalLineData(selectedTime) {
     d3.select(".trajectory.view.graph.verticalLine.circle")
         .datum(data)
         .attr("transform", function (d) {
-            return "translate(" + x(d.x) + "," + y0(d.y) + ")";
+            return "translate(" + x(d.x) + "," + scales[0](d.y) + ")";
         });
 
 
@@ -518,10 +541,10 @@ function changeVerticalLineData(selectedTime) {
         data2 = reducedNodeData[getCompartmentFromIndexIdentifier(id2) + "_" + getSpeciesFromIndexIdentifier(id2)];
         data2 = data2[selectedTime];
 
-        d3.select(".trajectory.view.graph.verticalLine.valueLabel2")
+        d3.select(".trajectory.view.graph.verticalLine.valueLabel.two")
             .datum(data2)
             .attr("transform", function (d) {
-                return "translate(" + x(d.x) + "," + y1(d.y) + ")";
+                return "translate(" + x(d.x) + "," + scales[1](d.y) + ")";
             }).text(function (d) {
             return d.y;
 
@@ -530,7 +553,7 @@ function changeVerticalLineData(selectedTime) {
         d3.select(".trajectory.view.graph.verticalLine.circle2")
             .datum(data2)
             .attr("transform", function (d) {
-                return "translate(" + x(d.x) + "," + y1(d.y) + ")";
+                return "translate(" + x(d.x) + "," + scales[1](d.y) + ")";
             })
     }
 }
@@ -548,7 +571,7 @@ function setNodeCompartments() {
 function drawGraphFromNode(data) {
     compartmentsOfSelectedNode.length = 0;
     activeComponentIdices.length = 0;
-    selectedNode = "Node (" + data.x + ", " + data.y + ")";
+    selectedNode = "n(" + data.x + "," + data.y + ")";
     setNodeCompartments();
     clearHtmlTags();
     sumCurrentNodeData();

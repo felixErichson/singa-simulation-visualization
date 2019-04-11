@@ -233,7 +233,7 @@ a.nav-link, a.nav-link:hover {
     border-bottom-right-radius: unset !important;
 }
 
-#menu-custom-search {
+.search_div{
     margin: 10px;
 }
 
@@ -242,7 +242,7 @@ a.nav-link, a.nav-link:hover {
 }
 
 .list-group-item.list-group-item-action.list-group-item-success {
-    color: #0cac79;
+    color: #155724;
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem;
     margin-top: 20px;
@@ -293,6 +293,12 @@ a.nav-link, a.nav-link:hover {
     position: absolute;
     vertical-align: middle;
     margin: 33px;
+}
+
+.trajectory.view.graph.verticalLine.valueLabel{
+
+    z-index: 5;
+
 }
 
 
