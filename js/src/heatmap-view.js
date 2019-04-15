@@ -1,11 +1,21 @@
-
 const marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
-      widthSlider = 600 - marginSlider.left - marginSlider.right,
-      heightSlider = 200 - marginSlider.top - marginSlider.bottom;
+    widthSlider = 600 - marginSlider.left - marginSlider.right,
+    heightSlider = 200 - marginSlider.top - marginSlider.bottom;
 
 const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
-      heatwidth = 450 - heatMargin.left - heatMargin.right,
-      heatheight = 450 - heatMargin.top - heatMargin.bottom;
+    heatwidth = 450 - heatMargin.left - heatMargin.right,
+    heatheight = 450 - heatMargin.top - heatMargin.bottom;
+
+let dragedTime;
+let slideControl;
+let dragedTimeLabel;
+let xTimeScale;
+let concentrationRange;
+let svgSlider;
+let moving = false;
+let timer;
+let comp;
+let spec;
 
 function setHeatmapDropdown() {
 
@@ -42,16 +52,16 @@ function setHeatmapDropdown() {
     }
 }
 
-function onClickHeatmapDropdown(clickedSpeciesText){
+function onClickHeatmapDropdown(clickedSpeciesText) {
     $("#dropdown_button").text("species: " + clickedSpeciesText);
     d3.selectAll('#trajectory-view-heatmap svg').remove();
     d3.select("#heatmap-view-slider").html("");
     d3.selectAll('#heatmap-view-slider svg').remove();
 
-    setHeatmapRange();
+    // setHeatmapRange();
     setHeatMapSvg();
-    appendPlayButton();
-    drawSilder(clickedSpeciesText);
+    // appendPlayButton();
+    // drawSilder(clickedSpeciesText);
     clearHtmlTags();
 }
 
@@ -66,25 +76,13 @@ function appendPlayButton() {
     playButton = d3.select("#play-button")
 }
 
-let dragedTime;
-let slideControl;
-let dragedTimeLabel;
-let xTimeScale;
-let concentrationRange;
-let svgSlider;
-let moving = false;
-let timer;
-let comp;
-let spec;
 
-
-function initializeSlider(species){
+function initializeSlider(species) {
     concentrationRange = getRangeOfSpecies(species);
     let compartment = getCompartmentFromSpecies(species);
 
     spec = species;
     comp = compartment;
-
 
 
     dragedTime = time[0];
@@ -106,7 +104,7 @@ function initializeSlider(species){
 
 }
 
-function drawTrack(slider, compartment, species){
+function drawTrack(slider, compartment, species) {
     slider.append("line")
         .attr("class", "track")
         .attr("x1", xTimeScale.range()[0])
@@ -161,8 +159,6 @@ function drawTrackOverlay(slider) {
 
 }
 
-
-
 function drawSilder(species) {
 
     let compartment = getCompartmentFromSpecies(species);
@@ -200,7 +196,7 @@ function drawSilder(species) {
 function step() {
     update(dragedTime, comp, spec);
     dragedTime = dragedTime + (5);
-    console.log (dragedTime);
+    console.log(dragedTime);
     if (dragedTime > time.length - 1) {
         moving = false;
         dragedTime = 0;
@@ -227,7 +223,6 @@ function update(h, compartment, species) {
         changeVerticalLineData(h);
     }
 }
-
 
 function setHeatmapRange() {
 
@@ -263,6 +258,7 @@ function drawHeatmapLegend() {
             return d.value
         })])
         .range([0, heatwidth]);
+
 
 //Calculate the variables for the temp gradient
     let numStops = 10;
@@ -361,13 +357,17 @@ function getRangeOfSpecies(species) {
     let maxValue = 0.0;
     let minValue = Number.MAX_VALUE;
     nestedData.values().forEach(function (node) {
+
+        if (node.keys() !== "y" || node.keys() !== "x") {
+            //console.log(node.values());
+        }
         node.values().forEach(function (currentSpecies) {
             currentSpecies.values().forEach(function (currentValues) {
                 currentValues.entries().forEach(function (currentEntry) {
                     if (currentEntry.key === species) {
                         if (maxValue < currentEntry.value)
                             maxValue = currentEntry.value;
-                        if(minValue > currentEntry.value){
+                        if (minValue > currentEntry.value) {
                             minValue = currentEntry.value;
                         }
                     }
@@ -386,8 +386,8 @@ function setHeatmapColor(compartment, species, concentrationRange) {
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
             .domain(d3.extent(heatmapData, function (d) {
-                return d.value
-            })
+                    return d.value
+                })
             )
     } else {
 
@@ -400,13 +400,73 @@ function setHeatmapColor(compartment, species, concentrationRange) {
 
 function setHeatMapSvg() {
 
+    //TODO hier weitermachen Skalierung bearbeiten
+
+
+   let xScale = d3.scaleLinear().domain([]).range([0,heatwidth]);
+    let yScale = d3.scaleLinear().domain([vertices]).range([0,heatwidth]);
+
     heatmapSvg = d3.select("#trajectory-view-heatmap")
         .append("svg")
-        .attr("width", heatwidth + heatMargin.left + heatMargin.right)
-        .attr("height", heatheight + heatMargin.top + heatMargin.bottom)
+        .attr("width", 1000)
+        .attr("height", 1000)
         .append("g")
         .attr("transform",
-            "translate(30,10)");
+            "translate(30,10)")
+        .attr("class", "PiYG");
+
+
+    let vertices = [];
+    let vesicle = [];
+
+    nestedData.get("0.001").keys().forEach(function (node) {
+
+        if(node.startsWith("n")){
+            let x = nestedData.get("0.001").get(node).get("x");
+            let y = nestedData.get("0.001").get(node).get("y");
+
+            vertices.push([x,y]);
+
+            heatmapSvg.append("circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("r", 3)
+                .style("fill", "black")
+
+        } else {
+
+            let x = nestedData.get("0.001").get(node).get("x");
+            let y = nestedData.get("0.001").get(node).get("y");
+
+            vesicle.push([x,y]);
+
+            heatmapSvg.append("circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("r", 6)
+                .style("fill", "none")
+                .style("stroke", "black")
+                .style("stroke-with","2px")
+        }
+
+    });
+
+    var voronoi = d3.voronoi()
+        .extent([[0, 0], [1000, 1000]]);
+
+    var paths = heatmapSvg.selectAll("path")
+        .data(voronoi(vertices).polygons())
+        .enter().append("path")
+        .attr("d", function(d) {return "M" + d.join("L") + "Z";})
+        .style("stroke", " black")
+        .style("stroke-width", " 2px");
+
+    heatmapSvg.selectAll("path")
+        .data(voronoi(vertices).polygons())
+        .enter().append("path")
+        .attr("d", function(d) {return "M" + d.join("L") + "Z";})
+        .style("stroke", " black")
+        .style("stroke-width", " 2px");
 
     heatmapX = d3.scaleBand()
         .range([0, heatwidth])
@@ -416,6 +476,8 @@ function setHeatMapSvg() {
     heatmapY = d3.scaleBand()
         .range([heatheight, 0])
         .domain(heatmapYRange)
+
+
 }
 
 function drawHeatmapRectangles(currentValue, species) {
@@ -483,12 +545,19 @@ function mouseOverNode(currentNode, CurrentNodeObject, species, dragedTime) {
         d3.select("#showed_species").text("species: " + species)
     }
 
+    let possibleCompartments = nestedData.get(dragedTime).get("n(" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")");
+
+    if (possibleCompartments !== undefined) {
+        possibleCompartments = possibleCompartments.keys();
+    }
+
+
     d3.select("#menu-heatmap-data")
         .append("p")
         .attr("id", "showed_species")
         .attr("position", "absolute")
         .attr("bottom", "0")
-        .text("possible nodeCompartments: " + nestedData.get(dragedTime).get("n(" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")").keys());
+        .text("possible nodeCompartments: " + possibleCompartments);
 
 
     d3.select("#menu-heatmap-data")
@@ -508,11 +577,11 @@ function changeVerticalLineData(selectedTime) {
     let data = reducedNodeData[getCompartmentFromIndexIdentifier(id1) + "_" + getSpeciesFromIndexIdentifier(id1)];
     data = data[selectedTime];
 
-    if(time[selectedTime] > time[time.length/1.5]){
+    if (time[selectedTime] > time[time.length / 1.5]) {
         d3.selectAll(".trajectory.view.graph.verticalLine.valueLabel")
             .attr("x", -150)
 
-    }else{
+    } else {
 
         d3.selectAll(".trajectory.view.graph.verticalLine.valueLabel")
             .attr("x", 0)

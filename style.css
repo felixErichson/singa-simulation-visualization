@@ -108,8 +108,8 @@ body {
 
 #trajectory-view-heatmap {
 
-    height: 520px;
-    width: 480px;
+    height: 1200px;
+    width: 1100px;
     position: absolute;
     margin: 0 0 10px 10px;
     background-color: #ffffff;

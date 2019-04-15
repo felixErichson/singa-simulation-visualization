@@ -54,156 +54,163 @@ function loadFile() {
 }
 
 
-    let currentTime,
-        currentCompartment,
-        currentNode,
-        parent;
+let currentTime,
+    currentCompartment,
+    currentNode,
+    parent,
+    currentPosition;
 
-    function readDataFromCsv() {
-        globalData = d3.csvParse(reader.result);
+function readDataFromCsv() {
+    globalData = d3.csvParse(reader.result);
 
-        prepareDataFromCsv();
-        prepareNestedDataFromCsv(globalData);
-        sumData();
-        setHeatmapDropdown();
+    prepareDataFromCsv();
+    prepareNestedDataFromCsv(globalData);
+    sumData();
+    setHeatmapDropdown();
 
-    }
+}
 
-    function readDataFromJson() {
+function readDataFromJson() {
 
-        globalData = JSON.parse(reader.result);
-        nestedData = d3.map();
+    globalData = JSON.parse(reader.result);
+    nestedData = d3.map();
 
-        prepareNestedDataFromJson(globalData);
-        sumData();
-        setHeatmapDropdown();
-    }
+    prepareNestedDataFromJson(globalData);
+    sumData();
+    setHeatmapDropdown();
+}
 
-    function prepareDataFromCsv() {
-        globalData.forEach(function (d) {
-            d.elapsed_time = +d["elapsed time"];
-            d.concentration = +d.concentration;
+function prepareDataFromCsv() {
+    globalData.forEach(function (d) {
+        d.elapsed_time = +d["elapsed time"];
+        d.concentration = +d.concentration;
 
-            if (!time.includes(d.elapsed_time)) {
-                time.push(d.elapsed_time)
-            }
-            /** @namespace d.compartment */
-            if (!allCompartments.includes(d.compartment)) {
-                allCompartments.push(d.compartment)
-            }
-            if (!allSpecies.includes(d.species)) {
-                allSpecies.push(d.species)
-            }
-        });
-    }
+        if (!time.includes(d.elapsed_time)) {
+            time.push(d.elapsed_time)
+        }
+        /** @namespace d.compartment */
+        if (!allCompartments.includes(d.compartment)) {
+            allCompartments.push(d.compartment)
+        }
+        if (!allSpecies.includes(d.species)) {
+            allSpecies.push(d.species)
+        }
+    });
+}
 
-    function prepareNestedDataFromJson(data) {
+function prepareNestedDataFromJson(data) {
 
-        for (let currentKey in data) {
+    for (let currentKey in data) {
 
-            if (data[currentKey] !== null) {
-                if (typeof (data[currentKey]) === "object") {
+        if (data[currentKey] !== null) {
+            if (typeof (data[currentKey]) === "object") {
 
-                    if (parent === "trajectory-data") {
-                        currentTime = currentKey;
-                        if (!time.includes(currentKey)) {
-                            time.push(parseFloat(currentKey));
-                            nestedData.set(currentKey, d3.map())
-                        }
+                if (parent === "trajectory-data") {
+                    currentTime = currentKey;
+                    if (!time.includes(currentKey)) {
+                        time.push(parseFloat(currentKey));
+                        nestedData.set(currentKey, d3.map())
                     }
+                }
 
-                    if (parent === "data") {
-                        currentNode = currentKey;
-                        if (!currentNode.startsWith("v")) { //TODO vesicle is ignored here
-                            if (!allNodes.includes(currentKey)) {
-                                allNodes.push(currentKey)
+                if (parent === "data") {
+                    currentNode = currentKey;
+                    //if (!currentNode.startsWith("v")) { //TODO vesicle is ignored here
+                    if (!allNodes.includes(currentKey)) {
+                        allNodes.push(currentKey)
 
-                            }
-                            nestedData.get(currentTime).set(currentNode, d3.map())
-                        }
                     }
+                    nestedData.get(currentTime).set(currentNode, d3.map())
+                    //}
+                }
 
-                    if (parent === "concentrations") {
-                        currentCompartment = currentKey;
-                        if (!allCompartments.includes(currentKey)) {
-                            allCompartments.push(currentKey);
+                if (parent === "concentrations") {
+                    currentCompartment = currentKey;
+                    if (!allCompartments.includes(currentKey)) {
+                        allCompartments.push(currentKey);
 
-                        }
-                        if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
-                            nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
-                        }
                     }
-                    const grandparent = parent;
-                    parent = currentKey;
-                    prepareNestedDataFromJson(data[currentKey]);
-                    parent = grandparent;
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                        nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
+                    }
+                }
 
+                const grandparent = parent;
+                parent = currentKey;
+                prepareNestedDataFromJson(data[currentKey]);
+                parent = grandparent;
+
+            } else {
+
+                if (currentKey === "time-unit") {
+
+                    timeUnit = data[currentKey];
+
+                } else if (currentKey === "concentration-unit") {
+
+                    concentrationUnit = data[currentKey]
+                } else if (parent !== "position") {
+                    if (!allSpecies.includes(currentKey)) {
+                        allSpecies.push(currentKey);
+                    }
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                        nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                    }
                 } else {
-
-                    if (currentKey === "time-unit") {
-
-                        timeUnit = data[currentKey];
-
-                    } else if (currentKey === "concentration-unit") {
-
-                        concentrationUnit = data[currentKey]
-                    } else {
-                        if (!allSpecies.includes(currentKey)) {
-                            allSpecies.push(currentKey);
-                        }
-                        if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
-                            nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
-                        }
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                        nestedData.get(currentTime).get(currentNode).set(currentKey, data[currentKey]);
                     }
                 }
             }
         }
     }
 
-    function prepareNestedDataFromCsv(data) {
+}
 
-        nestedData =
-            d3.nest()
-                .key(function (d) {
-                    return d.elapsed_time;
-                })
-                .key(function () {
-                    return "n(0,0)"
-                })
-                .key(function (d) {
-                    return d.compartment;
-                })
-                .key(function (d) {
-                    return d.species;
-                })
-                .rollup(function (v) {
-                    return d3.sum(v, function (d) {
-                        return d.concentration;
-                    });
-                })
-                .map(data);
-    }
+function prepareNestedDataFromCsv(data) {
 
-    function sumData() {
-
-        let rememberSpecies = [];
-        allCompartments.forEach(function (compartment) {
-            nestedData.keys().forEach(function (timeStep) {
-                nestedData.get(timeStep).keys().forEach(function (node) {
-                    if (nestedData.get(timeStep).get(node).get(compartment) !== undefined && nestedData.get(timeStep).get(node).get(compartment).keys() !== undefined) {
-                        nestedData.get(timeStep).get(node).get(compartment).keys().forEach(function (species) {
-                            if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(node).get(compartment).get(species) !== 0 && nestedData.get(timeStep).get(node).get(compartment).get(species) !== undefined) {
-                                rememberSpecies.push(species);
-                                selectedNode = node;
-                                componentCombinations.push(compartment + "_" + species);
-                            }
-                        })
-                    }
-                })
+    nestedData =
+        d3.nest()
+            .key(function (d) {
+                return d.elapsed_time;
             })
-        });
-        //  console.log(componentCombinations);
-    }
+            .key(function () {
+                return "n(0,0)"
+            })
+            .key(function (d) {
+                return d.compartment;
+            })
+            .key(function (d) {
+                return d.species;
+            })
+            .rollup(function (v) {
+                return d3.sum(v, function (d) {
+                    return d.concentration;
+                });
+            })
+            .map(data);
+}
+
+function sumData() {
+
+    let rememberSpecies = [];
+    allCompartments.forEach(function (compartment) {
+        nestedData.keys().forEach(function (timeStep) {
+            nestedData.get(timeStep).keys().forEach(function (node) {
+                if (nestedData.get(timeStep).get(node).get(compartment) !== undefined && nestedData.get(timeStep).get(node).get(compartment).keys() !== undefined) {
+                    nestedData.get(timeStep).get(node).get(compartment).keys().forEach(function (species) {
+                        if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(node).get(compartment).get(species) !== 0 && nestedData.get(timeStep).get(node).get(compartment).get(species) !== undefined) {
+                            rememberSpecies.push(species);
+                            selectedNode = node;
+                            componentCombinations.push(compartment + "_" + species);
+                        }
+                    })
+                }
+            })
+        })
+    });
+    //  console.log(componentCombinations);
+}
 
 
 function sumCurrentNodeData() {
