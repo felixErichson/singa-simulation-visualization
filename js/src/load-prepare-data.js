@@ -209,7 +209,7 @@ function sumData() {
             })
         })
     });
-    //  console.log(componentCombinations);
+      console.log(componentCombinations);
 }
 
 
@@ -217,6 +217,7 @@ function sumCurrentNodeData() {
     nodeComponentCombinations.length = 0;
     let rememberSpecies = [];
     compartmentsOfSelectedNode.forEach(function (compartment) {
+        //console.log(compartment);
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
                 if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {

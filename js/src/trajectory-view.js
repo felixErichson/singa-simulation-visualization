@@ -222,7 +222,7 @@ function createTrajectoryPlot() {
         trajectoryPlot.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + trajectoryPlotHeight + ")")
-            .call(d3.axisBottom(x))
+            .call(d3.axisBottom(x).ticks(7))
             .attr("font-size", 15);
     }
 

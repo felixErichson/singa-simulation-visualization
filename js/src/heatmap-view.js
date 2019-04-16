@@ -95,7 +95,7 @@ function initializeSlider(species) {
 
     getHeatmapData(dragedTime, compartment, species);
     heatmapColor = setHeatmapColor();
-    drawHeatmapRectangles(dragedTime);
+    drawHeatmapRectangles(dragedTime,species);
 
     xTimeScale = d3.scaleLinear()
         .domain([0, time.length - 1])
@@ -215,7 +215,7 @@ function update(h, compartment, species) {
 
     getHeatmapData(time[h], compartment, species);
     heatmapColor = setHeatmapColor();
-    drawHeatmapRectangles(time[h]);
+    drawHeatmapRectangles(time[h], species);
     relativeScaleAxis();
     absoluteScaleAxis();
     drawHeatmapLegend();
@@ -259,7 +259,7 @@ function drawHeatmapLegend() {
         .append("linearGradient")
         .attr("id", "legend-traffic")
         .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "100%").attr("y2", "0%")
+        .attr("x2", "100%").attr("y2", "0%");
 
     linearGradient.append("stop")
         .attr("offset", "0%")
@@ -443,6 +443,12 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .attr("cx", xScale(x))
                 .attr("cy", yScale(y))
                 .attr("r", 1)
+                .style("fill", "black");
+
+            heatmapSvg.append("circle")
+                .attr("cx", xScale(x))
+                .attr("cy", yScale(y))
+                .attr("r", 2)
                 .style("fill", "black")
 
         } else {
@@ -468,7 +474,27 @@ function drawHeatmapRectangles(currentTimeStep, species) {
         })
         .attr("d", function (d) {
             return "M" + d.join("L") + "Z";
-        });
+        })
+        .on("click", function (d) {
+            drawGraphFromNode(d);
+            getIndexIdentifier(getCompartmentFromSpecies(species), species);
+            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
+            setChartTitle("Node (" + d.x + "," + d.y + ")");
+
+        })
+        .on("mouseover", function (d) {
+            d3.select(this)
+                .style("stroke", "black")
+                .style("stroke-width", "1");
+            mouseOverNode(this, d, species, currentTimeStep);
+        })
+        .on("mouseleave", function () {
+            d3.select(this)
+                .style("stroke-width", "0");
+
+            d3.select("#menu-heatmap-data")
+                .selectAll("p").remove();
+        })
     // .style("stroke", " black")
     // .style("stroke-width", " 2px")
 
@@ -484,28 +510,45 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
     vesicle.forEach(function (position) {
 
+        for(let i in vesicle){
 
-        heatmapSvg.append("circle")
-            .attr("cx", xScale(position[0]))
-            .attr("cy", yScale(position[1]))
-            .attr("r", 5)
-            .style("fill", "none")
-            .style("stroke", "black")
-            .style("stroke-with", "2px")
+            heatmapSvg.append("circle")
+                .attr("cx", xScale(position[0]))
+                .attr("cy", yScale(position[1]))
+                .attr("r", 5)
+                .style("fill", "blue");
+
+
+            heatmapSvg.append("circle")
+                .attr("cx", xScale(position[0]))
+                .attr("cy", yScale(position[1]))
+                .attr("r", 3)
+                .style("fill", "white");
+
+            heatmapSvg.append("circle")
+                .attr("id", "v"+i)
+                .attr("cx", xScale(position[0]))
+                .attr("cy", yScale(position[1]))
+                .attr("r", 6)
+                .style("fill", "black")
+                .style("fill-opacity", "0.0")
+                .on("click", function () {
+                    console.log("nice")
+                })
+
+        }
+
+
+
+
+
+
+
+
     });
 
 
-    //     .on("mouseover", function (d) {
-    //         mouseOverNode(this, d, species, currentValue);
-    //     })
-    //     .on("mouseleave", function () {
-    //         d3.select(this)
-    //             .style("stroke-width", "2")
-    //             .style("stroke-opacity", 0.6);
-    //
-    //         d3.select("#menu-heatmap-data")
-    //             .selectAll("p").remove();
-    //     })
+
     //     .on("click", function (d) {
     //         drawGraphFromNode(d);
     //         onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
@@ -514,9 +557,6 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 }
 
 function mouseOverNode(currentNode, CurrentNodeObject, species, dragedTime) {
-
-    d3.select(currentNode)
-        .style("stroke-width", "5");
 
     d3.select("#menu-heatmap-data")
         .append("p")
@@ -621,7 +661,7 @@ function changeVerticalLineData(selectedTime) {
 function setNodeCompartments() {
     nestedData.keys().forEach(function (timeStep) {
         nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
-            if (!compartmentsOfSelectedNode.includes(compartment)) {
+            if (!compartmentsOfSelectedNode.includes(compartment)&& !compartment.startsWith("x") && !compartment.startsWith("y")) {
                 compartmentsOfSelectedNode.push(compartment)
             }
         })

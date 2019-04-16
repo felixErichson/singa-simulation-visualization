@@ -93,7 +93,10 @@ function getIndexIdentifier(selectedCompartment, selectedSpecies) {
  */
 function getCompartmentFromSpecies(species) {
     let compartment = "";
+    //console.log(componentCombinations);
     componentCombinations.forEach(function (currentTrajectory) {
+
+        //console.log(currentTrajectory);
         if (currentTrajectory.split("_")[1] === species) {
             compartment = currentTrajectory.split("_")[0];
         }
