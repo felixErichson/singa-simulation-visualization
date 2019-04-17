@@ -16,6 +16,7 @@ let moving = false;
 let timer;
 let comp;
 let spec;
+let vesicleColor;
 
 function setHeatmapDropdown() {
 
@@ -83,10 +84,7 @@ function initializeSlider(species) {
     concentrationRange = getRangeOfSpecies(species, compartment);
     spec = species;
     comp = compartment;
-
-
     dragedTime = time[0];
-
     svgSlider = d3.select("#heatmap-view-slider")
         .append("svg")
         .attr("style", "margin-left: 20%")
@@ -94,7 +92,9 @@ function initializeSlider(species) {
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
     getHeatmapData(dragedTime, compartment, species);
-    heatmapColor = setHeatmapColor();
+    getVesicleData(dragedTime,compartment,species);
+    heatmapColor = setHeatmapColor(heatmapData.concat(vesicleData));
+    //vesicleColor = setHeatmapColor(vesicleData);
     drawHeatmapRectangles(dragedTime,species);
 
     xTimeScale = d3.scaleLinear()
@@ -127,8 +127,6 @@ function drawTrack(slider, compartment, species) {
 
             })
         );
-
-
 }
 
 function drawTrackOverlay(slider) {
@@ -155,8 +153,6 @@ function drawTrackOverlay(slider) {
         .attr("text-anchor", "middle")
         .text(time[0])
         .attr("transform", "translate(0," + (-25) + ")");
-
-
 }
 
 function drawSilder(species) {
@@ -190,7 +186,6 @@ function drawSilder(species) {
                 button.text("Pause");
             }
         });
-
 }
 
 function step() {
@@ -214,11 +209,14 @@ function update(h, compartment, species) {
         .text(d3.format(".3f")(time[h]));
 
     getHeatmapData(time[h], compartment, species);
-    heatmapColor = setHeatmapColor();
+    getVesicleData(time[h], compartment, species);
+    heatmapColor = setHeatmapColor(heatmapData.concat(vesicleData));
+    //vesicleColor = setHeatmapColor(vesicleData);
     drawHeatmapRectangles(time[h], species);
     relativeScaleAxis();
     absoluteScaleAxis();
     drawHeatmapLegend();
+
     d3.select("#menu-heatmap-data")
         .selectAll("p").remove();
     if (activeComponentIdices[0] !== undefined) {
@@ -263,12 +261,11 @@ function drawHeatmapLegend() {
 
     linearGradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "#f1ff7f"); //light blue
-
+        .attr("stop-color", "#f1ff7f");
 
     linearGradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "#0cac79"); //dark blue
+        .attr("stop-color", "#0cac79");
 
     let legendWidth = Math.min(heatwidth, 400);
 
@@ -284,6 +281,7 @@ function drawHeatmapLegend() {
         .attr("width", legendWidth)
         .attr("height", 10)
         .style("fill", "url(#legend-traffic)");
+
 
     if ($('input[name="check"]:checked').val() === "relative") {
         relativeScaleAxis();
@@ -309,8 +307,10 @@ function relativeScaleAxis() {
 
     LegendAxisScale = d3.scaleLinear()
         .range([-legendWidth / 2, legendWidth / 2])
-        .domain(d3.extent(heatmapData, function (d) {
-            return d.value
+        .domain(d3.extent(heatmapData.concat(vesicleData), function (d) {
+            if (d.value > -1){
+                return d.value
+            }
         }));
 }
 
@@ -320,6 +320,46 @@ function absoluteScaleAxis() {
     LegendAxisScale = d3.scaleLinear()
         .range([-legendWidth / 2, legendWidth / 2])
         .domain(concentrationRange);
+
+
+}
+
+let vesicleData = [];
+
+function getVesicleData(currentTimeStep, compartment, species) {
+
+    vesicleData.length = 0;
+    let obj;
+
+    nestedData.get(currentTimeStep).keys().forEach(function (node) {
+        if (node.startsWith("v")) {
+            if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
+                if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
+
+                    obj = {
+                        //  name: compartment+ "_" + species,
+                       name: node,
+                        value: 0
+                    };
+                    vesicleData.push(obj);
+                } else {
+                    obj = {
+                        name: node,
+                        value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
+                    };
+                    vesicleData.push(obj);
+                }
+
+            } else {
+                obj = {
+                    //  name: compartment+ "_" + species,
+                    name: node,
+                    value: -1
+                };
+                vesicleData.push(obj);
+            }
+        }
+    });
 
 
 }
@@ -355,7 +395,7 @@ function getHeatmapData(currentTimeStep, compartment, species) {
                     //  name: compartment+ "_" + species,
                     x: node.split(regEx)[1],
                     y: node.split(regEx)[2],
-                    value: 0
+                    value: -1
                 };
                 heatmapData.push(obj);
 
@@ -381,22 +421,26 @@ function getRangeOfSpecies(species, compartment) {
     return [minValue, maxValue];
 }
 
-function setHeatmapColor() {
-
+function setHeatmapColor(data) {
+console.log(data);
     if ($('input[name="check"]:checked').val() === "relative") {
 
-        return d3.scaleLinear()
-            .range(["#f1ff7f", "#0cac79"])
-            .domain(d3.extent(heatmapData, function (d) {
-                    //console.log(d.value);
-                    return d.value
-                })
-            )
-    } else {
+            return d3.scaleLinear()
+                .range(["#ffffff","#f1ff7f","#0cac79"])
+                .domain([-1,d3.min(data, function (d){
+                    if (d.value > -1){
+                        return d.value
+                    }
+                }),d3.max(data, function (d) {
+                    if (d.value > -1){
+                        return d.value
+                    }
+                })])
 
+    } else {
         return d3.scaleLinear()
-            .range(["#f1ff7f", "#0cac79"])
-            .domain(concentrationRange)
+            .range(["#ffffff","#f1ff7f","#0cac79"])
+            .domain([-1,concentrationRange[0], concentrationRange[1]])
     }
 }
 
@@ -419,13 +463,17 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     heatmapSvg.selectAll("circle").remove();
 
     let vertices = [];
-    let vesicle = [];
+    let vesiclePositions = [];
 
     let xScale;
     let yScale;
 
     vertices.length = 0;
-    vesicle.length = 0;
+    vesiclePositions.length = 0;
+
+
+     xScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
+     yScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
 
     nestedData.get(currentTimeStep).keys().forEach(function (node) {
 
@@ -433,33 +481,14 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             let x = nestedData.get(currentTimeStep).get(node).get("x");
             let y = nestedData.get(currentTimeStep).get(node).get("y");
 
-
-            let xScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
-            let yScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
-
-            // console.log(xScale(x), x);
-            vertices.push([xScale(x), yScale(y)]);
-            heatmapSvg.append("circle")
-                .attr("cx", xScale(x))
-                .attr("cy", yScale(y))
-                .attr("r", 1)
-                .style("fill", "black");
-
-            heatmapSvg.append("circle")
-                .attr("cx", xScale(x))
-                .attr("cy", yScale(y))
-                .attr("r", 2)
-                .style("fill", "black")
+             vertices.push([xScale(x), yScale(y)]);
 
         } else {
 
             let x = nestedData.get(currentTimeStep).get(node).get("x");
             let y = nestedData.get(currentTimeStep).get(node).get("y");
 
-            xScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
-            yScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
-
-            vesicle.push([x, y]);
+            vesiclePositions.push([x, y]);
         }
     });
 
@@ -476,7 +505,8 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             return "M" + d.join("L") + "Z";
         })
         .on("click", function (d) {
-            drawGraphFromNode(d);
+            selectedNode = "n(" + d.x + "," + d.y + ")";
+            drawGraphFromNode();
             getIndexIdentifier(getCompartmentFromSpecies(species), species);
             onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
             setChartTitle("Node (" + d.x + "," + d.y + ")");
@@ -494,66 +524,71 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
             d3.select("#menu-heatmap-data")
                 .selectAll("p").remove();
-        })
-    // .style("stroke", " black")
-    // .style("stroke-width", " 2px")
-
+        });
 
     for (let i = 0; i < 100; i++) {
+
         d3.select(".path" + i)
             .datum(heatmapData[i])
             .style("fill", function (d) {
-                //console.log(d.value, heatmapColor(d.value));
                 return heatmapColor(d.value)
             });
     }
 
-    vesicle.forEach(function (position) {
-
-        for(let i in vesicle){
+    for (let i in vesiclePositions){
 
             heatmapSvg.append("circle")
-                .attr("cx", xScale(position[0]))
-                .attr("cy", yScale(position[1]))
+                .attr("id", "membrane" + i)
+                .attr("cx", xScale(vesiclePositions[i][0]))
+                .attr("cy", yScale(vesiclePositions[i][1]))
                 .attr("r", 5)
-                .style("fill", "blue");
-
+                .style("stroke","black")
+                .style("stroke-width","1px" )
+                .style("fill", "white");
 
             heatmapSvg.append("circle")
-                .attr("cx", xScale(position[0]))
-                .attr("cy", yScale(position[1]))
+                .attr("id", "lumen"+i)
+                .attr("cx", xScale(vesiclePositions[i][0]))
+                .attr("cy", yScale(vesiclePositions[i][1]))
                 .attr("r", 3)
+                .style("stroke","black")
+                .style("stroke-width","1px" )
                 .style("fill", "white");
 
             heatmapSvg.append("circle")
                 .attr("id", "v"+i)
-                .attr("cx", xScale(position[0]))
-                .attr("cy", yScale(position[1]))
+                .attr("cx", xScale(vesiclePositions[i][0]))
+                .attr("cy", yScale(vesiclePositions[i][1]))
                 .attr("r", 6)
                 .style("fill", "black")
                 .style("fill-opacity", "0.0")
                 .on("click", function () {
-                    console.log("nice")
-                })
+                    selectedNode = "v"+i;
+                    drawGraphFromNode();
+                    setChartTitle("Vesicle " + i);
+                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
+    })
+    }
 
+    for (let i = 0; i<10; i++){
+        relativeScaleAxis(vesicleData);
+        if(getCompartmentFromSpecies(species) === "vesicle membrane") {
+            d3.select("#membrane" + i)
+                .datum(vesicleData[i])
+                .style("fill", function (d) {
+                    return heatmapColor(d.value)
+                });
+        } else if (getCompartmentFromSpecies(species) === "vesicle lumen" ){
+
+            d3.select("#lumen" + i)
+                .datum(vesicleData[i])
+                .style("fill", function (d) {
+                    return heatmapColor(d.value)
+                });
         }
+    }
 
 
-
-
-
-
-
-
-    });
-
-
-
-    //     .on("click", function (d) {
-    //         drawGraphFromNode(d);
-    //         onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
-    //         setChartTitle("Node (" + d.x + "," + d.y + ")");
-    //     })
 }
 
 function mouseOverNode(currentNode, CurrentNodeObject, species, dragedTime) {
@@ -668,10 +703,9 @@ function setNodeCompartments() {
     });
 }
 
-function drawGraphFromNode(data) {
+function drawGraphFromNode() {
     compartmentsOfSelectedNode.length = 0;
     activeComponentIdices.length = 0;
-    selectedNode = "n(" + data.x + "," + data.y + ")";
     setNodeCompartments();
     clearHtmlTags();
     sumCurrentNodeData();

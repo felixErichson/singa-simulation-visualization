@@ -17,15 +17,12 @@ let componentCombinations = [],
     reader = new FileReader(),
     globalData = null,
     heatmapSvg,
-    heatmapY,
-    heatmapX,
     searchButtonDataArray = [],
     heatmapData = [],
     heatmapXRange = [],
     heatmapYRange = [],
     playButton,
     heatmapColor,
-    selectedTime,
     nestedData;
 
 let regEx = new RegExp("\\((\\d+),(\\d+)\\)", "g");

@@ -113,8 +113,6 @@ body {
     position: absolute;
     margin: 0 0 10px 10px;
     background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     text-align: center;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -127,8 +125,6 @@ body {
     height: 100px;
     margin: 5px 25px 25px 10px;
     background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     text-align: justify;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -142,8 +138,6 @@ body {
     height: 520px;
     margin: 25px 25px 10px 500px;
     background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     text-align: justify;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
