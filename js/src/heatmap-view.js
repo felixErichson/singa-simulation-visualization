@@ -20,6 +20,9 @@ let vesicleColor;
 
 function setHeatmapDropdown() {
 
+    d3.select(".loader").remove();
+
+
     d3.select("#trajectory-view-heatmap")
         .append("div")
         .attr("class", "btn-group")
@@ -444,7 +447,14 @@ console.log(data);
     }
 }
 
+
+
 function setHeatMapSvg() {
+
+    var zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .translateExtent([[-100, -100], [heatwidth + 90, heatheight + 100]])
+        .on("zoom", zoomed);
 
     heatmapSvg = d3.select("#trajectory-view-heatmap")
         .append("svg")
@@ -453,9 +463,18 @@ function setHeatMapSvg() {
         .append("g")
         .attr("transform",
             "translate(30,10)")
-        .attr("class", "PiYG");
+        .attr("class", "PiYG")
+        .call(zoom);
 
 }
+
+function zoomed() {
+
+       heatmapSvg.attr("transform", d3.event.transform);
+
+
+}
+
 
 function drawHeatmapRectangles(currentTimeStep, species) {
 

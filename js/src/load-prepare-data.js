@@ -31,11 +31,20 @@ function loadExample(fileEnding) {
 
 
 function loadFile() {
+    d3.select("#loadFileHint").remove();
+
+    d3.select("#trajectory-view-heatmap")
+        .append("div")
+        .attr("id", "spinner")
+        .attr("class", "spinner-grow text-success" );
 
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
     clearHtmlTags();
     d3.select('#trajectory-view-heatmap').html('');
+
+    d3.select('#trajectory-view-heatmap').append("div").attr("class", "loader");
+
 
     let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
