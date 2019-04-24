@@ -6,6 +6,12 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatwidth = 450 - heatMargin.left - heatMargin.right,
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
+
+
+let tooltip = d3.select("body").append("div")
+    .attr("class", "nodeTooltip")
+    .style("opacity", 0);
+
 let dragedTime;
 let slideControl;
 let dragedTimeLabel;
@@ -16,18 +22,19 @@ let moving = false;
 let timer;
 let comp;
 let spec;
-let vesicleColor;
+let legendSvg;
 
 function setHeatmapDropdown() {
 
     d3.select(".loader").remove();
 
 
-    d3.select("#trajectory-view-heatmap")
+    d3.select("#heatmap-view-species-selection")
         .append("div")
         .attr("class", "btn-group")
         .attr("id", "heatmap_dropdown")
-        .style("trajectoryPlotMargin-top", "5px")
+        .style("margin-top", "5px")
+        .style("margin-left", "30%")
         .style("position", "relative")
         .append("button")
         .attr("type", "button")
@@ -35,7 +42,7 @@ function setHeatmapDropdown() {
         .attr("id", "dropdown_button")
         .attr("data-toggle", "dropdown")
         .attr("aria-haspopup", "true")
-        .attr("aria-expanded", "flase")
+        .attr("aria-expanded", "false")
         .text("select species");
 
     d3.select("#heatmap_dropdown")
@@ -59,8 +66,12 @@ function setHeatmapDropdown() {
 function onClickHeatmapDropdown(clickedSpeciesText) {
     $("#dropdown_button").text("species: " + clickedSpeciesText);
     d3.selectAll('#trajectory-view-heatmap svg').remove();
-    d3.select("#heatmap-view-slider").html("");
+    d3.select("#play-button").remove();
     d3.selectAll('#heatmap-view-slider svg').remove();
+    const selector = ".nav.nav-tabs.justify-content-center";
+
+    $(selector).removeClass("invisible");
+    $(selector).toggleClass("visible");
 
     setHeatmapRange();
     setHeatMapSvg();
@@ -75,7 +86,9 @@ function appendPlayButton() {
         .append("button")
         .attr("id", "play-button")
         .attr("class", "btn btn-primary")
-        .text("Play");
+        .append("i")
+        .attr("class","fas fa-play");
+
 
     playButton = d3.select("#play-button")
 }
@@ -177,16 +190,17 @@ function drawSilder(species) {
     playButton
         .on("click", function () {
             let button = d3.select(this);
-            if (button.text() === "Pause") {
+            if (button.select("i").attr("class") === "fas fa-pause") {
                 moving = false;
                 clearInterval(timer);
                 // timer = 0;
-                button.text("Play");
+                button.select("i").attr("class", "fas fa-play");
             } else {
                 moving = true;
                 timer = setInterval("step()", 10);
                 //console.log(timer);
-                button.text("Pause");
+                button.select("i").attr("class", "fas fa-pause");
+                //button.text("Pause");
             }
         });
 }
@@ -199,12 +213,11 @@ function step() {
         moving = false;
         dragedTime = 0;
         clearInterval(timer);
-        playButton.text("Play");
+        playButton.select("i").attr("class", "fas fa-play");
     }
 }
 
 function update(h, compartment, species) {
-
 
     slideControl.attr("cx", xTimeScale(h));
 
@@ -252,11 +265,14 @@ function setHeatmapRange() {
 
 function drawHeatmapLegend() {
 
+    d3.select("#heatLEngend").html('');
+
     d3.select("#legend-traffic").remove();
+    d3.select(".legendWrapper").remove();
     d3.select(".legendRect").remove();
     d3.select(".axislegend").remove();
 
-   let linearGradient =  heatmapSvg.append("defs")
+   let linearGradient =  legendSvg.append("defs")
         .append("linearGradient")
         .attr("id", "legend-traffic")
         .attr("x1", "0%").attr("y1", "0%")
@@ -270,16 +286,16 @@ function drawHeatmapLegend() {
         .attr("offset", "100%")
         .attr("stop-color", "#0cac79");
 
-    let legendWidth = Math.min(heatwidth, 400);
+    let legendWidth = Math.min(heatwidth, 450);
 
-    let legendsvg = heatmapSvg.append("g")
+    let legendsvg = legendSvg.append("g")
         .attr("class", "legendWrapper")
         .attr("transform", "translate(0,10)");
 
     legendsvg.append("rect")
         .attr("class", "legendRect")
-        .attr("x", 5)
-        .attr("y", 400)
+        .attr("x", 15)
+        .attr("y", 0)
         //.attr("rx", hexRadius*1.25/2)
         .attr("width", legendWidth)
         .attr("height", 10)
@@ -298,7 +314,7 @@ function drawHeatmapLegend() {
 
     legendsvg.append("g")
         .attr("class", "axislegend")
-        .attr("transform", "translate(200,410)")
+        .attr("transform", "translate(210,10)")
         .call(xAxis);
 }
 
@@ -425,7 +441,6 @@ function getRangeOfSpecies(species, compartment) {
 }
 
 function setHeatmapColor(data) {
-console.log(data);
     if ($('input[name="check"]:checked').val() === "relative") {
 
             return d3.scaleLinear()
@@ -458,21 +473,26 @@ function setHeatMapSvg() {
 
     heatmapSvg = d3.select("#trajectory-view-heatmap")
         .append("svg")
-        .attr("width", 500)
-        .attr("height", 500)
+        .attr("width", 450)
+        .attr("height", 450)
         .append("g")
         .attr("transform",
-            "translate(30,10)")
+            "translate(15,25)")
         .attr("class", "PiYG")
         .call(zoom);
+
+    legendSvg = d3.select("#trajectory-view-heatmap")
+        .append("svg")
+        .attr("width", 450)
+        .attr("height", 50)
+        .attr("class", "heatLegend");
+
+
 
 }
 
 function zoomed() {
-
        heatmapSvg.attr("transform", d3.event.transform);
-
-
 }
 
 
@@ -536,6 +556,15 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .style("stroke", "black")
                 .style("stroke-width", "1");
             mouseOverNode(this, d, species, currentTimeStep);
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html('Node ('+ d.x + ',' + d.y +')' + "<br/>" +"value: " + d.value )
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+
+
         })
         .on("mouseleave", function () {
             d3.select(this)
@@ -543,6 +572,10 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
             d3.select("#menu-heatmap-data")
                 .selectAll("p").remove();
+
+        tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
         });
 
     for (let i = 0; i < 100; i++) {
@@ -586,7 +619,21 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     drawGraphFromNode();
                     setChartTitle("Vesicle " + i);
                     onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
-    })
+    }).on("mouseover", function () {
+        d3.select(this).style("stroke-width", "2px").style("stroke", "black");
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html('Vesicle '+ i + "<br/>" +"value: " + vesicleData[i].value)
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            }).on("mouseleave", function () {
+                d3.select(this).style("stroke-width", "0").style("stroke", "unset");
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+
+            })
     }
 
     for (let i = 0; i<10; i++){

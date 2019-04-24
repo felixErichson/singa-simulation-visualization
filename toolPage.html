@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+          integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+
+
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
@@ -34,14 +39,13 @@
 <body>
 
 <div class="sidenav">
-
     <!--singa picture-->
-    <a  href="index.html" ><img id="singa_logo" src="singa_logo_website.png" alt="Hello you! Click here!"> </a>
+   <a  href="index.html" ><img id="singa_logo" src="singa_icon_other_color.png" alt="Hello you! Click here!"> </a>
 
     <!--upload file (with svg picture)-->
     <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="loadFile()"
            accept=".csv, .json"/>
-    <a  id="fileBrowser" href="" onclick="document.getElementById('upload').click(); return false">
+    <a  id="fileBrowser" href="" style="margin-left: 10px; margin-top: 1%" onclick="document.getElementById('upload').click(); return false">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 400 70" fill="none" stroke="#0cac79" style="margin-right: 10px" >
 
             <path style="fill:none;stroke:#0cac79;stroke-width:19.66500092;stroke-linecap:butt;stroke-linejoin:miter;
@@ -55,23 +59,23 @@
         </svg>load file</a>
 
     <!--load example (with svg picture)-->
-    <a  id="exampleCharts" href="" data-toggle="modal" data-target="#exampleFileModal">
+<!--    <a  id="exampleCharts" href="" data-toggle="modal" data-target="#exampleFileModal">-->
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 550 70" stroke="#0cac79" style="margin-right: 10px">
+<!--        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-20 200 550 70" stroke="#0cac79" style="margin-right: 10px">-->
 
-            <path
-                    d="M 25.767024,391.35304 24.442822,45.703759 C 23.089522,24.831423 30.377197,3.2981411 58.081622,4.7779021 L 207.44069,6.0926885 370.8523,156.55311 216.10382,154.79803 219.53593,18.187927 388.99516,171.67216 l 0.2528,250.38467 c 0.16429,25.13332 -24.97796,24.84016 -40.52863,23.78189 L 50.248435,445.68771 C 22.814432,441.09626 27.542117,418.97114 25.767024,391.35304 Z"
-                    style="fill:none;stroke:#0cac79;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-            <path
-                    d="M 68.002451,252.48901 341.50818,250.32624 Z"
-                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-            <path
-                    d="M 67.642905,298.64469 341.14864,296.48192 Z"
-                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-            <path
-                    d="M 68.398858,344.7578 341.9046,342.59503 Z"
-                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-        </svg>example</a>
+<!--            <path-->
+<!--                    d="M 25.767024,391.35304 24.442822,45.703759 C 23.089522,24.831423 30.377197,3.2981411 58.081622,4.7779021 L 207.44069,6.0926885 370.8523,156.55311 216.10382,154.79803 219.53593,18.187927 388.99516,171.67216 l 0.2528,250.38467 c 0.16429,25.13332 -24.97796,24.84016 -40.52863,23.78189 L 50.248435,445.68771 C 22.814432,441.09626 27.542117,418.97114 25.767024,391.35304 Z"-->
+<!--                    style="fill:none;stroke:#0cac79;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
+<!--            <path-->
+<!--                    d="M 68.002451,252.48901 341.50818,250.32624 Z"-->
+<!--                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
+<!--            <path-->
+<!--                    d="M 67.642905,298.64469 341.14864,296.48192 Z"-->
+<!--                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
+<!--            <path-->
+<!--                    d="M 68.398858,344.7578 341.9046,342.59503 Z"-->
+<!--                    style="fill:none;stroke:#0cac79;stroke-width:16.77148247;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />-->
+<!--        </svg>example</a>-->
 
 </div>
 
@@ -85,19 +89,12 @@
 
         <div id="trajectory-view-heatmap"></div>
         <div id="trajectory-view-graph"></div>
+        <div id="heatmap-view-species-selection"></div>
         <div id="heatmap-view-slider"></div>
 
     <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
 
-        <li>
-            <a class="nav-link" id="data-tab" data-toggle="tab" href="#menu-heatmap-data" role="tab" aria-controls="data"
-               aria-selected="true">Node data</a>
-        </li>
 
-        <li>
-            <a class="nav-link" id="option-tab" data-toggle="tab" href="#menu-heatmap-options" role="tab" aria-controls="option"
-               aria-selected="false">options</a>
-        </li>
 
         <li class="nav-item">
             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab" aria-controls="home"
@@ -116,11 +113,15 @@
                aria-controls="contact" aria-selected="false">all trajectories</a>
         </li>
 
+        <li>
+            <a class="nav-link" id="option-tab" data-toggle="tab" href="#menu-heatmap-options" role="tab" aria-controls="option"
+               aria-selected="false" style="float: right">options</a>
+        </li>
+
 
     </ul>
 
     <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade " id="menu-heatmap-data" role="tabpanel" aria-labelledby="data-tab"></div>
         <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel" aria-labelledby="home-tab">
                 <div id="menu-species-selection-search-buttons"></div>
             <div id="menu-species-selection-species-buttons"></div>

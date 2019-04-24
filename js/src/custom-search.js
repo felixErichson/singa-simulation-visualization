@@ -92,12 +92,14 @@ function createCustomSearchMenu() {
             .attr("class", "btn btn-outline-secondary")
             .attr("type", "button")
             .attr("style", "margin-left : 10px !important; margin-bottom : 15px !important ")
-            .text("remove")
+            //.text("remove")
             .on("click", function () {
                 let attributeText = $(this).attr("id");
                 let identifier = attributeText.substr(attributeText.lastIndexOf("-") + 1);
                 d3.select("#menu-custom-search-refinement-" + identifier).html("");
-            });
+            })
+            .append("i")
+            .attr("class", "fas fa-times");
     }
 
     function appendOptionToField(selector, text) {

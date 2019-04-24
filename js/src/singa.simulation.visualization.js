@@ -124,9 +124,6 @@ function resetGlobalArrays() {
 function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
-    $(".nav.nav-tabs.justify-content-center").removeClass("invisible");
-    $(".nav.nav-tabs.justify-content-center").toggleClass("visible");
-
 }
 
 function clearHtmlTags() {

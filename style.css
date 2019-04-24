@@ -106,19 +106,19 @@ body {
 }
 
 .sidenav {
-    height: 100%;
-    width: 250px;
+    height: 70px;
+    width: 100%;
     position: fixed;
     z-index: 1;
     top: 0;
     left: 0;
-    background-color: #f5f5f5;
+    background-color: #0cac79;
     overflow-x: hidden;
-    padding-top: 20px;
+    padding-top: 5px;
+    box-shadow: 5px 5px 5px grey;
 }
 
 .sidenav a {
-    padding: 6px 8px 6px 16px;
     text-decoration: none;
     font-size: 20px;
     color: #000000;
@@ -126,22 +126,22 @@ body {
 }
 
 .sidenav a svg path {
-
     stroke: #000000 !important;
 }
 
 .sidenav a:hover {
-    color: #0cac79;
+    color: #ffffff;
     font-weight: bold;
     text-decoration: none;
 }
 
 .sidenav a:hover svg path {
-    stroke: #0cac79 !important;
+    stroke: #ffffff !important;
 }
 
 .trajectory-view-menu-container {
-    margin-left: 250px; /* Same as the trajectoryPlotWidth of the sidenav */
+margin-left: 10%;
+margin-top: 120px;
     font-size: 20px; /* Increased text to enable scrolling */
     padding: 0 0;
 }
@@ -158,10 +158,12 @@ body {
 
 
 #singa_logo {
-    margin-top: 10px;
-    margin-bottom: 50px;
-    width: 200px;
-    height: auto;
+    /*margin-top: 10px;*/
+    /*margin-bottom: 50px;*/
+    width: auto;
+    height: 60px;
+    float: right;
+    margin-right: 5%;
 
 }
 
@@ -190,6 +192,17 @@ body {
     box-sizing: border-box;
 
 
+}
+
+#heatmap-view-species-selection{
+    width: 1290px;
+    height: 50px;
+    margin: 5px 25px 25px 10px;
+    background-color: #ffffff;
+    text-align: justify;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 #trajectory-view-graph {
@@ -352,6 +365,21 @@ a.nav-link, a.nav-link:hover {
 
     z-index: 5;
 
+}
+
+div.nodeTooltip {
+    margin-left: 10px;
+    position: absolute;
+    text-align: center;
+    width: 180px;
+    height: 50px;
+    padding: 10px 2px 2px;
+    font: 12px sans-serif;
+    background: #ffffff;
+    border-radius: 8px;
+    pointer-events: none;
+
+    border: 2px black;
 }
 
 
