@@ -116,17 +116,20 @@ body {
     overflow-x: hidden;
     padding-top: 5px;
     box-shadow: 5px 5px 5px grey;
+    padding-left: 20px;
+    padding-right: 20px;
+
 }
 
 .sidenav a {
     text-decoration: none;
     font-size: 20px;
-    color: #000000;
+    color: #ffffff;
     display: block;
 }
 
 .sidenav a svg path {
-    stroke: #000000 !important;
+    stroke: #ffffff !important;
 }
 
 .sidenav a:hover {
@@ -162,8 +165,10 @@ margin-top: 120px;
     /*margin-bottom: 50px;*/
     width: auto;
     height: 60px;
-    float: right;
-    margin-right: 5%;
+align-self: end;
+    position: fixed;
+    margin-right: 2%;
+    margin-left: 90%;
 
 }
 
@@ -384,4 +389,129 @@ div.nodeTooltip {
 
 
 
+nav {
+    width: 100%;
+    padding: 0 0;
+}
+nav ul {
+    list-style: none;
+    margin-block-end: 0; !important;
+    padding-inline-start: 0;
+}
+nav ul li {
+    display: inline-block;
+}
+nav ul li a {
+    display: block;
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 800;
+    text-transform: uppercase;
+    /*margin: 15px 10px;*/
+    padding: 15px 10px;
+}
+nav ul li a,
+nav ul li a:after,
+nav ul li a:before {
+    transition: all .5s;
+}
+nav ul li a:hover {
+    color: #ffffff;
+}
 
+/* SHIFT */
+
+section {
+    height: 100vh;
+}
+
+nav.shift ul li a {
+    position:relative;
+    z-index: 1;
+}
+nav.shift ul li a:hover {
+    color: #ffffff;
+}
+nav.shift ul li a:after {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    width: 100%;
+    height: 1px;
+    content: '.';
+    color: transparent;
+    background: #ff6212;
+    /*visibility: none;*/
+    opacity: 0;
+    z-index: -1;
+}
+nav.shift ul li a:hover:after {
+    opacity: 1;
+    visibility: visible;
+    height: 100%;
+}
+
+
+#optionModal {
+    width: 200px;
+    height: 200px;
+    padding: 0.5em;
+    z-index: 100;
+}
+
+#nav-button{
+    background-color: unset;
+    border: unset;
+    display: block;
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 800;
+    text-transform: uppercase;
+    /*margin: 15px 10px;*/
+    padding: 15px 10px;
+
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}

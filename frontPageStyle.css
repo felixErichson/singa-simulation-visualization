@@ -44,9 +44,16 @@ img{
     margin-top: 20px;
     width: 20%;
     height: auto;
-    background-color: #185fa8;
+    background-color: #0cac79;
     text-align: center;
     border-radius: 0.25rem;
+}
+
+div .front.selection.div:hover {
+    box-shadow: 5px 5px 5px grey;
+}
+.front.selection.div{
+
 }
 .front.selection.div.tutorial {
     margin-left: 20%;

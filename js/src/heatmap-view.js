@@ -64,14 +64,12 @@ function setHeatmapDropdown() {
 }
 
 function onClickHeatmapDropdown(clickedSpeciesText) {
+
+    $('#nav-option').css('visibility','visible');
     $("#dropdown_button").text("species: " + clickedSpeciesText);
     d3.selectAll('#trajectory-view-heatmap svg').remove();
     d3.select("#play-button").remove();
     d3.selectAll('#heatmap-view-slider svg').remove();
-    const selector = ".nav.nav-tabs.justify-content-center";
-
-    $(selector).removeClass("invisible");
-    $(selector).toggleClass("visible");
 
     setHeatmapRange();
     setHeatMapSvg();
@@ -770,11 +768,20 @@ function setNodeCompartments() {
 }
 
 function drawGraphFromNode() {
+
+    const selector = ".nav.nav-tabs.justify-content-center";
+
+    $(selector).removeClass("invisible");
+    $(selector).toggleClass("visible");
+
     compartmentsOfSelectedNode.length = 0;
     activeComponentIdices.length = 0;
     setNodeCompartments();
     clearHtmlTags();
     sumCurrentNodeData();
     initializeMainContent();
+
+
+
 
 }

@@ -29,6 +29,8 @@ let regEx = new RegExp("\\((\\d+),(\\d+)\\)", "g");
 
 //Functions to read and structure the data into a uniform data format (nestedData)
 
+$('#optionModal').draggable();
+
 /**
  *
  * @param identifier component consisting of compartment_species (cytoplasm_CAMP)
@@ -179,4 +181,16 @@ function getRandomColor() {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+}
+
+function showOptions() {
+    $('#optionModal').css('visibility','visible');
+    // $("#optionModal").show();
+
+}
+
+function hideOptions() {
+    $('#optionModal').css('visibility','hidden');
+    // $("#optionModal").hide();
+
 }
