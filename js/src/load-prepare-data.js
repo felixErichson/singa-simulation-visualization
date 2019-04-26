@@ -58,16 +58,13 @@ function loadFile() {
     if (file) {
         reader.readAsText(file);
     }
-    $('#fileBrowserModal').modal('toggle');
-
 }
 
 
 let currentTime,
     currentCompartment,
     currentNode,
-    parent,
-    currentPosition;
+    parent;
 
 function readDataFromCsv() {
     globalData = d3.csvParse(reader.result);

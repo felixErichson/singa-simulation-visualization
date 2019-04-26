@@ -17,29 +17,30 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
           integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
-    <link href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,700,400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,700,400' rel='stylesheet'
+          type='text/css'>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-            crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
-            integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-
-
-
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 
 </head>
@@ -47,14 +48,14 @@
 <body>
 
 
-
 <div class="sidenav">
     <nav class="shift">
         <ul style="float: left">
             <li>
-                <input type="file" id="upload" name="upload" style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="loadFile()"
-                         accept=".csv, .json"/>
-                <a  id="fileBrowser" href="" onclick="document.getElementById('upload').click(); return false">
+                <input type="file" id="upload" name="upload"
+                       style="visibility: hidden; width: 1px; height: 1px; display: none;" onchange="loadFile()"
+                       accept=".csv, .json"/>
+                <a id="fileBrowser" href="" onclick="document.getElementById('upload').click(); return false">
                     <i class="far fa-folder-open"></i>
                     load file
                 </a>
@@ -65,11 +66,11 @@
 
         <ul style="float: right">
             <li>
-            <a id="nav-option" onclick="showOptions()" style="color: #ffffff; visibility: hidden" >
-                <i class="fas fa-tools" style="margin-right: 3px" ></i>
-                options
-            </a>
-        </li>
+                <a id="nav-option" onclick="showOptions()" style="color: #ffffff; visibility: visible">
+                    <i class="fas fa-tools" style="margin-right: 3px"></i>
+                    options
+                </a>
+            </li>
             <li>
                 <a href="https://www.google.de/" target="_blank">
                     <i class="fas fa-book"></i>
@@ -81,27 +82,29 @@
 </div>
 
 
-<div id="optionModal" class="ui-widget-content" style="position: fixed; visibility: visible" >
+<div id="optionModal" class="ui-widget-content" style="position: fixed; visibility: hidden">
     <p> Options
         <i class="fas fa-times" onclick="hideOptions()" style="float: right"></i>
     </p>
 
     <p>Set the scaling of the heatmap.
-        <a href="#" data-toggle="tooltip" title="dddd" >you probably</a>
 
-
-        <a style="float: right" data-toggle="tooltip" data-html="true" title="<em>Tooltip</em> <u>with</u> <b>HTML</b>"> <i class="fas fa-info-circle" >
-        </i> </a>
     </p>
     <div class="input-group-text">
         <input type="checkbox" aria-label="Checkbox for following text input" name="check"
                value="relative" checked> relative
+        <a style="float: right"> <i class="fas fa-info-circle" style="margin-left: 5px" data-toggle="tooltip"
+                                    data-placement="right" data-html="true"
+                                    title="scaled to the maximum value of a time step"></i></a>
     </div>
 
     <div class="input-group-text">
         <input type="checkbox" aria-label="Checkbox for following text input" name="check"
-               value="absolute"onclick="drawHeatmapLegend()">
+               value="absolute" onclick="drawHeatmapLegend()">
         absolute
+
+        <i class="fas fa-info-circle" style="margin-left: 5px" data-toggle="tooltip" data-placement="right"
+           data-html="true" title="scaled to the maximum value over all time steps"></i>
     </div>
 
 </div>
@@ -113,90 +116,101 @@
 
     </div>
 
-        <div id="trajectory-view-heatmap">
+    <div id="trajectory-view-heatmap">
 
-        </div>
-        <div id="trajectory-view-graph"></div>
-        <div id="heatmap-view-species-selection"></div>
-        <div id="heatmap-view-slider"></div>
-
-    <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
-
-
-
-        <li class="nav-item">
-            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab" aria-controls="home"
-               aria-selected="true">species selection</a>
-        </li>
-
-
-        <li class="nav-item">
-            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#menu-custom-search" role="tab" aria-controls="profile"
-               aria-selected="false">custom search</a>
-        </li>
-
-
-        <li class="nav-item">
-            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#menu-all-trajectories" role="tab"
-               aria-controls="contact" aria-selected="false">all trajectories</a>
-        </li>
-
-    </ul>
-
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel" aria-labelledby="home-tab">
-                <div id="menu-species-selection-search-buttons"></div>
-            <div id="menu-species-selection-species-buttons"></div>
-        </div>
-
-        <div class="tab-pane fade" id="menu-custom-search" role="tabpanel" aria-labelledby="profile-tab">
-            <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
-                <div class="input-group-prepend">
-                </div>
-            </div>
-            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse"
-               data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
-                advanced search
-            </a>
-            <div class="collapse show" id="collapseExample">
-                <div class="card card-body">
-                    <div id="menu-custom-search-creation-area"></div>
-                </div>
-            </div>
-            <div id="menu-custom-search-component-area"></div>
-        </div>
-
-
-        <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
     </div>
-</div>
+    <div id="trajectory-view-graph"></div>
+    <div id="heatmap-view-species-selection"></div>
+    <div id="heatmap-view-slider"></div>
 
-<div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+
+    <div id="trajectory-view-navigation" style="position: absolute; margin-top: 700px; width: 100%">
+        <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
+
+
+            <li class="nav-item">
+                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab"
+                   aria-controls="home"
+                   aria-selected="true">species selection</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#menu-custom-search" role="tab"
+                   aria-controls="profile"
+                   aria-selected="false">custom search</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#menu-all-trajectories" role="tab"
+                   aria-controls="contact" aria-selected="false">all trajectories</a>
+            </li>
+
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel"
+                 aria-labelledby="home-tab">
+                <div id="menu-species-selection-search-buttons"></div>
+                <div id="menu-species-selection-species-buttons"></div>
             </div>
-            <div class="modal-body">
-                <button type="button" class="btn btn-primary" id="exC" onclick="loadExample('csv')" data-dismiss="modal">
-                    example_trajectories.cvs
-                </button>
-                <button type="button" class="btn btn-primary" id="exJ" onclick="loadExample('json')" data-dismiss="modal">
-                    example_trajectories.json
-                </button>
+
+            <div class="tab-pane fade" id="menu-custom-search" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
+                    <div class="input-group-prepend">
+                    </div>
+                </div>
+                <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse"
+                   data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
+                    advanced search
+                </a>
+                <div class="collapse show" id="collapseExample">
+                    <div class="card card-body">
+                        <div id="menu-custom-search-creation-area"></div>
+                    </div>
+                </div>
+                <div id="menu-custom-search-component-area"></div>
+            </div>
+
+
+            <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <button type="button" class="btn btn-primary" id="exC" onclick="loadExample('csv')"
+                            data-dismiss="modal">
+                        example_trajectories.cvs
+                    </button>
+                    <button type="button" class="btn btn-primary" id="exJ" onclick="loadExample('json')"
+                            data-dismiss="modal">
+                        example_trajectories.json
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    $( function() {
-        $( "#optionModal" ).draggable();
-    } );
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    $(function () {
+        $("#optionModal").draggable();
+    });
 
 </script>
 <script src="js/src/singa.simulation.visualization.js"></script>

@@ -1,23 +1,20 @@
 body {
     font: 8px Arial;
-    height: 2000px;
 }
 
 
 /* Center the loader */
 .loader {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: 1;
+    position: fixed;
+    z-index: 2;
+    left: 45%;
+    top: 40%;
     width: 150px;
     height: 150px;
     margin: -75px 0 0 -75px;
     border: 16px solid #f3f3f3;
     border-radius: 50%;
     border-top: 16px solid #0cac79;
-    width: 120px;
-    height: 120px;
     -webkit-animation: spin 2s linear infinite;
     animation: spin 2s linear infinite;
 }
@@ -95,13 +92,17 @@ body {
 }
 
 #loadFileHint{
+    position: fixed;
+    z-index: 9;
     padding: 5px;
     font-size: 15px;
     width: 150px;
     height: 80px;
     border: 3px dashed dimgrey;
-    margin-left: 0;
-    margin-top: 160px;
+    margin-left: -75px;
+    margin-top: 15%;
+    left: 50%;
+
 
 }
 
@@ -143,8 +144,11 @@ body {
 }
 
 .trajectory-view-menu-container {
-margin-left: 10%;
-margin-top: 120px;
+    width: 100%;
+    position: absolute;
+    margin: 120px 0 0 0;
+/*margin-left: 5%;*/
+/*margin-top: 120px;*/
     font-size: 20px; /* Increased text to enable scrolling */
     padding: 0 0;
 }
@@ -173,11 +177,11 @@ align-self: end;
 }
 
 #trajectory-view-heatmap {
-
+    left: 30%;
     height: 520px;
     width: 480px;
     position: absolute;
-    margin: 0 0 10px 10px;
+    margin: 0 0 10px -240px;
     background-color: #ffffff;
     text-align: center;
     -webkit-box-sizing: border-box;
@@ -187,9 +191,11 @@ align-self: end;
 }
 
 #heatmap-view-slider {
+    position: absolute;
+    left: 20%;
     width: 1290px;
     height: 100px;
-    margin: 5px 25px 25px 10px;
+    margin: 570px 25px 25px 10px;
     background-color: #ffffff;
     text-align: justify;
     -webkit-box-sizing: border-box;
@@ -200,9 +206,11 @@ align-self: end;
 }
 
 #heatmap-view-species-selection{
+    position: absolute;
+    left: 20%;
     width: 1290px;
     height: 50px;
-    margin: 5px 25px 25px 10px;
+    margin: 520px 25px 25px 10px;
     background-color: #ffffff;
     text-align: justify;
     -webkit-box-sizing: border-box;
@@ -211,9 +219,11 @@ align-self: end;
 }
 
 #trajectory-view-graph {
+    position: absolute;
+    left: 20%;
     width: 800px;
     height: 520px;
-    margin: 25px 25px 10px 500px;
+    margin: 25px 25px 10px 480px;
     background-color: #ffffff;
     text-align: justify;
     -webkit-box-sizing: border-box;
@@ -317,11 +327,6 @@ a.nav-link, a.nav-link:hover {
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem;
     margin-top: 20px;
-
-}
-
-.nav.nav-tabs.justify-content-center.visible {
-    justify-content: end !important;
 
 }
 
