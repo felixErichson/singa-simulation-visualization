@@ -189,7 +189,7 @@ align-self: end;
 
 #heatmap-view-slider {
 
-    width: 500px;
+    width: 650px;
     height: 100px;
     margin: 50px auto 25px auto;
     background-color: #ffffff;
@@ -200,7 +200,7 @@ align-self: end;
 }
 
 #heatmap-view-species-selection{
-    width: 0;
+    width: max-content;
     height: 50px;
     margin: 0 auto 25px auto;
     background-color: #ffffff;
@@ -214,6 +214,15 @@ align-self: end;
     background-color: #ffffff;
     text-align: justify;
     box-sizing: border-box;
+}
+
+#data-view-table{
+
+    width: 1350px;
+    margin-left: auto;
+    margin-right: auto;
+    /*border: 1px solid #bfbfbf;*/
+    /*border-radius: 0.25rem;*/
 }
 
 .btn-file {
@@ -353,7 +362,7 @@ a.nav-link, a.nav-link:hover {
 
     position: absolute;
     vertical-align: middle;
-    margin: 33px;
+    margin-top: 33px;
 }
 
 .trajectory.view.graph.verticalLine.valueLabel{

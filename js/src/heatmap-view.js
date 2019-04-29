@@ -31,14 +31,13 @@ function setHeatmapDropdown() {
 
     d3.select("#heatmap-view-species-selection")
         .append("div")
-        .attr("class", "btn-group")
+        .attr("class", "mx-auto btn-group")
         .attr("id", "heatmap_dropdown")
-        .style("margin-top", "5px")
-        .style("margin-left", "30%")
+        .style("margin-top", "10px")
         .style("position", "relative")
         .append("button")
         .attr("type", "button")
-        .attr("class", "btn btn-primary dropdown-toogle")
+        .attr("class", "mx-auto btn btn-primary dropdown-toogle")
         .attr("id", "dropdown_button")
         .attr("data-toggle", "dropdown")
         .attr("aria-haspopup", "true")
@@ -101,7 +100,7 @@ function initializeSlider(species) {
     dragedTime = time[0];
     svgSlider = d3.select("#heatmap-view-slider")
         .append("svg")
-        .attr("style", "margin-left: 20%")
+        .attr("style", "margin-left: 50px")
         .attr("width", widthSlider + marginSlider.left + marginSlider.right)
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
@@ -464,7 +463,7 @@ function setHeatmapColor(data) {
 
 function setHeatMapSvg() {
 
-    var zoom = d3.zoom()
+    let zoom = d3.zoom()
         .scaleExtent([1, 10])
         .translateExtent([[-100, -100], [heatwidth + 90, heatheight + 100]])
         .on("zoom", zoomed);
