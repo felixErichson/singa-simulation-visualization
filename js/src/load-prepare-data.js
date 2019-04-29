@@ -33,7 +33,7 @@ function loadExample(fileEnding) {
 function loadFile() {
     d3.select("#loadFileHint").remove();
 
-    d3.select("#trajectory-view-heatmap")
+    d3.select("body")
         .append("div")
         .attr("id", "spinner")
         .attr("class", "spinner-grow text-success" );
@@ -83,7 +83,7 @@ function readDataFromJson() {
 
     prepareNestedDataFromJson(globalData);
     sumData();
-    setHeatmapDropdown();
+    setHeatmapDropdown("#heatmap-view-species-selection", "select species");
 }
 
 function prepareDataFromCsv() {

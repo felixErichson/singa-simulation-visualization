@@ -5,16 +5,16 @@ body {
 
 /* Center the loader */
 .loader {
+    left: 50%;
+    top: 40%;
     position: fixed;
     z-index: 2;
-    left: 45%;
-    top: 40%;
     width: 150px;
     height: 150px;
     margin: -75px 0 0 -75px;
-    border: 16px solid #f3f3f3;
+    border: 8px solid #f3f3f3;
     border-radius: 50%;
-    border-top: 16px solid #0cac79;
+    border-top: 8px solid #0cac79;
     -webkit-animation: spin 2s linear infinite;
     animation: spin 2s linear infinite;
 }
@@ -209,10 +209,10 @@ align-self: end;
 }
 
 #trajectory-view-graph {
+    text-align: center;
     width: 800px;
     height: 520px;
     background-color: #ffffff;
-    text-align: justify;
     box-sizing: border-box;
 }
 
@@ -278,6 +278,11 @@ path {
     margin-left: 5px;
     border-bottom-right-radius: 0.25rem !important;
     border-top-right-radius: 0.25rem !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 300px;
+
 }
 
 .btn.btn-primary:focus {
@@ -314,6 +319,10 @@ a.nav-link, a.nav-link:hover {
 
 .btn-outline-secondary {
     margin-left: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 400px;
 }
 
 .list-group-item.list-group-item-action.list-group-item-success {

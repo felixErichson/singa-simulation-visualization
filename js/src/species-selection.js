@@ -23,19 +23,7 @@ function createSpeciesSelectionMenu() {
         });
     }
 
-    function addSpeciesButton(compartment, species) {
-        d3.select("#compartment_" + compartmentsOfSelectedNode.indexOf((compartment)))
-            .append("div")
-            .attr("class", "col-md-4 center-block")
-            .append("button")
-            .attr("id", getIndexIdentifier(compartment, species))
-            .attr("class", "btn btn-outline-secondary")
-            .attr("type", "button")
-            .text(species)
-            .on("click", function () {
-                onSpeciesButtonClick(this.id)
-            });
-    }
+
 
     function checkEmptyCompartment(compartment) {
         if ($(".col-md-4").parents('#compartment_' + compartmentsOfSelectedNode.indexOf(compartment)).length !== 1) {
@@ -47,9 +35,41 @@ function createSpeciesSelectionMenu() {
 
 }
 
+function addSpeciesButton(compartment, species) {
+    d3.select("#compartment_" + compartmentsOfSelectedNode.indexOf((compartment)))
+        .append("div")
+        .attr("class", "col-md-4 center-block")
+        .append("button")
+        .attr("id", getIndexIdentifier(compartment, species))
+        .attr("class", "btn btn-outline-secondary")
+        .attr("type", "button")
+        .text(species)
+        .on("click", function () {
+            onSpeciesButtonClick(this.id)
+        });
+
+    d3.select("#trajectory-view-graph").append("div").attr("class", "row").attr("id", "selected_Button_area").style("position", "absolute").style("bottom", "205px");
+}
+
 function onSpeciesButtonClick(indexIdentifier) {
     if (activeComponentIdices.length < 2 && getButtonSelector(indexIdentifier).attr("class") === "btn btn-outline-secondary") {
+        d3.select('[id= "' +indexIdentifier +'"]').remove();
+        d3.select("#selected_Button_area")
+            .append("div")
+            .attr("class", "col-xs-4")
+            .append("button")
+            .attr("id", indexIdentifier)
+            .attr("class", "btn btn-outline-secondary")
+            .attr("type", "button")
+            .text(getSpeciesFromIndexIdentifier(indexIdentifier))
+            .on("click", function () {
+                removeLine(indexIdentifier);
+                d3.select(this).remove();
+                addSpeciesButton(getCompartmentFromIndexIdentifier(indexIdentifier), getSpeciesFromIndexIdentifier(indexIdentifier));
+            });
+
         addLine(indexIdentifier);
+
     } else if (getButtonSelector(indexIdentifier).attr("class") === "btn btn-outline-secondary active") {
         removeLine(indexIdentifier)
     }
