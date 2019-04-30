@@ -194,3 +194,25 @@ function hideOptions() {
     // $("#optionModal").hide();
 
 }
+
+/**
+ *
+ * @param text also html text possible
+ */
+function generateTooltip(text) {
+    infoTooltip.html(text)
+        .style("left", (d3.event.pageX + 20) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+}
+
+function showTooltip() {
+    infoTooltip.transition()
+        .duration(200)
+        .style("opacity", .8);
+}
+
+function hideTooltip() {
+    infoTooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+}

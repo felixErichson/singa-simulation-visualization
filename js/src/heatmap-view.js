@@ -7,8 +7,8 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
 
-let tooltip = d3.select("body").append("div")
-    .attr("class", "nodeTooltip")
+let infoTooltip = d3.select("body").append("div")
+    .attr("class", "infoTooltip")
     .style("opacity", 0);
 
 let dragedTime;
@@ -29,7 +29,7 @@ function setHeatmapDropdown(container, text) {
     d3.selectAll(".dropdown-menu").remove();
     d3.selectAll(".dropdown-item").remove();
 
-     d3.select(".loader").remove();
+    d3.select(".loader").remove();
 
 
     d3.select(container)
@@ -45,7 +45,9 @@ function setHeatmapDropdown(container, text) {
         .attr("data-toggle", "dropdown")
         .attr("aria-haspopup", "true")
         .attr("aria-expanded", "false")
+
         .text(text);
+
 
     d3.select("#heatmap_dropdown")
         .append("div")
@@ -454,15 +456,20 @@ function getRangeOfSpecies(species, compartment) {
             }
         })
     });
+
+    if (minValue === Number.MAX_VALUE){
+        return [0,0]
+    }
     return [minValue, maxValue];
 }
 
 function setHeatmapColor(data) {
     if ($('input[name="check"]:checked').val() === "relative") {
 
+
         return d3.scaleLinear()
-            .range(["#ffffff", "#f1ff7f", "#0cac79"])
-            .domain([-1, d3.min(data, function (d) {
+            .range(["#f1ff7f", "#0cac79"])
+            .domain([d3.min(data, function (d) {
                 if (d.value > -1) {
                     return d.value
                 }
@@ -473,9 +480,10 @@ function setHeatmapColor(data) {
             })])
 
     } else {
+        console.log(concentrationRange[0], concentrationRange[1]);
         return d3.scaleLinear()
-            .range(["#ffffff", "#f1ff7f", "#0cac79"])
-            .domain([-1, concentrationRange[0], concentrationRange[1]])
+            .range(["#f1ff7f", "#0cac79"])
+            .domain([ concentrationRange[0], concentrationRange[1]])
     }
 }
 
@@ -491,9 +499,10 @@ function setHeatMapSvg() {
         .append("svg")
         .attr("width", 450)
         .attr("height", 450)
+        .style("border", "1px solid black")
         .append("g")
         .attr("transform",
-            "translate(15,25)")
+            "translate(0,0)")
         .attr("class", "PiYG")
         .call(zoom);
 
@@ -525,9 +534,10 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     vertices.length = 0;
     vesiclePositions.length = 0;
 
+    let maxDomain =  Math.sqrt(allNodes.length)*100;
 
-    xScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
-    yScale = d3.scaleLinear().domain([0, 1000]).range([0, 400]);
+    xScale = d3.scaleLinear().domain([0, maxDomain]).range([0, 450]);
+    yScale = d3.scaleLinear().domain([0, maxDomain]).range([0, 450]);
 
     nestedData.get(currentTimeStep).keys().forEach(function (node) {
 
@@ -536,7 +546,6 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             let y = nestedData.get(currentTimeStep).get(node).get("y");
 
             vertices.push([xScale(x), yScale(y)]);
-
         } else {
 
             let x = nestedData.get(currentTimeStep).get(node).get("x");
@@ -547,7 +556,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     });
 
     var voronoi = d3.voronoi()
-        .extent([[0, 0], [xScale(1000), yScale(1000)]]);
+        .extent([[0, 0], [xScale(maxDomain), yScale(maxDomain)]]);
 
     var paths = heatmapSvg.selectAll("path")
         .data(voronoi(vertices).polygons())
@@ -571,22 +580,13 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .style("stroke", "black")
                 .style("stroke-width", "1");
             mouseOverNode(this, d, species, currentTimeStep);
-
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
+            showTooltip();
 
             if (d.value === -1) {
-                tooltip.html('Node (' + d.x + ',' + d.y + ')' + "<br/>" + "value: " + "none")
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                generateTooltip('Node (' + d.x + ',' + d.y + ')' + "<br/>" + "value: " + "none");
             } else {
-                tooltip.html('Node (' + d.x + ',' + d.y + ')' + "<br/>" + "value: " + d.value)
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                generateTooltip('Node (' + d.x + ',' + d.y + ')' + "<br/>" + "value: " + d.value);
             }
-
-
         })
         .on("mouseleave", function () {
             d3.select(this)
@@ -594,18 +594,19 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
             d3.select("#menu-heatmap-data")
                 .selectAll("p").remove();
-
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+            hideTooltip();
         });
 
-    for (let i = 0; i < 100; i++) {
+    for (let i in allNodes){
 
         d3.select(".path" + i)
             .datum(heatmapData[i])
             .style("fill", function (d) {
-                return heatmapColor(d.value)
+                if(d.value !== -1){
+                    return heatmapColor(d.value)
+                } else {
+                    return "#fff"
+                }
             });
     }
 
@@ -643,27 +644,16 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
             }).on("mouseover", function () {
             d3.select(this).style("stroke-width", "2px").style("stroke", "black");
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-
+            showTooltip();
             if (vesicleData[i].value === -1) {
-                tooltip.html('Vesicle ' + i + "<br/>" + "value: " + "none")
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                generateTooltip('Vesicle ' + i + "<br/>" + "value: " + "none");
             } else {
-                tooltip.html('Vesicle ' + i + "<br/>" + "value: " + vesicleData[i].value)
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                generateTooltip('Vesicle ' + i + "<br/>" + "value: " + vesicleData[i].value);
             }
-
 
         }).on("mouseleave", function () {
             d3.select(this).style("stroke-width", "0").style("stroke", "unset");
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-
+            hideTooltip();
         })
     }
 
@@ -673,14 +663,22 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             d3.select("#membrane" + i)
                 .datum(vesicleData[i])
                 .style("fill", function (d) {
-                    return heatmapColor(d.value)
+                    if(d.value !== -1){
+                        return heatmapColor(d.value)
+                    } else {
+                        return "#fff"
+                    }
                 });
         } else if (getCompartmentFromSpecies(species) === "vesicle lumen") {
 
             d3.select("#lumen" + i)
                 .datum(vesicleData[i])
                 .style("fill", function (d) {
-                    return heatmapColor(d.value)
+                    if(d.value !== -1){
+                        return heatmapColor(d.value)
+                    } else {
+                        return "#fff"
+                    }
                 });
         }
     }
