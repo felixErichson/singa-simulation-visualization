@@ -39,6 +39,15 @@ function createCustomSearchMenu() {
                 clearSearch();
                 filterComponents();
                 searchIdentifier++;
+            })
+            .on("mouseover", function () {
+                generateTooltip("Submit the search and highlight species below." +
+                    "<br> Sums up the found concentrations of the species." +
+                    "<br> Generates a button in \"species selection\"");
+                showTooltip();
+            })
+            .on("mouseleave", function () {
+                hideTooltip();
             });
 
         d3.select("#menu-custom-search-creation-area")
@@ -46,7 +55,8 @@ function createCustomSearchMenu() {
             .attr("type", "text")
             .attr("class", "form-control")
             .attr("style", "width : 300px !important ;margin-left : 10px !important ; display : -webkit-inline-box !important")
-            .attr("id", "menu-custom-search-title");
+            .attr("id", "menu-custom-search-title")
+            .attr("placeholder","add search name");
     }
 
     function addCompartmentSelection() {
@@ -84,7 +94,8 @@ function createCustomSearchMenu() {
             .append("input")
             .attr("type", "text")
             .attr("class", "form-control")
-            .attr("id", "menu-custom-search-refinement-term-" + globalSearchIterator);
+            .attr("id", "menu-custom-search-refinement-term-" + globalSearchIterator)
+            .attr("placeholder", "add search pattern");
 
         d3.select(".form-row.nr" + globalSearchIterator)
             .append("button")
@@ -92,11 +103,16 @@ function createCustomSearchMenu() {
             .attr("class", "btn btn-outline-secondary")
             .attr("type", "button")
             .attr("style", "margin-left : 10px !important; margin-bottom : 15px !important ")
-            //.text("remove")
             .on("click", function () {
                 let attributeText = $(this).attr("id");
                 let identifier = attributeText.substr(attributeText.lastIndexOf("-") + 1);
                 d3.select("#menu-custom-search-refinement-" + identifier).html("");
+            })     .on("mouseover", function () {
+            generateTooltip("remove refinement");
+            showTooltip();
+        })
+            .on("mouseleave", function () {
+                hideTooltip();
             })
             .append("i")
             .attr("class", "fas fa-times");

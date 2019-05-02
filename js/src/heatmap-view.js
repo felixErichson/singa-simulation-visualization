@@ -1,3 +1,5 @@
+//TODO CSV einlesen ohne heatmap
+
 const marginSlider = {top: 50, right: 50, bottom: 0, left: 50},
     widthSlider = 600 - marginSlider.left - marginSlider.right,
     heightSlider = 200 - marginSlider.top - marginSlider.bottom;
@@ -23,7 +25,7 @@ let comp;
 let spec;
 let legendSvg;
 
-function setHeatmapDropdown(container, text) {
+function setHeatmapDropdown(container, text, csv) {
 
     d3.selectAll(".mx-auto").remove();
     d3.selectAll(".dropdown-menu").remove();
@@ -62,12 +64,12 @@ function setHeatmapDropdown(container, text) {
             .text(allSpecies[i])
             .on("click", function () {
                 let clickedSpeciesText = $(this).text();
-                onClickHeatmapDropdown(clickedSpeciesText);
+                onClickHeatmapDropdown(clickedSpeciesText, csv);
             })
     }
 }
 
-function onClickHeatmapDropdown(clickedSpeciesText) {
+function onClickHeatmapDropdown(clickedSpeciesText, csv) {
 
 
     $('#nav-option').css('visibility', 'visible');
@@ -77,10 +79,27 @@ function onClickHeatmapDropdown(clickedSpeciesText) {
     d3.select("#play-button").remove();
     d3.selectAll('#heatmap-view-slider svg').remove();
 
+    if(csv === "csv"){
+
+        drawGraphFromNode();
+        appendPlayButton();
+        drawSilder(clickedSpeciesText);
+        setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText, "csv");
+    }
+
     d3.select('#trajectory-view-heatmap')
         .append("i")
         .style("font-size", "xx-large")
-        .attr("class", "heatmapHeading fas fa-th");
+        .attr("class", "heatmapHeading fas fa-th")
+        .on("mouseover", function () {
+            generateTooltip('The heatmap represents a part of a cell. <br>' +
+                ' The color gradient shows the change in concentration of individual species. <br> ' +
+                '<b>Clicking</b> on the contents allows to see the concentration changes in a line plot.<br>')
+            showTooltip();
+        })
+        .on("mouseleave", function () {
+            hideTooltip();
+        } );
 
     d3.select('#trajectory-view-heatmap')
         .append("h2")
@@ -825,7 +844,15 @@ function drawGraphFromNode() {
         .append("i")
         .attr("class", "graphHeading")
         .style("font-size", "xx-large")
-        .attr("class", "fas fa-chart-line");
+        .attr("class", "fas fa-chart-line")
+        .on("mouseover", function () {
+            generateTooltip("The plot shows the change in concentration over" +
+                "<br> the entire period of one or more species. ");
+            showTooltip();
+        })
+        .on("mouseleave", function () {
+            hideTooltip();
+        });
 
     d3.select('#trajectory-view-graph')
         .append("h2")

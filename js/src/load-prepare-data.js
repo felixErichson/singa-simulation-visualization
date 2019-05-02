@@ -72,7 +72,7 @@ function readDataFromCsv() {
     prepareDataFromCsv();
     prepareNestedDataFromCsv(globalData);
     sumData();
-    setHeatmapDropdown();
+    setHeatmapDropdown("#heatmap-view-species-selection", "select species", "csv");
 
 }
 
@@ -121,13 +121,13 @@ function prepareNestedDataFromJson(data) {
 
                 if (parent === "data") {
                     currentNode = currentKey;
-                    //if (!currentNode.startsWith("v")) { //TODO vesicle is ignored here
+
                     if (!allNodes.includes(currentKey)) {
                         allNodes.push(currentKey)
 
                     }
                     nestedData.get(currentTime).set(currentNode, d3.map())
-                    //}
+
                 }
 
                 if (parent === "concentrations") {
@@ -198,7 +198,7 @@ function prepareNestedDataFromCsv(data) {
 }
 
 function sumData() {
-
+console.log(nestedData);
     let rememberSpecies = [];
     allCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {

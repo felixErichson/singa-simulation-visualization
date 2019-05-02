@@ -93,9 +93,8 @@
     <div class="input-group-text">
         <input type="checkbox" aria-label="Checkbox for following text input" name="check"
                value="relative" checked> relative
-        <a style="float: right"> <i class="fas fa-info-circle" style="margin-left: 5px"
-                                    onmouseover="generateTooltip('scaled to the maximum value of a time step');
-                                    showTooltip()" onmouseleave="hideTooltip()"></i></a>
+        <a style="float: right"> <i id="relative_scale_info" class="fas fa-info-circle" style="margin-left: 5px"
+                                    ></i></a>
     </div>
 
     <div class="input-group-text">
@@ -103,8 +102,8 @@
                value="absolute" onclick="drawHeatmapLegend()">
         absolute
 
-        <i class="fas fa-info-circle" style="margin-left: 5px" data-toggle="tooltip" data-placement="right"
-           data-html="true" title="scaled to the maximum value over all time steps"></i>
+        <i class="fas fa-info-circle" style="margin-left: 5px"
+          id=absolute_scale_info></i>
     </div>
 
 </div>

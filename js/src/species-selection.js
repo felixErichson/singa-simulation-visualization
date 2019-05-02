@@ -44,13 +44,15 @@ function addSpeciesButton(compartment, species) {
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
         .text(species)
-
         .on("click", function () {
             onSpeciesButtonClick(this.id)
-        })   .attr("data-toggle","tooltip")
-        .attr("data-placement","right")
-        .attr("data-html","true")
-        .attr("title", species);
+        })
+        .on("mouseover", function () {
+            generateTooltip(species);
+            showTooltip()
+        }).on("mouseleave", function () {
+            hideTooltip();
+    });
 
     d3.select("#trajectory-view-graph").append("div").attr("class", "row").attr("id", "selected_Button_area").style("position", "absolute").style("bottom", "205px");
 }
@@ -69,13 +71,20 @@ function onSpeciesButtonClick(indexIdentifier) {
             .attr("class", "btn btn-outline-secondary")
             .attr("type", "button")
             .text(getSpeciesFromIndexIdentifier(indexIdentifier))
-            .attr("data-toggle","tooltip")
-            .attr("data-placement","top")
-            .attr("title", getSpeciesFromIndexIdentifier(indexIdentifier))
             .on("click", function () {
                 removeLine(indexIdentifier);
                 d3.select(this).remove();
                 addSpeciesButton(getCompartmentFromIndexIdentifier(indexIdentifier), getSpeciesFromIndexIdentifier(indexIdentifier));
+            })
+            .on("click", function () {
+                onSpeciesButtonClick(this.id)
+            })
+            .on("mouseover", function () {
+                generateTooltip(getSpeciesFromIndexIdentifier(indexIdentifier));
+                showTooltip()
+            })
+            .on("mouseleave", function () {
+            hideTooltip();
             });
 
         addLine(indexIdentifier);

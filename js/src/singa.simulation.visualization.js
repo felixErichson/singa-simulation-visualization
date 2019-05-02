@@ -91,13 +91,13 @@ function getIndexIdentifier(selectedCompartment, selectedSpecies) {
  * @return compartment as string
  */
 function getCompartmentFromSpecies(species) {
-    let compartment = "";
+    let compartment = [];
     //console.log(componentCombinations);
     componentCombinations.forEach(function (currentTrajectory) {
 
         //console.log(currentTrajectory);
         if (currentTrajectory.split("_")[1] === species) {
-            compartment = currentTrajectory.split("_")[0];
+            compartment.push(currentTrajectory.split("_")[0]);
         }
     });
     return compartment;
@@ -207,8 +207,9 @@ function generateTooltip(text) {
 
 function showTooltip() {
     infoTooltip.transition()
-        .duration(200)
-        .style("opacity", .8);
+        .duration(500)
+        .style("z-index", 100)
+        .style("opacity", .9);
 }
 
 function hideTooltip() {
@@ -216,3 +217,52 @@ function hideTooltip() {
         .duration(500)
         .style("opacity", 0);
 }
+
+d3.select("#home-tab")
+    .on("mouseover", function () {
+    generateTooltip(" all species are represented as " +
+        "<br> buttons to their assigned compartments. " +
+        "<br> Click the buttons to show line chart" )
+    showTooltip()
+    })
+    .on("mouseleave", function () {
+        hideTooltip()
+    });
+
+d3.select("#profile-tab")
+    .on("mouseover", function () {
+        generateTooltip(" Search patterns and summ data. <br>" +
+            "Button is created in species selection.")
+        showTooltip()
+    })
+    .on("mouseleave", function () {
+        hideTooltip()
+    });
+
+
+d3.select("#contact-tab")
+    .on("mouseover", function () {
+        generateTooltip("Get an overview of all trajectories in a node.")
+        showTooltip()
+    })
+    .on("mouseleave", function () {
+        hideTooltip()
+    });
+
+d3.select("#relative_scale_info")
+    .on("mouseover", function () {
+        generateTooltip("scaled to the maximum value of a time step")
+        showTooltip()
+    })
+    .on("mouseleave", function () {
+        hideTooltip()
+    });
+
+d3.select("#absolute_scale_info")
+    .on("mouseover", function () {
+        generateTooltip("scaled to the maximum value over all time steps")
+        showTooltip()
+    })
+    .on("mouseleave", function () {
+        hideTooltip()
+    });
