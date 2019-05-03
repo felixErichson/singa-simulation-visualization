@@ -19,6 +19,7 @@ let componentCombinations = [],
     heatmapSvg,
     searchButtonDataArray = [],
     heatmapData = [],
+    nestedHeatmapData,
     heatmapXRange = [],
     heatmapYRange = [],
     playButton,
@@ -220,9 +221,10 @@ function hideTooltip() {
 
 d3.select("#home-tab")
     .on("mouseover", function () {
-    generateTooltip(" all species are represented as " +
-        "<br> buttons to their assigned compartments. " +
-        "<br> Click the buttons to show line chart" )
+    generateTooltip(" All species are represented as " +
+        "<br> buttons to their assigned compartment. " +
+        "<br> Click the buttons to show " +
+        "<br>concentration change as line plot" );
     showTooltip()
     })
     .on("mouseleave", function () {
@@ -232,7 +234,7 @@ d3.select("#home-tab")
 d3.select("#profile-tab")
     .on("mouseover", function () {
         generateTooltip(" Search patterns and summ data. <br>" +
-            "Button is created in species selection.")
+            "Button is created in species selection.");
         showTooltip()
     })
     .on("mouseleave", function () {
@@ -242,7 +244,7 @@ d3.select("#profile-tab")
 
 d3.select("#contact-tab")
     .on("mouseover", function () {
-        generateTooltip("Get an overview of all trajectories in a node.")
+        generateTooltip("Get an overview of all trajectories in a node.");
         showTooltip()
     })
     .on("mouseleave", function () {
@@ -251,7 +253,7 @@ d3.select("#contact-tab")
 
 d3.select("#relative_scale_info")
     .on("mouseover", function () {
-        generateTooltip("scaled to the maximum value of a time step")
+        generateTooltip("scaled to the maximum value of a time step");
         showTooltip()
     })
     .on("mouseleave", function () {
@@ -260,7 +262,7 @@ d3.select("#relative_scale_info")
 
 d3.select("#absolute_scale_info")
     .on("mouseover", function () {
-        generateTooltip("scaled to the maximum value over all time steps")
+        generateTooltip("scaled to the maximum value over all time steps");
         showTooltip()
     })
     .on("mouseleave", function () {

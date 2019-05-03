@@ -36,7 +36,7 @@ function loadFile() {
     d3.select("body")
         .append("div")
         .attr("id", "spinner")
-        .attr("class", "spinner-grow text-success" );
+        .attr("class", "spinner-grow text-success");
 
     resetGlobalArrays();
     btnAllTrajectoriesVisible();
@@ -104,6 +104,8 @@ function prepareDataFromCsv() {
     });
 }
 
+let currentSpecies;
+
 function prepareNestedDataFromJson(data) {
 
     for (let currentKey in data) {
@@ -130,17 +132,22 @@ function prepareNestedDataFromJson(data) {
 
                 }
 
-                if (parent === "concentrations") {
+                if (parent === "subsections") {
                     currentCompartment = currentKey;
                     if (!allCompartments.includes(currentKey)) {
                         allCompartments.push(currentKey);
 
                     }
-                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) {
                         nestedData.get(currentTime).get(currentNode).set(currentCompartment, d3.map())
                     }
                 }
 
+                if (currentKey === "positions") {
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) {
+                        nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+                    }
+                }
                 const grandparent = parent;
                 parent = currentKey;
                 prepareNestedDataFromJson(data[currentKey]);
@@ -148,25 +155,24 @@ function prepareNestedDataFromJson(data) {
 
             } else {
 
-                if (currentKey === "time-unit") {
-
-                    timeUnit = data[currentKey];
-
-                } else if (currentKey === "concentration-unit") {
-
-                    concentrationUnit = data[currentKey]
-                } else if (parent !== "position") {
+                if (parent === "concentrations") {
+                    currentSpecies = currentKey;
                     if (!allSpecies.includes(currentKey)) {
                         allSpecies.push(currentKey);
                     }
-                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
+                    if (nestedData.get(currentTime).get(currentNode) !== undefined) {
                         nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
+
                     }
-                } else {
-                    if (nestedData.get(currentTime).get(currentNode) !== undefined) { //TODO vesicle is ignored here
-                        nestedData.get(currentTime).get(currentNode).set(currentKey, data[currentKey]);
-                    }
+
                 }
+
+                if (currentKey === "time-unit") {
+                    timeUnit = data[currentKey];
+                } else if (currentKey === "concentration-unit") {
+                    concentrationUnit = data[currentKey]
+                }
+
             }
         }
     }
@@ -198,7 +204,6 @@ function prepareNestedDataFromCsv(data) {
 }
 
 function sumData() {
-console.log(nestedData);
     let rememberSpecies = [];
     allCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {
@@ -215,7 +220,7 @@ console.log(nestedData);
             })
         })
     });
-      console.log(componentCombinations);
+
 }
 
 
@@ -223,7 +228,7 @@ function sumCurrentNodeData() {
     nodeComponentCombinations.length = 0;
     let rememberSpecies = [];
     compartmentsOfSelectedNode.forEach(function (compartment) {
-        //console.log(compartment);
+
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
                 if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
