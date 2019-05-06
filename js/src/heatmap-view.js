@@ -432,36 +432,39 @@ function getHeatmapData(currentTimeStep, species) {
     nestedData.get(currentTimeStep).keys().forEach(function (node) {
         if (!node.startsWith("v")) {
             nestedData.get(currentTimeStep).get(node).keys().forEach(function (compartment) {
-                if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
-                    if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
+                if (nestedData.get(currentTimeStep).get(node).get(compartment).get("positions").length < 2) {
+                    if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
+                        if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
 
-                        obj = {
-                            compartment: compartment,
-                            x: node.split(regEx)[1],
-                            y: node.split(regEx)[2],
-                            value: 0
-                        };
-                        heatmapData.push(obj);
+                            obj = {
+                                compartment: compartment,
+                                x: node.split(regEx)[1],
+                                y: node.split(regEx)[2],
+                                value: 0
+                            };
+                            heatmapData.push(obj);
+                        } else {
+                            obj = {
+                                compartment: compartment,
+                                x: node.split(regEx)[1],
+                                y: node.split(regEx)[2],
+                                value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
+                            };
+                            heatmapData.push(obj);
+                        }
+
                     } else {
                         obj = {
                             compartment: compartment,
                             x: node.split(regEx)[1],
                             y: node.split(regEx)[2],
-                            value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
+                            value: -1
                         };
                         heatmapData.push(obj);
+
                     }
-
-                } else {
-                    obj = {
-                        compartment: compartment,
-                        x: node.split(regEx)[1],
-                        y: node.split(regEx)[2],
-                        value: -1
-                    };
-                    heatmapData.push(obj);
-
                 }
+
             })
 
         }
@@ -479,6 +482,7 @@ function getHeatmapData(currentTimeStep, species) {
         .map(heatmapData);
     console.log(nestedData);
     console.log(nestedHeatmapData);
+    console.log("+++", heatmapData);
 }
 
 function getRangeOfSpecies(species, compartment) {
@@ -633,10 +637,12 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             return "path" + i
         })
         .attr("d", function (d) {
+            console.log(d);
             return "M" + d.join("L") + "Z";
         })
-        .on("click", function (d) {
 
+        .on("click", function (d) {
+            console.log(d);
             selectedNode = "n(" + d.x + "," + d.y + ")";
             drawGraphFromNode();
             getIndexIdentifier(getCompartmentFromSpecies(species), species);
@@ -645,7 +651,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
         })
         .on("mouseover", function (d) {
-
+            console.log(d);
             d3.select(this)
                 .style("stroke", "black")
                 .style("stroke-width", "1");
@@ -667,8 +673,8 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             hideTooltip();
         });
 
-
     for (let i in valuesOfConcentration) {
+        console.log(i);
         d3.select(".path" + i)
             .datum(valuesOfConcentration[i].get(species))
             .style("fill", function (d) {
@@ -679,7 +685,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     return "#fff"
                 }
 
-            });
+            }).datum(heatmapData[i])
     }
 
     for (let i in vesiclePositions) {
@@ -688,7 +694,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             .attr("id", "membrane" + i)
             .attr("cx", vesiclePositions[i][0])
             .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2]+2)
+            .attr("r", vesiclePositions[i][2] + 2)
             .style("stroke", "black")
             .style("stroke-width", "1px")
             .style("fill", "white");
@@ -727,42 +733,41 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             d3.select(this).style("stroke-width", "0").style("stroke", "unset");
             hideTooltip();
         })
-     }
+    }
 
 
     for (let i = 0; i < vesiclePositions.length; i++) {
 
-    let vesicleCompartments = getCompartmentFromSpecies(species);
+        let vesicleCompartments = getCompartmentFromSpecies(species);
 
-    vesicleCompartments.forEach(function (compartment) {
-        relativeScaleAxis(vesicleData);
-        if (compartment === "vesicle membrane") {
-            d3.select("#membrane" + i)
-                .datum(vesicleData[i])
-                .style("fill", function (d) {
+        vesicleCompartments.forEach(function (compartment) {
+            relativeScaleAxis(vesicleData);
+            if (compartment === "vesicle membrane") {
+                d3.select("#membrane" + i)
+                    .datum(vesicleData[i])
+                    .style("fill", function (d) {
 
-                    if (d.value !== -1) {
-                        return heatmapColor(d.value)
-                    } else {
-                        return "#fff"
-                    }
-                });
-        } else if ( compartment === "vesicle lumen") {
+                        if (d.value !== -1) {
+                            return heatmapColor(d.value)
+                        } else {
+                            return "#fff"
+                        }
+                    });
+            } else if (compartment === "vesicle lumen") {
 
-            d3.select("#lumen" + i)
-                .datum(vesicleData[i])
-                .style("fill", function (d) {
-                    if (d.value !== -1) {
-                        return heatmapColor(d.value)
-                    } else {
-                        return "#fff"
-                    }
-                });
-        }
+                d3.select("#lumen" + i)
+                    .datum(vesicleData[i])
+                    .style("fill", function (d) {
+                        if (d.value !== -1) {
+                            return heatmapColor(d.value)
+                        } else {
+                            return "#fff"
+                        }
+                    });
+            }
 
 
-
-    })
+        })
 
 
     }

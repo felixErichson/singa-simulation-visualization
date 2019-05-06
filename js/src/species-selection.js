@@ -16,7 +16,7 @@ function createSpeciesSelectionMenu() {
     }
 
     function assignSpeciesButtonsToCompartment(compartment) {
-        nodeComponentCombinations.forEach(function (identifier) {
+        Object.keys(reducedNodeData).forEach(function (identifier) {
             if (getCompartmentFromStringIdentifier(identifier) === compartment) {
                 addSpeciesButton(compartment, getSpeciesFromStringIdentifier(identifier))
             }

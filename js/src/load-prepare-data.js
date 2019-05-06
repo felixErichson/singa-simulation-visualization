@@ -171,9 +171,9 @@ function prepareNestedDataFromJson(data) {
                     timeUnit = data[currentKey];
                 } else if (currentKey === "concentration-unit") {
                     concentrationUnit = data[currentKey]
-                } else if (currentKey === "simulation-width"){
+                } else if (currentKey === "simulation-width") {
                     simulationWidth = data[currentKey]
-                } else if (currentKey === "simulation-height"){
+                } else if (currentKey === "simulation-height") {
                     simulationHeight = data[currentKey]
                 }
 
@@ -229,18 +229,20 @@ function sumData() {
 
 
 function sumCurrentNodeData() {
-    nodeComponentCombinations.length = 0;
-    let rememberSpecies = [];
+
+
     compartmentsOfSelectedNode.forEach(function (compartment) {
 
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
-                if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
-                    rememberSpecies.push(species);
+                if (nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
                     reducedNodeData[compartment + "_" + species] = filterData(compartment, species);
-                    nodeComponentCombinations.push(compartment + "_" + species);
+
+
                 }
             })
         })
-    })
+    });
+  console.log(Object.keys(reducedNodeData));
+
 }

@@ -3,7 +3,6 @@
 const color = ['#d95f02', '#7570b3', '#e7298a'];
 
 let componentCombinations = [],
-    nodeComponentCombinations = [],
     reducedNodeData = [],
     activeComponentIdices = [],
     time = [],
