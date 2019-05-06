@@ -24,7 +24,9 @@ let componentCombinations = [],
     heatmapYRange = [],
     playButton,
     heatmapColor,
-    nestedData;
+    nestedData,
+    simulationWidth,
+    simulationHeight;
 
 let regEx = new RegExp("\\((\\d+),(\\d+)\\)", "g");
 

@@ -572,14 +572,12 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     let yScale;
 
     let hlp = false;
-    let ypos;
+    let yPositionReminder;
     vertices.length = 0;
     vesiclePositions.length = 0;
 
-    let maxDomain = Math.sqrt(allNodes.length) * 100;
-
-    xScale = d3.scaleLinear().domain([0, maxDomain]).range([0, 450]);
-    yScale = d3.scaleLinear().domain([0, maxDomain]).range([0, 450]);
+    xScale = d3.scaleLinear().domain([0, simulationWidth]).range([0, 450]);
+    yScale = d3.scaleLinear().domain([0, simulationHeight]).range([0, 450]);
 
     nestedData.get(currentTimeStep).keys().forEach(function (node) {
         nestedData.get(currentTimeStep).get(node).keys().forEach(function (compartment) {
@@ -596,16 +594,14 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             } else {
 
                 let positions = nestedData.get(currentTimeStep).get(node).get(compartment).get("positions");
-                console.log(positions);
                 positions.forEach(function (position) {
 
                     if (hlp === false) {
-                        ypos = position.y;
+                        yPositionReminder = position.y;
                         hlp = true;
 
                     } else if (hlp === true) {
-                        vesiclePositions.push([xScale(position.x), yScale(ypos), xScale(position.y) - xScale(ypos)]);
-                        console.log(vesiclePositions.push([xScale(position.x), yScale(ypos), xScale(position.y) - xScale(ypos)]))
+                        vesiclePositions.push([xScale(position.x), yScale(yPositionReminder), xScale(position.y) - xScale(yPositionReminder)]);
                         hlp = false;
                     }
                 })
@@ -627,7 +623,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     });
 
     var voronoi = d3.voronoi()
-        .extent([[0, 0], [xScale(maxDomain), yScale(maxDomain)]]);
+        .extent([[0, 0], [xScale(simulationWidth), yScale(simulationHeight)]]);
 
     // console.log(vertices);
     var paths = heatmapSvg.selectAll("path")
@@ -640,6 +636,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             return "M" + d.join("L") + "Z";
         })
         .on("click", function (d) {
+
             selectedNode = "n(" + d.x + "," + d.y + ")";
             drawGraphFromNode();
             getIndexIdentifier(getCompartmentFromSpecies(species), species);
@@ -648,6 +645,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
         })
         .on("mouseover", function (d) {
+
             d3.select(this)
                 .style("stroke", "black")
                 .style("stroke-width", "1");
@@ -685,13 +683,12 @@ function drawHeatmapRectangles(currentTimeStep, species) {
     }
 
     for (let i in vesiclePositions) {
-        console.log(vesiclePositions);
 
         heatmapSvg.append("circle")
             .attr("id", "membrane" + i)
             .attr("cx", vesiclePositions[i][0])
             .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2])
+            .attr("r", vesiclePositions[i][2]+2)
             .style("stroke", "black")
             .style("stroke-width", "1px")
             .style("fill", "white");
@@ -700,7 +697,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             .attr("id", "lumen" + i)
             .attr("cx", vesiclePositions[i][0])
             .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2] + 3)
+            .attr("r", vesiclePositions[i][2])
             .style("stroke", "black")
             .style("stroke-width", "1px")
             .style("fill", "white");
@@ -709,18 +706,18 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             .attr("id", "v" + i)
             .attr("cx", vesiclePositions[i][0])
             .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2] + 4)
+            .attr("r", vesiclePositions[i][2] + 3)
             .style("fill", "black")
             .style("fill-opacity", "0.0")
             .on("click", function () {
                 selectedNode = "v" + i;
                 drawGraphFromNode();
                 setChartTitle("Vesicle " + i);
-                onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
+                onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
             }).on("mouseover", function () {
             d3.select(this).style("stroke-width", "2px").style("stroke", "black");
             showTooltip();
-            if (vesicleData[i].value === undefined) {
+            if (vesicleData[i].value === -1) {
                 generateTooltip('Vesicle ' + i + "<br/>" + "value: " + "none");
             } else {
                 generateTooltip('Vesicle ' + i + "<br/>" + "value: " + vesicleData[i].value);
@@ -730,21 +727,27 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             d3.select(this).style("stroke-width", "0").style("stroke", "unset");
             hideTooltip();
         })
-    }
+     }
 
-    for (let i = 0; i < 10; i++) {
+
+    for (let i = 0; i < vesiclePositions.length; i++) {
+
+    let vesicleCompartments = getCompartmentFromSpecies(species);
+
+    vesicleCompartments.forEach(function (compartment) {
         relativeScaleAxis(vesicleData);
-        if (getCompartmentFromSpecies(species) === "vesicle membrane") {
+        if (compartment === "vesicle membrane") {
             d3.select("#membrane" + i)
                 .datum(vesicleData[i])
                 .style("fill", function (d) {
+
                     if (d.value !== -1) {
                         return heatmapColor(d.value)
                     } else {
                         return "#fff"
                     }
                 });
-        } else if (getCompartmentFromSpecies(species) === "vesicle lumen") {
+        } else if ( compartment === "vesicle lumen") {
 
             d3.select("#lumen" + i)
                 .datum(vesicleData[i])
@@ -756,6 +759,12 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     }
                 });
         }
+
+
+
+    })
+
+
     }
 
 

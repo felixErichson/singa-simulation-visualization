@@ -171,6 +171,10 @@ function prepareNestedDataFromJson(data) {
                     timeUnit = data[currentKey];
                 } else if (currentKey === "concentration-unit") {
                     concentrationUnit = data[currentKey]
+                } else if (currentKey === "simulation-width"){
+                    simulationWidth = data[currentKey]
+                } else if (currentKey === "simulation-height"){
+                    simulationHeight = data[currentKey]
                 }
 
             }
