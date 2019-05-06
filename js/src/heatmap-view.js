@@ -440,7 +440,7 @@ function getHeatmapData(currentTimeStep, species) {
                                 compartment: compartment,
                                 x: node.split(regEx)[1],
                                 y: node.split(regEx)[2],
-                                value: 0
+                                value: -1
                             };
                             heatmapData.push(obj);
                         } else {
@@ -480,9 +480,8 @@ function getHeatmapData(currentTimeStep, species) {
         })
 
         .map(heatmapData);
-    console.log(nestedData);
-    console.log(nestedHeatmapData);
-    console.log("+++", heatmapData);
+console.log( heatmapData);
+console.log( nestedData);
 }
 
 function getRangeOfSpecies(species, compartment) {
@@ -523,7 +522,6 @@ function setHeatmapColor(data) {
             })])
 
     } else {
-        console.log(concentrationRange[0], concentrationRange[1]);
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
             .domain([concentrationRange[0], concentrationRange[1]])
@@ -637,21 +635,26 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             return "path" + i
         })
         .attr("d", function (d) {
-            console.log(d);
+
             return "M" + d.join("L") + "Z";
         })
 
         .on("click", function (d) {
-            console.log(d);
+
             selectedNode = "n(" + d.x + "," + d.y + ")";
             drawGraphFromNode();
-            getIndexIdentifier(getCompartmentFromSpecies(species), species);
-            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species), species));
+           // getIndexIdentifier(getCompartmentFromSpecies(species), species);
+
+
+                    onSpeciesButtonClick(getCompartmentFromSpecies(species)[0], species);
+
+
+
             setChartTitle("Node (" + d.x + "," + d.y + ")");
 
         })
         .on("mouseover", function (d) {
-            console.log(d);
+
             d3.select(this)
                 .style("stroke", "black")
                 .style("stroke-width", "1");
@@ -674,7 +677,6 @@ function drawHeatmapRectangles(currentTimeStep, species) {
         });
 
     for (let i in valuesOfConcentration) {
-        console.log(i);
         d3.select(".path" + i)
             .datum(valuesOfConcentration[i].get(species))
             .style("fill", function (d) {
@@ -885,6 +887,7 @@ function changeVerticalLineData(selectedTime) {
 }
 
 function setNodeCompartments() {
+
     nestedData.keys().forEach(function (timeStep) {
         nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
             if (!compartmentsOfSelectedNode.includes(compartment) && !compartment.startsWith("x") && !compartment.startsWith("y")) {
@@ -906,6 +909,7 @@ function drawGraphFromNode() {
 
     compartmentsOfSelectedNode.length = 0;
     activeComponentIdices.length = 0;
+
     setNodeCompartments();
     clearHtmlTags();
 
@@ -930,6 +934,7 @@ function drawGraphFromNode() {
         .style("display", "inline-block")
         .style("margin-left", "4px").text("PLOT");
 
+    reducedNodeData.length = 0;
     sumCurrentNodeData();
     initializeMainContent();
 

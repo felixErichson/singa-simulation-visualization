@@ -230,10 +230,10 @@ function sumData() {
 
 function sumCurrentNodeData() {
 
+    reducedNodeData = [];
 
-    compartmentsOfSelectedNode.forEach(function (compartment) {
-
-        nestedData.keys().forEach(function (timeStep) {
+    nestedData.keys().forEach(function (timeStep) {
+        nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
             nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
                 if (nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
                     reducedNodeData[compartment + "_" + species] = filterData(compartment, species);
@@ -242,7 +242,5 @@ function sumCurrentNodeData() {
                 }
             })
         })
-    });
-  console.log(Object.keys(reducedNodeData));
-
+    })
 }
