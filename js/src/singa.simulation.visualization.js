@@ -18,7 +18,7 @@ let componentCombinations = [],
     heatmapSvg,
     searchButtonDataArray = [],
     heatmapData = [],
-    nestedHeatmapData,
+    membraneData = [],
     heatmapXRange = [],
     heatmapYRange = [],
     playButton,
@@ -152,6 +152,12 @@ function initializeMainContent() {
 
 }
 
+/**
+ * creates an array of
+ * @param compartment
+ * @param spec
+ * @return {Array}
+ */
 function filterData(compartment, spec) {
 
     let trajectoryData = [];
@@ -198,8 +204,8 @@ function hideOptions() {
 }
 
 /**
- *
- * @param text also html text possible
+ * genarates tooltip on mouseouver events at mouse position
+ * @param text content of tooltip (html text possible)
  */
 function generateTooltip(text) {
     infoTooltip.html(text)
