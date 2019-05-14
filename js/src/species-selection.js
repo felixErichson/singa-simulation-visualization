@@ -72,15 +72,13 @@ function onSpeciesButtonClick(indexIdentifier) {
             .attr("type", "button")
             .text(getSpeciesFromIndexIdentifier(indexIdentifier))
             .on("click", function () {
+                hideTooltip();
                 removeLine(indexIdentifier);
                 d3.select(this).remove();
                 addSpeciesButton(getCompartmentFromIndexIdentifier(indexIdentifier), getSpeciesFromIndexIdentifier(indexIdentifier));
             })
-            .on("click", function () {
-                onSpeciesButtonClick(this.id)
-            })
             .on("mouseover", function () {
-                generateTooltip(getSpeciesFromIndexIdentifier(indexIdentifier));
+                generateTooltip(getSpeciesFromIndexIdentifier(indexIdentifier) + " - " + getCompartmentFromIndexIdentifier(indexIdentifier));
                 showTooltip()
             })
             .on("mouseleave", function () {

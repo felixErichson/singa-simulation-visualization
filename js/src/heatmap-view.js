@@ -669,7 +669,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             selectedNode = "n(" + d.x + "," + d.y + ")";
             drawGraphFromNode();
            // getIndexIdentifier(getCompartmentFromSpecies(species), species);
-                    onSpeciesButtonClick(getCompartmentFromSpecies(species)[0], species);
+                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
             setChartTitle("Node (" + d.x + "," + d.y + ")");
 
         })
@@ -813,7 +813,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .y(function (d) {return yScale(d.y);})
             )
             .style("stroke", "white")
-            .style("stroke-width", "6");
+            .style("stroke-width", 6);
 
 
 
