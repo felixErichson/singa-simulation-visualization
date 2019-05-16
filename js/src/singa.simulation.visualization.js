@@ -17,7 +17,7 @@ let componentCombinations = [],
     globalData = null,
     heatmapSvg,
     searchButtonDataArray = [],
-    heatmapData = [],
+    heatmapData = d3.map(),
     membraneData = [],
     heatmapXRange = [],
     heatmapYRange = [],
@@ -120,9 +120,10 @@ function resetGlobalArrays() {
     allSpecies.length = 0;
     allCompartments.length = 0;
     allNodes.length = 0;
-    heatmapData.length = 0;
+   // heatmapData.length = 0;
     heatmapXRange.length = 0;
     heatmapYRange.length = 0;
+
 }
 
 function btnAllTrajectoriesVisible() {

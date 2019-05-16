@@ -208,13 +208,16 @@ function prepareNestedDataFromCsv(data) {
 }
 
 function sumData() {
+
+
+
     let rememberSpecies = [];
     allCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).keys().forEach(function (node) {
                 if (nestedData.get(timeStep).get(node).get(compartment) !== undefined && nestedData.get(timeStep).get(node).get(compartment).keys() !== undefined) {
                     nestedData.get(timeStep).get(node).get(compartment).keys().forEach(function (species) {
-                        if (!rememberSpecies.includes(species) && nestedData.get(timeStep).get(node).get(compartment).get(species) !== 0 && nestedData.get(timeStep).get(node).get(compartment).get(species) !== undefined) {
+                        if (!componentCombinations.includes(compartment+"_"+species) && nestedData.get(timeStep).get(node).get(compartment).get(species) !== 0 && nestedData.get(timeStep).get(node).get(compartment).get(species) !== undefined) {
                             rememberSpecies.push(species);
                             selectedNode = node;
                             componentCombinations.push(compartment + "_" + species);

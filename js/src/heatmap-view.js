@@ -9,25 +9,26 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
 
+let xScale;
+let yScale;
+
 let infoTooltip = d3.select("body").append("div")
     .attr("class", "infoTooltip")
     .style("opacity", 0);
 
 let dragedTime,
- slideControl,
- dragedTimeLabel,
- xTimeScale,
- concentrationRange,
- svgSlider,
- moving = false,
- timer,
- comp,
- spec,
- legendSvg,
- vesicleData = [],
- LegendAxisScale,
- valuesOfConcentration = [],
- membranePositions = [];
+    slideControl,
+    dragedTimeLabel,
+    xTimeScale,
+    concentrationRange,
+    svgSlider,
+    moving = false,
+    timer,
+    comp,
+    spec,
+    legendSvg,
+    LegendAxisScale;
+
 
 function setHeatmapDropdown(container, text, csv) {
 
@@ -138,7 +139,7 @@ function appendPlayButton() {
 function initializeSlider(species) {
 
     let compartment = getCompartmentFromSpecies(species);
-    concentrationRange = getRangeOfSpecies(species, compartment);
+    concentrationRange = getRangeOfSpecies(species, getCompartmentFromSpecies(species));
     spec = species;
     comp = compartment;
     dragedTime = time[0];
@@ -149,10 +150,7 @@ function initializeSlider(species) {
         .attr("height", heightSlider + marginSlider.top + marginSlider.bottom);
 
     getHeatmapData(dragedTime, species);
-    getVesicleData(dragedTime, compartment, species);
-    getMembraneData(dragedTime, species);
-    heatmapColor = setHeatmapColor(heatmapData.concat(vesicleData));
-    //vesicleColor = setHeatmapColor(vesicleData);
+    heatmapColor = setHeatmapColor();
     drawHeatmapRectangles(dragedTime, species);
 
     xTimeScale = d3.scaleLinear()
@@ -260,17 +258,12 @@ function step() {
 }
 
 function update(h, compartment, species) {
-
     slideControl.attr("cx", xTimeScale(h));
-
     dragedTimeLabel.attr("x", xTimeScale(h))
         .text(d3.format(".3f")(time[h]));
 
     getHeatmapData(time[h], species);
-    getVesicleData(time[h], compartment, species);
-    getMembraneData(time[h], species);
-    heatmapColor = setHeatmapColor(heatmapData.concat(vesicleData));
-    //vesicleColor = setHeatmapColor(vesicleData);
+    heatmapColor = setHeatmapColor();
     drawHeatmapRectangles(time[h], species);
     relativeScaleAxis();
     absoluteScaleAxis();
@@ -344,10 +337,8 @@ function relativeScaleAxis() {
 
     LegendAxisScale = d3.scaleLinear()
         .range([-legendWidth / 2, legendWidth / 2])
-        .domain(d3.extent(heatmapData.concat(vesicleData), function (d) {
-            if (d.value > -1) {
-                return d.value
-            }
+        .domain(d3.extent(getCurrentConcentrations(), function (d) {
+            return d
         }));
 }
 
@@ -359,150 +350,68 @@ function absoluteScaleAxis() {
         .domain(concentrationRange);
 }
 
-function getVesicleData(currentTimeStep, compartment, species) {
-
-    vesicleData.length = 0;
-    let obj;
-
-    nestedData.get(currentTimeStep).keys().forEach(function (node) {
-        if (node.startsWith("v")) {
-            if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
-                if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
-
-                    obj = {
-                        //  name: compartment+ "_" + species,
-                        name: node,
-                        value: 0
-                    };
-                    vesicleData.push(obj);
-                } else {
-                    obj = {
-                        name: node,
-                        value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
-                    };
-                    vesicleData.push(obj);
-                }
-
-            } else {
-                obj = {
-                    //  name: compartment+ "_" + species,
-                    name: node,
-                    value: -1
-                };
-                vesicleData.push(obj);
-            }
-        }
-    });
-
-
-}
-
 function getHeatmapData(currentTimeStep, species) {
 
-    heatmapData.length = 0;
-    let obj;
 
-    nestedData.get(currentTimeStep).keys().forEach(function (node) {
-        if (!node.startsWith("v")) {
-            nestedData.get(currentTimeStep).get(node).keys().forEach(function (compartment) {
-                if (nestedData.get(currentTimeStep).get(node).get(compartment).get("positions").length < 2) {
-                    if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
-                        if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
+    let yPositionReminder;
+    let hlp = false;
+    xScale = d3.scaleLinear().domain([0, simulationWidth]).range([0, 450]);
+    yScale = d3.scaleLinear().domain([0, simulationHeight]).range([0, 450]);
 
-                            obj = {
-                                compartment: compartment,
-                                x: node.split(regEx)[1],
-                                y: node.split(regEx)[2],
-                                value: -1
-                            };
-                            heatmapData.push(obj);
+    nestedData.get(currentTimeStep).entries().forEach(function (updatable) {
+        let currentUpdatableMap = d3.map();
+        heatmapData.set(updatable.key, currentUpdatableMap);
+        updatable.value.entries().forEach(function (compartment) {
+            let compartmentMap = d3.map();
+            currentUpdatableMap.set(compartment.key, compartmentMap);
+            compartment.value.entries().forEach(function (value) {
+                if (value.key === species) {
+                    compartmentMap.set("concentration", value.value);
+                }
+                if (value.key === "positions") {
+                    //  console.log(value.value);
+                    if (updatable.key.startsWith("n")) {
+                        if (compartment.key.includes("membrane")) {
+
+                            compartmentMap.set("path", positionsToPath(value.value));
                         } else {
-                            obj = {
-                                compartment: compartment,
-                                x: node.split(regEx)[1],
-                                y: node.split(regEx)[2],
-                                value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
-                            };
-                            heatmapData.push(obj);
+                            compartmentMap.set("path", positionsToPath(value.value) + "Z");
+                        }
+                    } else if (updatable.key.startsWith("v")) {
+                        if (hlp === false) {
+                            yPositionReminder = value.value[0].y;
+                            hlp = true;
+
+                        } else if (hlp === true) {
+                            currentUpdatableMap.set("position", [xScale(value.value[0].x), yScale(yPositionReminder), xScale(value.value[0].y) - xScale(yPositionReminder)]);
+                            hlp = false;
                         }
 
-                    } else {
-                        obj = {
-                            compartment: compartment,
-                            x: node.split(regEx)[1],
-                            y: node.split(regEx)[2],
-                            value: -1
-                        };
-                        heatmapData.push(obj);
 
                     }
                 }
-
             })
-
-        }
+        })
     });
+    console.log(heatmapData);
 }
 
-function getMembraneData(currentTimeStep, species) {
-    membraneData.length = 0;
-    let obj;
 
-    nestedData.get(currentTimeStep).keys().forEach(function (node) {
-        if (!node.startsWith("v")) {
-            nestedData.get(currentTimeStep).get(node).keys().forEach(function (compartment) {
-                if (nestedData.get(currentTimeStep).get(node).get(compartment).get("positions").length >= 2) {
-                    if (nestedData.get(currentTimeStep).get(node).get(compartment) !== undefined) {
-                        if (nestedData.get(currentTimeStep).get(node).get(compartment).get(species) === undefined) {
-
-                            obj = {
-                                compartment: compartment,
-                                x: node.split(regEx)[1],
-                                y: node.split(regEx)[2],
-                                value: -1
-                            };
-                            membraneData.push(obj);
-                        } else {
-                            obj = {
-                                compartment: compartment,
-                                x: node.split(regEx)[1],
-                                y: node.split(regEx)[2],
-                                value: nestedData.get(currentTimeStep).get(node).get(compartment).get(species)
-                            };
-                            membraneData.push(obj);
-                        }
-
-                    } else {
-                        obj = {
-                            compartment: compartment,
-                            x: node.split(regEx)[1],
-                            y: node.split(regEx)[2],
-                            value: -1
-                        };
-                        membraneData.push(obj);
-
-                    }
-                }
-
-            })
-
-        }
-    });
-    console.log("+++", membraneData);
-}
-
-function getRangeOfSpecies(species, compartment) {
+function getRangeOfSpecies(species, compartments) {
     let maxValue = 0.0;
     let minValue = Number.MAX_VALUE;
-    nestedData.values().forEach(function (node) {
-        node.values().forEach(function (currentSpecies) {
-            if (currentSpecies.get(compartment) !== undefined) {
-                if (maxValue < currentSpecies.get(compartment).get(species))
-                    maxValue = currentSpecies.get(compartment).get(species);
-                if (minValue > currentSpecies.get(compartment).get(species)) {
-                    minValue = currentSpecies.get(compartment).get(species);
+
+    compartments.forEach(function (compartment) {
+        nestedData.values().forEach(function (node) {
+            node.values().forEach(function (currentSpecies) {
+                if (currentSpecies.get(compartment) !== undefined) {
+                    if (maxValue < currentSpecies.get(compartment).get(species))
+                        maxValue = currentSpecies.get(compartment).get(species);
+                    if (minValue > currentSpecies.get(compartment).get(species)) {
+                        minValue = currentSpecies.get(compartment).get(species);
+                    }
                 }
-            }
+            })
         })
     });
 
@@ -512,20 +421,41 @@ function getRangeOfSpecies(species, compartment) {
     return [minValue, maxValue];
 }
 
-function setHeatmapColor(data) {
+function getCurrentConcentrations() {
+
+    let concentrations = [];
+    heatmapData.entries().forEach(function (nodeEntry) {
+        if (nodeEntry.key.startsWith("n")) {
+            nodeEntry.value.entries().forEach(function (compartmentEntry) {
+                if (compartmentEntry.value.get("concentration") !== undefined) {
+                    concentrations.push(compartmentEntry.value.get("concentration"))
+                }
+            })
+        } else if (nodeEntry.key.startsWith("v")) {
+            nodeEntry.value.entries().forEach(function (updatable) {
+                if (updatable.key !== "position" && updatable.value !== undefined) {
+                    concentrations.push(updatable.value.get("concentration"))
+                }
+
+            })
+        }
+    });
+    return concentrations;
+}
+
+function setHeatmapColor() {
     if ($('input[name="check"]:checked').val() === "relative") {
 
+        let concentrations = getCurrentConcentrations();
 
         return d3.scaleLinear()
             .range(["#f1ff7f", "#0cac79"])
-            .domain([d3.min(data, function (d) {
-                if (d.value > -1) {
-                    return d.value
-                }
-            }), d3.max(data, function (d) {
-                if (d.value > -1) {
-                    return d.value
-                }
+            .domain([d3.min(concentrations, function (d) {
+                return d
+
+            }), d3.max(concentrations, function (d) {
+                return d
+
             })])
 
     } else {
@@ -566,260 +496,180 @@ function zoomed() {
     heatmapSvg.attr("transform", d3.event.transform);
 }
 
+function positionsToPath(positions) {
+    let path = "M";
+    positions.forEach(function (position, i) {
+        path += xScale(position.x) + "," + yScale(position.y);
+        if (i !== positions.length - 1) {
+            path += ","
+        }
+    });
+    return path;
+}
+
 function drawHeatmapRectangles(currentTimeStep, species) {
 
     heatmapSvg.selectAll("path").remove();
     heatmapSvg.selectAll("circle").remove();
 
-    let vertices = [];
-    let vesiclePositions = [];
-    valuesOfConcentration.length = 0;
-    let xScale;
-    let yScale;
+    let membranePaths = [];
 
-    let hlp = false;
-    let yPositionReminder;
-    vertices.length = 0;
-    vesiclePositions.length = 0;
+    heatmapData.entries().forEach(function (nodeEntry) {
+        if (nodeEntry.key.startsWith("n")) {
+            nodeEntry.value.entries().forEach(function (compartmentEntry) {
+                if (!compartmentEntry.key.includes("membrane")) {
+                    heatmapSvg.append("path")
 
-    xScale = d3.scaleLinear().domain([0, simulationWidth]).range([0, 450]);
-    yScale = d3.scaleLinear().domain([0, simulationHeight]).range([0, 450]);
+                        .attr("d", compartmentEntry.value.get("path"))
+                        .style("fill", function () {
+                            if (compartmentEntry.value.get("concentration") !== undefined) {
 
-    nestedData.get(currentTimeStep).keys().forEach(function (node) {
-        nestedData.get(currentTimeStep).get(node).keys().forEach(function (compartment) {
-            if (node.startsWith("n")) {
+                                return heatmapColor(compartmentEntry.value.get("concentration"))
+                            } else {
+                                return "#fff"
+                            }
 
-                let positions = nestedData.get(currentTimeStep).get(node).get(compartment).get("positions");
+                        })
+                        .on("click", function () {
+                            selectedNode = nodeEntry.key;
+                            drawGraphFromNode();
+                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                            setChartTitle(selectedNode);
 
-               // console.log(positions);
+                        })
+                        .on("mouseover", function () {
 
-                if (positions.length === 1) {
-                    valuesOfConcentration.push(nestedData.get(currentTimeStep).get(node).get(compartment));
-                    positions.forEach(function (position) {
-                        vertices.push([xScale(position.x), yScale(position.y)]);
-                    })
+                            d3.select(this)
+                                .style("stroke", "black")
+                                .style("stroke-width", "1");
+                            mouseOverNode(this, nodeEntry, species, currentTimeStep);
+                            showTooltip();
+                            if (compartmentEntry.value.get("concentration") === undefined) {
+                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
+                            } else {
+                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration"));
+                            }
+                        })
+                        .on("mouseleave", function () {
+                            d3.select(this)
+                                .style("stroke-width", "0");
+
+                            d3.select("#menu-heatmap-data")
+                                .selectAll("p").remove();
+                            hideTooltip();
+                        });
+                } else {
+                    membranePaths.push(nodeEntry);
                 }
+            })
+        } else if (nodeEntry.key.startsWith("v")) {
 
-                if (positions.length >= 2){
-                        membranePositions.push(positions);
-                }
-
-            } else {
-
-                let positions = nestedData.get(currentTimeStep).get(node).get(compartment).get("positions");
-                positions.forEach(function (position) {
-
-                    if (hlp === false) {
-                        yPositionReminder = position.y;
-                        hlp = true;
-
-                    } else if (hlp === true) {
-                        vesiclePositions.push([xScale(position.x), yScale(yPositionReminder), xScale(position.y) - xScale(yPositionReminder)]);
-                        hlp = false;
-                    }
-                })
-
-
-            }
-        })
-
-
-    });
-
-    vertices.forEach(function (vertex) {
-        heatmapSvg.append("circle")
-            .attr("cx", vertex[0])
-            .attr("cy", vertex[1])
-            .attr("r", 2)
-            .style("fill", "black")
-            .style("z-index", "100");
-    });
-
-
-    // membranePositions.forEach(function (pos) {
-    //
-    //     pos.forEach(function (d) {
-    //         d.x = xScale(d.x);
-    //         d.y = yScale(d.y);
-    //     })
-    //
-    // });
-
-    console.log(membranePositions);
-
-
-
-    var voronoi = d3.voronoi()
-        .extent([[0, 0], [xScale(simulationWidth), yScale(simulationHeight)]]);
-
-    // console.log(vertices);
-    var paths = heatmapSvg.selectAll("path")
-        .data(voronoi(vertices).polygons())
-        .enter().append("path")
-        .attr("class", function (d, i) {
-            return "path" + i
-        })
-        .attr("d", function (d) {
-
-            return "M" + d.join("L") + "Z";
-        })
-
-        .on("click", function (d) {
-
-            selectedNode = "n(" + d.x + "," + d.y + ")";
-            drawGraphFromNode();
-           // getIndexIdentifier(getCompartmentFromSpecies(species), species);
-                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
-            setChartTitle("Node (" + d.x + "," + d.y + ")");
-
-        })
-        .on("mouseover", function (d) {
-
-            d3.select(this)
+            let position = nodeEntry.value.get("position");
+            heatmapSvg.append("circle")
+                .attr("cx", position[0])
+                .attr("cy", position[1])
+                .attr("r", position[2] + 2)
                 .style("stroke", "black")
-                .style("stroke-width", "1");
-            mouseOverNode(this, d, species, currentTimeStep);
-            showTooltip();
-            if (d.value === -1) {
-                generateTooltip('Node (' + d.x + ',' + d.y + ')' + "<br/>" + d.compartment + "<br/>" + "value: " + "none" );
-            } else {
-                generateTooltip('Node (' + d.x + ',' + d.y + ')' + "<br/>" + d.compartment + "<br/>" + "value: " + d.value) ;
-            }
-        })
-        .on("mouseleave", function () {
-            d3.select(this)
-                .style("stroke-width", "0");
+                .style("stroke-width", "1px")
+                .style("fill", function () {
+                    if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
 
-            d3.select("#menu-heatmap-data")
-                .selectAll("p").remove();
-            hideTooltip();
+                        return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
+                    } else {
+                        return "#fff"
+                    }
+                });
+
+            heatmapSvg.append("circle")
+                .attr("cx", position[0])
+                .attr("cy", position[1])
+                .attr("r", position[2])
+                .style("stroke", "black")
+                .style("stroke-width", "1px")
+                .style("fill", "white");
+
+            heatmapSvg.append("circle")
+                .attr("cx", position[0])
+                .attr("cy", position[1])
+                .attr("r", position[2] + 3)
+                .style("fill", "black")
+                .style("fill-opacity", "0.0")
+                .on("click", function () {
+                    selectedNode = nodeEntry.key;
+                    drawGraphFromNode();
+                    setChartTitle(nodeEntry.key);
+                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                }).on("mouseover", function () {
+                d3.select(this).style("stroke-width", "2px").style("stroke", "black");
+                showTooltip();
+                showTooltip();
+                if (nodeEntry.value.get("vesicle membrane").value === undefined) {
+                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + "none");
+                } else {
+                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").value);
+                }
+
+            }).on("mouseleave", function () {
+                d3.select(this).style("stroke-width", "0").style("stroke", "unset");
+                hideTooltip();
+            })
+        }
+    });
+
+    membranePaths.forEach(function (nodeEntry, i) {
+        nodeEntry.value.entries().forEach(function (compartmentEntry) {
+            if (compartmentEntry.key.includes("membrane")) {
+
+
+                heatmapSvg.append("path")
+                    .attr("id", "membrane"+i)
+                    .attr("d", compartmentEntry.value.get("path"))
+                    .style("stroke", "black")
+                    .style("stroke-width", "4px");
+
+
+                heatmapSvg.append("path")
+                    .attr("d", compartmentEntry.value.get("path"))
+                    .style("stroke", function () {
+                        if (compartmentEntry.value.get("concentration") !== undefined) {
+
+                            return heatmapColor(compartmentEntry.value.get("path"))
+                        } else {
+                            return "#fff"
+                        }
+                    })
+                    .style("stroke-width", "3px")
+                    .on("click", function () {
+                        selectedNode = nodeEntry.key;
+                        drawGraphFromNode();
+                        onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                        setChartTitle(selectedNode);
+
+                    })
+                    .on("mouseover", function () {
+                        d3.select("#membrane"+i)
+                          .style("stroke-width", "6px");
+                        mouseOverNode(this, nodeEntry, species, currentTimeStep);
+                        showTooltip();
+                        if (compartmentEntry.value.get("concentration") === undefined) {
+                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
+                        } else {
+                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration"));
+                        }
+                    })
+                    .on("mouseleave", function () {
+                        d3.select("#membrane"+i)
+                            .style("stroke-width", "4px");
+                        d3.select("#menu-heatmap-data")
+                            .selectAll("p").remove();
+                        hideTooltip();
+                    });
+
+
+            }
         });
 
-    for (let i in valuesOfConcentration) {
-        d3.select(".path" + i)
-            .datum(valuesOfConcentration[i].get(species))
-            .style("fill", function (d) {
-                if (d !== undefined) {
-
-                    return heatmapColor(d)
-                } else {
-                    return "#fff"
-                }
-
-            }).datum(heatmapData[i])
-    }
-
-    for (let i in vesiclePositions) {
-
-        heatmapSvg.append("circle")
-            .attr("id", "membrane" + i)
-            .attr("cx", vesiclePositions[i][0])
-            .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2] + 2)
-            .style("stroke", "black")
-            .style("stroke-width", "1px")
-            .style("fill", "white");
-
-        heatmapSvg.append("circle")
-            .attr("id", "lumen" + i)
-            .attr("cx", vesiclePositions[i][0])
-            .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2])
-            .style("stroke", "black")
-            .style("stroke-width", "1px")
-            .style("fill", "white");
-
-        heatmapSvg.append("circle")
-            .attr("id", "v" + i)
-            .attr("cx", vesiclePositions[i][0])
-            .attr("cy", vesiclePositions[i][1])
-            .attr("r", vesiclePositions[i][2] + 3)
-            .style("fill", "black")
-            .style("fill-opacity", "0.0")
-            .on("click", function () {
-                selectedNode = "v" + i;
-                drawGraphFromNode();
-                setChartTitle("Vesicle " + i);
-                onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
-            }).on("mouseover", function () {
-            d3.select(this).style("stroke-width", "2px").style("stroke", "black");
-            showTooltip();
-            if (vesicleData[i].value === -1) {
-                generateTooltip('Vesicle ' + i + "<br/>" + "value: " + "none");
-            } else {
-                generateTooltip('Vesicle ' + i + "<br/>" + "value: " + vesicleData[i].value);
-            }
-
-        }).on("mouseleave", function () {
-            d3.select(this).style("stroke-width", "0").style("stroke", "unset");
-            hideTooltip();
-        })
-    }
-
-
-    for (let i = 0; i < vesiclePositions.length; i++) {
-
-        let vesicleCompartments = getCompartmentFromSpecies(species);
-
-        vesicleCompartments.forEach(function (compartment) {
-            relativeScaleAxis(vesicleData);
-            if (compartment === "vesicle membrane") {
-                d3.select("#membrane" + i)
-                    .datum(vesicleData[i])
-                    .style("fill", function (d) {
-
-                        if (d.value !== -1) {
-                            return heatmapColor(d.value)
-                        } else {
-                            return "#fff"
-                        }
-                    });
-            } else if (compartment === "vesicle lumen") {
-
-                d3.select("#lumen" + i)
-                    .datum(vesicleData[i])
-                    .style("fill", function (d) {
-                        if (d.value !== -1) {
-                            return heatmapColor(d.value)
-                        } else {
-                            return "#fff"
-                        }
-                    });
-            }
-
-
-        })
-
-
-    }
-
-    membranePositions.forEach(function (positions) {
-
-        heatmapSvg.append("path")
-            .data([positions])
-            .attr("d", d3.line()
-                .curve(d3.curveLinear)
-                .x(function (d) {return xScale(d.x);})
-                .y(function (d) {return yScale(d.y);})
-            )
-            .style("stroke", "black")
-            .style("stroke-width", "8");
-
-        heatmapSvg.append("path")
-            .data([positions])
-            .attr("d", d3.line()
-                .curve(d3.curveLinear)
-                .x(function (d) {return xScale(d.x);})
-                .y(function (d) {return yScale(d.y);})
-            )
-            .style("stroke", "white")
-            .style("stroke-width", 6);
-
-
-
-    });
-
-
+    })
 }
 
 function mouseOverNode(currentNode, CurrentNodeObject, species, dragedTime) {
