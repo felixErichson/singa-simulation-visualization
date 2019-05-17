@@ -85,42 +85,43 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
     d3.selectAll('#heatmap-view-slider svg').remove();
 
     if (csv === "csv") {
-
+        selectedNode = "n(0,0)";
         drawGraphFromNode();
+        // appendPlayButton();
+        // drawSilder(clickedSpeciesText);
+        setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText, "csv");
+    } else {
+
+
+        d3.select('#trajectory-view-heatmap')
+            .append("i")
+            .style("font-size", "xx-large")
+            .attr("class", "heatmapHeading fas fa-th")
+            .on("mouseover", function () {
+                generateTooltip('The heatmap represents a part of a cell. <br>' +
+                    ' The color gradient shows the change in concentration of individual species. <br> ' +
+                    '<b>Clicking</b> on the contents allows to see the concentration changes in a line plot.<br>')
+                showTooltip();
+            })
+            .on("mouseleave", function () {
+                hideTooltip();
+            });
+
+        d3.select('#trajectory-view-heatmap')
+            .append("h2")
+            .attr("class", "heatmapHeading")
+            .style("display", "inline-block")
+            .style("margin-left", "4px").text("HEATMAP");
+
+        setHeatMapSvg();
         appendPlayButton();
         drawSilder(clickedSpeciesText);
-        setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText, "csv");
+        clearHtmlTags();
+        drawHeatmapLegend();
+
+
+        setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText);
     }
-
-    d3.select('#trajectory-view-heatmap')
-        .append("i")
-        .style("font-size", "xx-large")
-        .attr("class", "heatmapHeading fas fa-th")
-        .on("mouseover", function () {
-            generateTooltip('The heatmap represents a part of a cell. <br>' +
-                ' The color gradient shows the change in concentration of individual species. <br> ' +
-                '<b>Clicking</b> on the contents allows to see the concentration changes in a line plot.<br>')
-            showTooltip();
-        })
-        .on("mouseleave", function () {
-            hideTooltip();
-        });
-
-    d3.select('#trajectory-view-heatmap')
-        .append("h2")
-        .attr("class", "heatmapHeading")
-        .style("display", "inline-block")
-        .style("margin-left", "4px").text("HEATMAP");
-
-    setHeatMapSvg();
-    appendPlayButton();
-    drawSilder(clickedSpeciesText);
-    clearHtmlTags();
-    drawHeatmapLegend();
-
-
-    setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText);
-
 }
 
 function appendPlayButton() {
@@ -622,7 +623,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
 
                 heatmapSvg.append("path")
-                    .attr("id", "membrane"+i)
+                    .attr("id", "membrane" + i)
                     .attr("d", compartmentEntry.value.get("path"))
                     .style("stroke", "black")
                     .style("stroke-width", "4px");
@@ -647,8 +648,8 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
                     })
                     .on("mouseover", function () {
-                        d3.select("#membrane"+i)
-                          .style("stroke-width", "6px");
+                        d3.select("#membrane" + i)
+                            .style("stroke-width", "6px");
                         mouseOverNode(this, nodeEntry, species, currentTimeStep);
                         showTooltip();
                         if (compartmentEntry.value.get("concentration") === undefined) {
@@ -658,7 +659,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                         }
                     })
                     .on("mouseleave", function () {
-                        d3.select("#membrane"+i)
+                        d3.select("#membrane" + i)
                             .style("stroke-width", "4px");
                         d3.select("#menu-heatmap-data")
                             .selectAll("p").remove();
@@ -829,8 +830,10 @@ function drawGraphFromNode() {
         .style("display", "inline-block")
         .style("margin-left", "4px").text("PLOT");
 
+
     reducedNodeData.length = 0;
     sumCurrentNodeData();
+    console.log("hallo 2");
     initializeMainContent();
 
 
