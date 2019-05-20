@@ -234,7 +234,7 @@ function sumData() {
 
 function sumCurrentNodeData() {
     reducedNodeData = [];
-    console.log(nestedData);
+    //console.log(nestedData);
     let combinationsofComponants = [];
 
     nestedData.keys().forEach(function (timeStep) {
@@ -253,6 +253,6 @@ function sumCurrentNodeData() {
             })
         })
     })
-console.log(reducedNodeData);
+//console.log(reducedNodeData);
 
 }

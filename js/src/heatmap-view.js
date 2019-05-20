@@ -127,7 +127,6 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
             .text("To show concentration changes as line chart you should click on an element in the Heatmap");
 
 
-
         setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText);
     }
 }
@@ -361,7 +360,7 @@ function absoluteScaleAxis() {
 
 function getHeatmapData(currentTimeStep, species) {
 
-
+    heatmapData = d3.map();
     let yPositionReminder;
     let hlp = false;
     xScale = d3.scaleLinear().domain([0, simulationWidth]).range([0, 450]);
@@ -402,7 +401,7 @@ function getHeatmapData(currentTimeStep, species) {
             })
         })
     });
-    console.log(heatmapData);
+    //console.log(heatmapData);
 }
 
 
@@ -578,9 +577,9 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             heatmapSvg.append("circle")
                 .attr("cx", position[0])
                 .attr("cy", position[1])
-                .attr("r", position[2] + 2)
+                .attr("r", position[2] + position[2])
                 .style("stroke", "black")
-                .style("stroke-width", "1px")
+                .style("stroke-width", "0.01em")
                 .style("fill", function () {
                     if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
 
@@ -595,13 +594,13 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .attr("cy", position[1])
                 .attr("r", position[2])
                 .style("stroke", "black")
-                .style("stroke-width", "1px")
+                .style("stroke-width", "0.01em")
                 .style("fill", "white");
 
             heatmapSvg.append("circle")
                 .attr("cx", position[0])
                 .attr("cy", position[1])
-                .attr("r", position[2] + 2)
+                .attr("r", position[2] + position[2])
                 .style("fill", "black")
                 .style("fill-opacity", "0.0")
                 .on("click", function () {
@@ -644,7 +643,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     .style("stroke", function () {
                         if (compartmentEntry.value.get("concentration") !== undefined) {
 
-                            return heatmapColor(compartmentEntry.value.get("path"))
+                            return heatmapColor(compartmentEntry.value.get("concentration"))
                         } else {
                             return "#fff"
                         }
@@ -844,7 +843,7 @@ function drawGraphFromNode() {
 
     reducedNodeData.length = 0;
     sumCurrentNodeData();
-    console.log("hallo 2");
+    //console.log("hallo 2");
     initializeMainContent();
 
 
