@@ -3,8 +3,9 @@ const trajectoryPlotMargin = {top: 40, right: 25, bottom: 40, left: 25},
     trajectoryPlotHeight = parseInt(d3.select("#trajectory-view-graph").style("height")) - trajectoryPlotMargin.top - trajectoryPlotMargin.bottom;
 
 const Orientation = {
-    East : "east",
-    West : "west"
+
+    West : "west",
+    East : "east"
 };
 
 const Position = {

@@ -11,7 +11,7 @@ function createCustomSearchMenu() {
 
     addHeadOfSearchField();
     addListOfSpecies();
-    addCompartmentSelection();
+    addRefinement();
 
 
     function addHeadOfSearchField() {
@@ -24,7 +24,7 @@ function createCustomSearchMenu() {
             .text("add refinement")
             .on("click", function () {
                 globalSearchIterator++;
-                addCompartmentSelection()
+                addRefinement()
             });
 
         d3.select("#menu-custom-search-creation-area")
@@ -56,10 +56,10 @@ function createCustomSearchMenu() {
             .attr("class", "form-control")
             .attr("style", "width : 300px !important ;margin-left : 10px !important ; display : -webkit-inline-box !important")
             .attr("id", "menu-custom-search-title")
-            .attr("placeholder","add search name");
+            .attr("placeholder", "add search name");
     }
 
-    function addCompartmentSelection() {
+    function addRefinement() {
 
         d3.select("#menu-custom-search-creation-area")
             .append("div")
@@ -107,7 +107,7 @@ function createCustomSearchMenu() {
                 let attributeText = $(this).attr("id");
                 let identifier = attributeText.substr(attributeText.lastIndexOf("-") + 1);
                 d3.select("#menu-custom-search-refinement-" + identifier).html("");
-            })     .on("mouseover", function () {
+            }).on("mouseover", function () {
             generateTooltip("remove refinement");
             showTooltip();
         })
@@ -140,12 +140,14 @@ function createCustomSearchMenu() {
             componentCombinations.forEach(function (identifier) {
                 if (getCompartmentFromStringIdentifier(identifier) === compartment) {
 
-                    let indexIdentifier = getIndexIdentifier(getCompartmentFromStringIdentifier(identifier), getSpeciesFromStringIdentifier(identifier));
-                    d3.select("#menu-custom-search-component-list")
-                        .append("li")
-                        .attr("class", "list-group-item")
-                        .attr("id", "menu-custom-search-component-list-item-" + indexIdentifier)
-                        .text(getSpeciesFromStringIdentifier(identifier))
+                    if (!getSpeciesFromStringIdentifier(identifier).includes("positions")) {
+                        let indexIdentifier = getIndexIdentifier(getCompartmentFromStringIdentifier(identifier), getSpeciesFromStringIdentifier(identifier));
+                        d3.select("#menu-custom-search-component-list")
+                            .append("li")
+                            .attr("class", "list-group-item")
+                            .attr("id", "menu-custom-search-component-list-item-" + indexIdentifier)
+                            .text(getSpeciesFromStringIdentifier(identifier))
+                    }
                 }
 
             })
@@ -189,6 +191,9 @@ function createCustomSearchMenu() {
         highlightSpecies(filteredComponentsCombinations);
     }
 
+    /**
+     * return true if containment = contains and false if containment = not contains
+     */
     function determineContainment(containment) {
         return containment === "contains";
     }
@@ -202,10 +207,14 @@ function createCustomSearchMenu() {
     }
 
     function highlightSpecies(filteredComponents) {
+        console.log(filteredComponents);
         filteredComponents.forEach(function (components) {
-            let species = getSpeciesFromStringIdentifier(components);
-            selectedSpecies.push(species);
-            $("li[id$=_" + allSpecies.indexOf(species) + "]").toggleClass("list-group-item-info");
+            if(getSpeciesFromStringIdentifier(components) !== "positions"){
+
+                let species = getSpeciesFromStringIdentifier(components);
+                selectedSpecies.push(species);
+                $("li[id$=_" + allSpecies.indexOf(species) + "]").toggleClass("list-group-item-info");
+            }
         });
         generateLineFromSearch()
     }
@@ -217,11 +226,13 @@ function createCustomSearchMenu() {
             compartmentsOfSelectedNode.forEach(function (compartment) {
                 selectedSpecies.forEach(function (species) {
                     let currentConcentration = timeStepEntry.value.get(selectedNode).get(compartment).get(species);
+
                     if (currentConcentration !== undefined) {
                         summedConcentration += currentConcentration;
                     }
                 })
             });
+         //   console.log(summedConcentration);
             summedConcentrationValues.push(summedConcentration);
         });
         return summedConcentrationValues;
@@ -231,6 +242,7 @@ function createCustomSearchMenu() {
         let summedLineObject;
         let summedLineArray = [];
         let summedConcentrationValues = sumSelectedData();
+        console.log(summedConcentrationValues);
 
         for (let timeIndex = 0; timeIndex < time.length; timeIndex++) {
             summedLineObject = {
