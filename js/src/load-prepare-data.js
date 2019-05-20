@@ -42,8 +42,9 @@ function loadFile() {
     btnAllTrajectoriesVisible();
     clearHtmlTags();
     d3.select('#trajectory-view-heatmap').html('');
-
     d3.select('#trajectory-view-heatmap').append("div").attr("class", "loader");
+    d3.select("#play-button").remove();
+    d3.selectAll('#heatmap-view-slider svg').remove();
 
 
     let file = document.querySelector('input[type=file]').files[0];

@@ -95,6 +95,7 @@ function createAllTrajectoriesMenu() {
         allTrajectoriesContext.append("path")
             .datum(reducedNodeData[identifier])
             .style("stroke", getRandomColor())
+            .style("fill", "none")
             .attr("d", d3.line()
                 .x(function (d) {
                     return xAxisScale(d.x);

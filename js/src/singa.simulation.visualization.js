@@ -140,7 +140,6 @@ function clearHtmlTags() {
     d3.select("#menu-custom-search-creation-area").html("");
     d3.select("#menu-species-selection-search-buttons").html("");
     $("#menu-species-selection-search-buttons").hide();
-
 }
 
 function initializeMainContent() {

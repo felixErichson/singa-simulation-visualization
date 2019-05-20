@@ -207,10 +207,8 @@ function createCustomSearchMenu() {
     }
 
     function highlightSpecies(filteredComponents) {
-        console.log(filteredComponents);
         filteredComponents.forEach(function (components) {
             if(getSpeciesFromStringIdentifier(components) !== "positions"){
-
                 let species = getSpeciesFromStringIdentifier(components);
                 selectedSpecies.push(species);
                 $("li[id$=_" + allSpecies.indexOf(species) + "]").toggleClass("list-group-item-info");
@@ -242,7 +240,6 @@ function createCustomSearchMenu() {
         let summedLineObject;
         let summedLineArray = [];
         let summedConcentrationValues = sumSelectedData();
-        console.log(summedConcentrationValues);
 
         for (let timeIndex = 0; timeIndex < time.length; timeIndex++) {
             summedLineObject = {

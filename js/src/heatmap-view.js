@@ -84,6 +84,7 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
     d3.select("#play-button").remove();
     d3.selectAll('#heatmap-view-slider svg').remove();
 
+
     if (csv === "csv") {
         selectedNode = "n(0,0)";
         drawGraphFromNode();
@@ -118,6 +119,13 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
         drawSilder(clickedSpeciesText);
         clearHtmlTags();
         drawHeatmapLegend();
+
+        d3.select("#trajectory-view-graph")
+            .append("div")
+            .attr("id", "trajectory-view-hint")
+            .append("p")
+            .text("To show concentration changes as line chart you should click on an element in the Heatmap");
+
 
 
         setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText);
@@ -469,7 +477,7 @@ function setHeatmapColor() {
 function setHeatMapSvg() {
 
     let zoom = d3.zoom()
-        .scaleExtent([1, 10])
+        .scaleExtent([1, 7])
         .translateExtent([[-100, -100], [heatwidth + 90, heatheight + 100]])
         .on("zoom", zoomed);
 
@@ -532,6 +540,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
 
                         })
                         .on("click", function () {
+                            d3.select("#trajectory-view-hint").remove();
                             selectedNode = nodeEntry.key;
                             drawGraphFromNode();
                             onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
@@ -592,10 +601,11 @@ function drawHeatmapRectangles(currentTimeStep, species) {
             heatmapSvg.append("circle")
                 .attr("cx", position[0])
                 .attr("cy", position[1])
-                .attr("r", position[2] + 3)
+                .attr("r", position[2] + 2)
                 .style("fill", "black")
                 .style("fill-opacity", "0.0")
                 .on("click", function () {
+                    d3.select("#trajectory-view-hint").remove();
                     selectedNode = nodeEntry.key;
                     drawGraphFromNode();
                     setChartTitle(nodeEntry.key);
@@ -641,6 +651,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     })
                     .style("stroke-width", "3px")
                     .on("click", function () {
+                        d3.select("#trajectory-view-hint").remove();
                         selectedNode = nodeEntry.key;
                         drawGraphFromNode();
                         onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));

@@ -102,8 +102,18 @@ body {
     margin-left: -75px;
     margin-top: 15%;
     left: 50%;
+}
 
-
+#trajectory-view-hint{
+margin-left: auto;
+    margin-right: auto;
+    z-index: 9;
+    padding: 5px;
+    font-size: 15px;
+    width: 230px;
+    height: 90px;
+    border: 3px dashed dimgrey;
+    margin-top: 15%;
 }
 
 .sidenav {
@@ -119,7 +129,6 @@ body {
     box-shadow: 5px 5px 5px grey;
     padding-left: 20px;
     padding-right: 20px;
-
 }
 
 .sidenav a {
@@ -184,7 +193,6 @@ align-self: end;
     background-color: #ffffff;
     text-align: center;
     box-sizing: border-box;
-
 }
 
 #heatmap-view-slider {
@@ -195,8 +203,6 @@ align-self: end;
     background-color: #ffffff;
     text-align: justify;
     box-sizing: border-box;
-
-
 }
 
 #heatmap-view-species-selection{
@@ -282,7 +288,6 @@ path {
     white-space: nowrap;
     overflow: hidden;
     max-width: 450px;
-
 }
 
 .btn.btn-primary:focus {
@@ -330,7 +335,6 @@ a.nav-link, a.nav-link:hover {
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem;
     margin-top: 20px;
-
 }
 
 .ticks {
@@ -409,8 +413,6 @@ div.infoTooltip {
     color: #ffffff;
     padding: 5px;
 }
-
-
 
 nav {
     width: 100%;
