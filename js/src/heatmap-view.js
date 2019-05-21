@@ -213,9 +213,9 @@ function drawTrackOverlay(slider) {
         .attr("r", 9);
 
     dragedTimeLabel = slider.append("text")
-        .attr("class", "label333")
+        .attr("class", "timeLabelSlider")
         .attr("text-anchor", "middle")
-        .text(time[0])
+        .text(time[0] + " ms")
         .attr("transform", "translate(0," + (-25) + ")");
 }
 
@@ -268,7 +268,7 @@ function step() {
 function update(h, compartment, species) {
     slideControl.attr("cx", xTimeScale(h));
     dragedTimeLabel.attr("x", xTimeScale(h))
-        .text(d3.format(".3f")(time[h]));
+        .text(d3.format(".3f")(time[h])+ " ms");
 
     getHeatmapData(time[h], species);
     heatmapColor = setHeatmapColor();
@@ -482,8 +482,11 @@ function setHeatMapSvg() {
 
     heatmapSvg = d3.select("#trajectory-view-heatmap")
         .append("svg")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", 450)
         .attr("height", 450)
+        .attr("id","heatmapSvg")
+
         .style("border", "1px solid black")
         .append("g")
         .attr("transform",
@@ -505,6 +508,7 @@ function zoomed() {
 }
 
 function positionsToPath(positions) {
+
     let path = "M";
     positions.forEach(function (position, i) {
         path += xScale(position.x) + "," + yScale(position.y);
@@ -845,6 +849,43 @@ function drawGraphFromNode() {
     sumCurrentNodeData();
     //console.log("hallo 2");
     initializeMainContent();
+
+
+}
+
+function showSvgCode() {
+    //get svg element.
+    let temp = document.getElementById("trajectory-view-heatmap");
+    var svgExport = temp.getElementsByTagName("svg")[0];
+
+
+    //get svg source.
+    let svgxml = (new XMLSerializer).serializeToString(svgExport);
+    console.log(svgxml);
+
+
+    $("#svg_code").text(svgxml);
+
+//add name spaces.
+    if(!svgxml.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        svgxml = svgxml.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if(!svgxml.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        svgxml = svgxml.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+
+//add xml declaration
+    svgxml = '<?xml version="1.0" standalone="no"?>\r\n' + svgxml;
+
+//convert svg source to URI data scheme.
+    var svgUrl = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgxml);
+
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = "heatmap.svg";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 
 
 }

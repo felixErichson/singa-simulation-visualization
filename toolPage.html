@@ -42,6 +42,9 @@
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
 
+
+
+
 </head>
 
 <body>
@@ -71,12 +74,12 @@
                     options
                 </a>
             </li>
-            <li>
-                <a href="https://www.google.de/" target="_blank">
-                    <i class="fas fa-book"></i>
-                    Tutorial
-                </a>
-            </li>
+<!--            <li>-->
+<!--                <a id="tutorial" onclick="showSvgCode()">-->
+<!--                    <i class="fas fa-book"></i>-->
+<!--                    Tutorial-->
+<!--                </a>-->
+<!--            </li>-->
             <li>
                 <a href="index.html">
                     <i class="fas fa-home"></i>
@@ -129,6 +132,11 @@
             </li>
             <li style=" list-style-type: none; ">
                 <div id="trajectory-view-graph" style="display: inline-block">
+
+                    <pre class="prettyprint lang-xml" id="svg_code">
+
+
+                    </pre>
                 </div>
             </li>
         </ul>
@@ -217,6 +225,10 @@
         </div>
     </div>
 </div>
+
+<form id="svgform" method="post" action="download.pl">
+
+</form>
 
 <script>
     $(document).ready(function () {

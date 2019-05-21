@@ -230,7 +230,7 @@ function createTrajectoryPlot() {
     function appendDataViewLabel(className, dyPosition) {
         trajectoryPlot.append("text")
             .attr("class", "trajectory view graph verticalLine " + className)
-            .attr("x", 10)
+            .attr("dx", 15)
             .attr("style", "font-size: 15px")
             .attr("dy", dyPosition)
     }

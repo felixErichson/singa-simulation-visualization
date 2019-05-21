@@ -36,9 +36,10 @@ function createAllTrajectoriesMenu() {
             .append("g")
             .attr("transform","translate(" + allTrajectoriesPlotMargin.left + "," + allTrajectoriesPlotMargin.top + ")");
 
-        initializeTitle(title);
         initializeAxisLabel();
+        initializeTitle(title);
         addPlotData(identifier);
+
 
     }
 
@@ -53,20 +54,21 @@ function createAllTrajectoriesMenu() {
     }
 
     function initializeAxisLabel() {
+        console.log("Halloooooo")
         allTrajectoriesContext.append("text")
-            .attr("class", "x label")
-            .attr("text-anchor", "end")
             .attr("x", (allTrajectoriesPlotWidth / 2) + 20)
             .attr("y", allTrajectoriesPlotHeight + 30)
-            .attr("font-size", 15)
+            .attr("class", "x label")
+            .attr("text-anchor", "end")
+            .attr("font-size", "15px")
             .text("[ms]");
 
         allTrajectoriesContext.append("text")
-            .attr("class", "y label")
-            .attr("text-anchor", "end")
             .attr("y", -10)
             .attr("x", 30)
-            .attr("font-size", 15)
+            .attr("class", "y label")
+            .attr("text-anchor", "end")
+            .attr("font-size", "15px")
             .text("[nmol/l]");
     }
 
