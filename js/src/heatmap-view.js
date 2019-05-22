@@ -124,7 +124,7 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
             .append("div")
             .attr("id", "trajectory-view-hint")
             .append("p")
-            .text("To show concentration changes as line chart you should click on an element in the Heatmap");
+            .text("To show the changes in concentration in a line chart, click any element in the heatmap.");
 
 
         setHeatmapDropdown("#trajectory-view-heatmap", clickedSpeciesText);
@@ -546,7 +546,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                             d3.select("#trajectory-view-hint").remove();
                             selectedNode = nodeEntry.key;
                             drawGraphFromNode();
-                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species),species);
                             setChartTitle(selectedNode);
 
                         })
@@ -612,7 +612,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                     selectedNode = nodeEntry.key;
                     drawGraphFromNode();
                     setChartTitle(nodeEntry.key);
-                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                    onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species), species);
                 }).on("mouseover", function () {
                 d3.select(this).style("stroke-width", "2px").style("stroke", "black");
                 showTooltip();
@@ -657,7 +657,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                         d3.select("#trajectory-view-hint").remove();
                         selectedNode = nodeEntry.key;
                         drawGraphFromNode();
-                        onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species));
+                        onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species), species);
                         setChartTitle(selectedNode);
 
                     })

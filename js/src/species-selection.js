@@ -24,7 +24,6 @@ function createSpeciesSelectionMenu() {
     }
 
 
-
     function checkEmptyCompartment(compartment) {
         if ($(".col-md-4").parents('#compartment_' + compartmentsOfSelectedNode.indexOf(compartment)).length !== 1) {
             d3.select('#compartment_' + compartmentsOfSelectedNode.indexOf(compartment))
@@ -35,34 +34,51 @@ function createSpeciesSelectionMenu() {
 
 }
 
-function addSpeciesButton(compartment, species) {
-    d3.select("#compartment_" + compartmentsOfSelectedNode.indexOf((compartment)))
+function addSpeciesButton(compartment, species, optionalTitle) {
+    let selector;
+    let buttonTitle;
+    let id;
+
+
+    if (compartment === "search") {
+        selector = "#menu-species-selection-search-buttons";
+        if (optionalTitle !== undefined) {
+            buttonTitle = optionalTitle;
+            id = compartment+"_"+species;
+        }
+    } else {
+        selector = "#compartment_" + compartmentsOfSelectedNode.indexOf((compartment));
+        buttonTitle = species;
+        id = getIndexIdentifier(compartment, species);
+    }
+
+    d3.select(selector)
         .append("div")
         .attr("class", "col-md-4 center-block")
         .append("button")
-        .attr("id", getIndexIdentifier(compartment, species))
+        .attr("id", id)
         .attr("class", "btn btn-outline-secondary")
         .attr("type", "button")
-        .text(species)
+        .text(buttonTitle)
         .on("click", function () {
-            onSpeciesButtonClick(this.id)
+            onSpeciesButtonClick(this.id, $(this).text().toString())
         })
         .on("mouseover", function () {
             generateTooltip(species);
             showTooltip()
         }).on("mouseleave", function () {
-            hideTooltip();
+        hideTooltip();
     });
 
     d3.select("#trajectory-view-graph").append("div").attr("class", "row").attr("id", "selected_Button_area").style("position", "absolute").style("bottom", "205px");
 }
 
-function onSpeciesButtonClick(indexIdentifier) {
+function onSpeciesButtonClick(indexIdentifier, title) {
     if (activeComponentIdices.length < 2 && getButtonSelector(indexIdentifier).attr("class") === "btn btn-outline-secondary") {
-        d3.select('[id= "' +indexIdentifier +'"]').remove();
+        d3.select('[id= "' + indexIdentifier + '"]').remove();
 
-      //TODO auslagern
-
+        //TODO auslagern
+console.log(indexIdentifier);
         d3.select("#selected_Button_area")
             .append("div")
             .attr("class", "col-xs-4")
@@ -70,19 +86,19 @@ function onSpeciesButtonClick(indexIdentifier) {
             .attr("id", indexIdentifier)
             .attr("class", "btn btn-outline-secondary")
             .attr("type", "button")
-            .text(getSpeciesFromIndexIdentifier(indexIdentifier))
+            .text(title)
             .on("click", function () {
                 hideTooltip();
                 removeLine(indexIdentifier);
                 d3.select(this).remove();
-                addSpeciesButton(getCompartmentFromIndexIdentifier(indexIdentifier), getSpeciesFromIndexIdentifier(indexIdentifier));
+                addSpeciesButton(getCompartmentFromIndexIdentifier(indexIdentifier), getSpeciesFromIndexIdentifier(indexIdentifier), title);
             })
             .on("mouseover", function () {
                 generateTooltip(getSpeciesFromIndexIdentifier(indexIdentifier) + " - " + getCompartmentFromIndexIdentifier(indexIdentifier));
                 showTooltip()
             })
             .on("mouseleave", function () {
-            hideTooltip();
+                hideTooltip();
             });
 
         addLine(indexIdentifier);

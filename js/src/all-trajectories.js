@@ -54,7 +54,6 @@ function createAllTrajectoriesMenu() {
     }
 
     function initializeAxisLabel() {
-        console.log("Halloooooo")
         allTrajectoriesContext.append("text")
             .attr("x", (allTrajectoriesPlotWidth / 2) + 20)
             .attr("y", allTrajectoriesPlotHeight + 30)

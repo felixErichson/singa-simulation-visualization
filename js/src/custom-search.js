@@ -262,7 +262,7 @@ function createCustomSearchMenu() {
             .attr("type", "button")
             .text($("#menu-custom-search-title").val())
             .on("click", function () {
-                onSpeciesButtonClick(this.id);
+                onSpeciesButtonClick(this.id, $("#menu-custom-search-title").val());
             });
     }
 
