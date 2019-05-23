@@ -268,7 +268,7 @@ function step() {
 function update(h, compartment, species) {
     slideControl.attr("cx", xTimeScale(h));
     dragedTimeLabel.attr("x", xTimeScale(h))
-        .text(d3.format(".3f")(time[h])+ " ms");
+        .text(d3.format(".3f")(time[h]) + " ms");
 
     getHeatmapData(time[h], species);
     heatmapColor = setHeatmapColor();
@@ -307,7 +307,7 @@ function drawHeatmapLegend() {
         .attr("offset", "100%")
         .attr("stop-color", "#0cac79");
 
-    let legendWidth = Math.min(heatwidth, 450);
+    let legendWidth = Math.max(heatwidth, 460);
 
     let legendsvg = legendSvg.append("g")
         .attr("class", "legendWrapper")
@@ -318,9 +318,18 @@ function drawHeatmapLegend() {
         .attr("x", 15)
         .attr("y", 0)
         //.attr("rx", hexRadius*1.25/2)
-        .attr("width", legendWidth)
+        .attr("width", heatwidth)
         .attr("height", 10)
         .style("fill", "url(#legend-traffic)");
+
+
+    legendsvg.append("text")
+        .attr("class", "heatmap legend label")
+        .attr("text-anchor", "end")
+        .attr("x", 450)
+        .attr("y",25 )
+        .attr("font-size", 12)
+        .text(concentrationUnit);
 
 
     if ($('input[name="check"]:checked').val() === "relative") {
@@ -485,7 +494,7 @@ function setHeatMapSvg() {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", 450)
         .attr("height", 450)
-        .attr("id","heatmapSvg")
+        .attr("id", "heatmapSvg")
 
         .style("border", "1px solid black")
         .append("g")
@@ -546,7 +555,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                             d3.select("#trajectory-view-hint").remove();
                             selectedNode = nodeEntry.key;
                             drawGraphFromNode();
-                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species),species);
+                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(species)[0], species), species);
                             setChartTitle(selectedNode);
 
                         })
@@ -560,7 +569,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                             if (compartmentEntry.value.get("concentration") === undefined) {
                                 generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
                             } else {
-                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration"));
+                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
                             }
                         })
                         .on("mouseleave", function () {
@@ -620,7 +629,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 if (nodeEntry.value.get("vesicle membrane").value === undefined) {
                     generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + "none");
                 } else {
-                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").value);
+                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").value + " " + concentrationUnit);
                 }
 
             }).on("mouseleave", function () {
@@ -669,7 +678,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                         if (compartmentEntry.value.get("concentration") === undefined) {
                             generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
                         } else {
-                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration"));
+                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " +concentrationUnit);
                         }
                     })
                     .on("mouseleave", function () {
@@ -867,10 +876,10 @@ function showSvgCode() {
     $("#svg_code").text(svgxml);
 
 //add name spaces.
-    if(!svgxml.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+    if (!svgxml.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         svgxml = svgxml.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
     }
-    if(!svgxml.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+    if (!svgxml.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
         svgxml = svgxml.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
     }
 
@@ -878,7 +887,7 @@ function showSvgCode() {
     svgxml = '<?xml version="1.0" standalone="no"?>\r\n' + svgxml;
 
 //convert svg source to URI data scheme.
-    var svgUrl = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgxml);
+    var svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgxml);
 
     var downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
