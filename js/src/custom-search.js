@@ -35,6 +35,12 @@ function createCustomSearchMenu() {
             .text("submit search ")
             .on("click", function () {
                 $("#menu-species-selection-search-buttons").show();
+
+                $("#menu-species-selection-search-buttons-headline").children("h4").remove();
+
+                d3.select("#menu-species-selection-search-buttons-headline")
+                    .append("h4")
+                    .text("custom trajectories");
                 appendButtonForSelection(searchIdentifier);
                 clearSearch();
                 filterComponents();
