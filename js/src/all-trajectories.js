@@ -57,7 +57,7 @@ function createAllTrajectoriesMenu() {
         allTrajectoriesContext.append("text")
             .attr("x", (allTrajectoriesPlotWidth / 2) + 20)
             .attr("y", allTrajectoriesPlotHeight + 30)
-            .attr("class", "x label")
+            // .attr("class", "x label")
             .attr("text-anchor", "end")
             .attr("font-size", "15px")
             .text("[ms]");
@@ -65,7 +65,7 @@ function createAllTrajectoriesMenu() {
         allTrajectoriesContext.append("text")
             .attr("y", -10)
             .attr("x", 30)
-            .attr("class", "y label")
+            // .attr("class", "y label")
             .attr("text-anchor", "end")
             .attr("font-size", "15px")
             .text("[nmol/l]");
