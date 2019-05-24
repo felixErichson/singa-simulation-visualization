@@ -1,7 +1,7 @@
 
 const allTrajectoriesPlotMargin = {top: 40, right: 20, bottom: 40, left: 100},
       allTrajectoriesPlotWidth = 400 - allTrajectoriesPlotMargin.left - allTrajectoriesPlotMargin.right,
-      allTrajectoriesPlotHeight = 300 - allTrajectoriesPlotMargin.top - allTrajectoriesPlotMargin.bottom;
+      allTrajectoriesPlotHeight = 330 - allTrajectoriesPlotMargin.top - allTrajectoriesPlotMargin.bottom;
 
 function createAllTrajectoriesMenu() {
 
@@ -13,6 +13,8 @@ function createAllTrajectoriesMenu() {
             d3.select("#menu-all-trajectories")
                 .append("div")
                 .attr("id", "trajectories-compartment-" + compartmentsOfSelectedNode.indexOf(compartment))
+                .style("margin-left", "20px")
+                .style("margin-top", "20px")
                 .append("h2")
                 .text(compartment);
         });
@@ -31,10 +33,12 @@ function createAllTrajectoriesMenu() {
         allTrajectoriesContext = d3.select(selector)
             .append("svg")
             .attr("float", "left")
-            .attr("width", allTrajectoriesPlotWidth + allTrajectoriesPlotMargin.left + allTrajectoriesPlotMargin.right)
-            .attr("height", allTrajectoriesPlotHeight + allTrajectoriesPlotMargin.top + allTrajectoriesPlotMargin.bottom)
+            .attr("width", allTrajectoriesPlotWidth + allTrajectoriesPlotMargin.left + allTrajectoriesPlotMargin.right +15)
+            .attr("height", allTrajectoriesPlotHeight + allTrajectoriesPlotMargin.top + allTrajectoriesPlotMargin.bottom +15)
+            .style("margin-bottom","20px")
+            .style("margin-top", "20px")
             .append("g")
-            .attr("transform","translate(" + allTrajectoriesPlotMargin.left + "," + allTrajectoriesPlotMargin.top + ")");
+            .attr("transform","translate(" + allTrajectoriesPlotMargin.left + "," + allTrajectoriesPlotMargin.top  + ")");
 
         initializeAxisLabel();
         initializeTitle(title);
@@ -49,21 +53,21 @@ function createAllTrajectoriesMenu() {
             .attr("y", 0 - (allTrajectoriesPlotMargin.top / 1.5))
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
-            .style("text-decoration", "underline")
+            .style("font-weight", "bold")
             .text(title);
     }
 
     function initializeAxisLabel() {
         allTrajectoriesContext.append("text")
             .attr("x", (allTrajectoriesPlotWidth / 2) + 20)
-            .attr("y", allTrajectoriesPlotHeight + 30)
+            .attr("y", allTrajectoriesPlotHeight + 50)
             // .attr("class", "x label")
             .attr("text-anchor", "end")
             .attr("font-size", "15px")
             .text("[ms]");
 
         allTrajectoriesContext.append("text")
-            .attr("y", -10)
+            .attr("y", 0)
             .attr("x", 30)
             // .attr("class", "y label")
             .attr("text-anchor", "end")
@@ -87,13 +91,17 @@ function createAllTrajectoriesMenu() {
 
 
         allTrajectoriesContext.append("g")
-            .attr("transform", "translate(0," + allTrajectoriesPlotHeight + ")")
+            .attr("transform", "translate(0," + (allTrajectoriesPlotHeight+15) + ")")
             .call(d3.axisBottom(xAxisScale).ticks(4));
 
         allTrajectoriesContext.append("g")
+            .attr("transform", "translate(0," + 15 + ")")
             .call(d3.axisLeft(yAxisScale).ticks(5));
 
-        allTrajectoriesContext.append("path")
+        allTrajectoriesContext
+            .append("g")
+            .attr("transform", "translate(0," + 15 + ")")
+            .append("path")
             .datum(reducedNodeData[identifier])
             .style("stroke", getRandomColor())
             .style("fill", "none")
