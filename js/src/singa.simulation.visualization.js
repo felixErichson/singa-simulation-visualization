@@ -1,6 +1,6 @@
 //Global variables
 
-const color = ['#d95f02', '#7570b3', '#e7298a'];
+const color = ['#d95f02', '#7570b3', '#88763e'];
 
 let componentCombinations = [],
     reducedNodeData = [],
@@ -129,6 +129,9 @@ function resetGlobalArrays() {
 function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
+
+   $(".nav.nav-tabs.justify-content-center").removeClass("visible");
+   $(".nav.nav-tabs.justify-content-center").toggleClass("invisible");
 }
 
 function clearHtmlTags() {

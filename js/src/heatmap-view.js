@@ -112,7 +112,7 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
             .append("h2")
             .attr("class", "heatmapHeading")
             .style("display", "inline-block")
-            .style("margin-left", "4px").text("HEATMAP");
+            .style("margin-left", "4px").text("SPACIAL VIEW");
 
         setHeatMapSvg();
         appendPlayButton();
@@ -851,7 +851,7 @@ function drawGraphFromNode() {
         .append("h2")
         .attr("class", "graphHeading")
         .style("display", "inline-block")
-        .style("margin-left", "4px").text("PLOT");
+        .style("margin-left", "4px").text("CONCENTRATION PLOT");
 
 
     reducedNodeData.length = 0;

@@ -11,38 +11,45 @@
 
     <link rel="stylesheet" type="text/css" href="style.css" media="screen">
 
+
+    <!--CSSCSS library from Bootsrap-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
+    <!--CSS library from Font Awesome  -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
           integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
+
+    <!--Libary for font family (Roboto)-->
     <link href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,700,400' rel='stylesheet'
           type='text/css'>
 
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-
+    <!--D3 version 4-->
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
+    <!--multi value syntax for selections and transitions with D3-->
     <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 
-
+    <!--Jquery library for Bootstrap-->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
 
+    <!--Jquery library-->
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 
+    <!--Jquery UI library for draggable options-->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+
+    <!--Library for Bootsrap to realize dropdown positioning-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 
+    <!--javascript library for Bootsrap-->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
-
-
 
 
 </head>
@@ -74,12 +81,12 @@
                     options
                 </a>
             </li>
-<!--            <li>-->
-<!--                <a id="tutorial" onclick="showSvgCode()">-->
-<!--                    <i class="fas fa-book"></i>-->
-<!--                    Tutorial-->
-<!--                </a>-->
-<!--            </li>-->
+            <!--            <li>-->
+            <!--                <a id="tutorial" onclick="showSvgCode()">-->
+            <!--                    <i class="fas fa-book"></i>-->
+            <!--                    Tutorial-->
+            <!--                </a>-->
+            <!--            </li>-->
             <li>
                 <a href="index.html">
                     <i class="fas fa-home"></i>
@@ -103,7 +110,7 @@
         <input type="checkbox" aria-label="Checkbox for following text input" name="check"
                value="relative" checked> relative
         <a style="float: right"> <i id="relative_scale_info" class="fas fa-info-circle" style="margin-left: 5px"
-                                    ></i></a>
+        ></i></a>
     </div>
 
     <div class="input-group-text">
@@ -112,119 +119,120 @@
         absolute
 
         <i class="fas fa-info-circle" style="margin-left: 5px"
-          id=absolute_scale_info></i>
+           id=absolute_scale_info></i>
     </div>
 
 </div>
 
-    <div class="trajectory-view-menu-container">
+<div class="trajectory-view-menu-container">
 
-        <div id="loadFileHint">
+    <div id="loadFileHint">
 
-            <p>To start the visualization load a file.</p>
+        <p>To start the visualization load a file.</p>
 
-        </div>
+    </div>
 
-        <ul id="data-view-table" style="width: 1350px; margin-left: auto; margin-right: auto">
-            <li style=" list-style-type: none; ">
-                <div id="trajectory-view-heatmap" style="display: inline-block">
-                </div>
-            </li>
-            <li style=" list-style-type: none; ">
-                <div id="trajectory-view-graph" style="display: inline-block">
+    <ul id="data-view-table" style="width: 1350px; margin-left: auto; margin-right: auto">
+        <li style=" list-style-type: none; ">
+            <div id="trajectory-view-heatmap" style="display: inline-block">
+            </div>
+        </li>
+        <li style=" list-style-type: none; ">
+            <div id="trajectory-view-graph" style="display: inline-block">
 
                     <pre class="prettyprint lang-xml" id="svg_code">
 
 
                     </pre>
+            </div>
+        </li>
+    </ul>
+
+
+    <div id="heatmap-view-species-selection"></div>
+    <div id="heatmap-view-slider"></div>
+</div>
+
+
+<div id="trajectory-view-navigation" style="position: absolute; margin-top: 850px; width: 100%">
+    <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
+
+
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab"
+               aria-controls="home"
+               aria-selected="true">species selection</a>
+        </li>
+
+
+        <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#menu-custom-search" role="tab"
+               aria-controls="profile"
+               aria-selected="false">custom search</a>
+        </li>
+
+
+        <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#menu-all-trajectories" role="tab"
+               aria-controls="contact" aria-selected="false">all trajectories</a>
+        </li>
+
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel"
+             aria-labelledby="home-tab">
+            <div id="menu-species-selection-search-buttons-headline"
+                 style="padding-left: 20px; padding-top: 20px"></div>
+            <div id="menu-species-selection-search-buttons" style="padding-left: 20px"></div>
+            <div id="menu-species-selection-species-buttons"></div>
+        </div>
+
+        <div class="tab-pane fade" id="menu-custom-search" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
+                <div class="input-group-prepend">
                 </div>
-            </li>
-        </ul>
+            </div>
+            <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse"
+               data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
+                advanced search
+            </a>
+            <div class="collapse show" id="collapseExample">
+                <div class="card card-body">
+                    <div id="menu-custom-search-creation-area"></div>
+                </div>
+            </div>
+            <div id="menu-custom-search-component-area"></div>
+        </div>
 
 
-        <div id="heatmap-view-species-selection"></div>
-        <div id="heatmap-view-slider"></div>
+        <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
     </div>
+</div>
 
-
-    <div id="trajectory-view-navigation" style="position: absolute; margin-top: 850px; width: 100%">
-        <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
-
-
-            <li class="nav-item">
-                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#menu-species-selection" role="tab"
-                   aria-controls="home"
-                   aria-selected="true">species selection</a>
-            </li>
-
-
-            <li class="nav-item">
-                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#menu-custom-search" role="tab"
-                   aria-controls="profile"
-                   aria-selected="false">custom search</a>
-            </li>
-
-
-            <li class="nav-item">
-                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#menu-all-trajectories" role="tab"
-                   aria-controls="contact" aria-selected="false">all trajectories</a>
-            </li>
-
-        </ul>
-
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active " id="menu-species-selection" role="tabpanel"
-                 aria-labelledby="home-tab">
-                <div id="menu-species-selection-search-buttons-headline" style="padding-left: 20px; padding-top: 20px"></div>
-                <div id="menu-species-selection-search-buttons" style="padding-left: 20px"></div>
-                <div id="menu-species-selection-species-buttons"></div>
+<div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-
-            <div class="tab-pane fade" id="menu-custom-search" role="tabpanel" aria-labelledby="profile-tab">
-                <div class="input-group mb-3 invisible" style="margin-bottom: unset !important;">
-                    <div class="input-group-prepend">
-                    </div>
-                </div>
-                <a class="list-group-item list-group-item-action list-group-item-success" data-toggle="collapse"
-                   data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
-                    advanced search
-                </a>
-                <div class="collapse show" id="collapseExample">
-                    <div class="card card-body">
-                        <div id="menu-custom-search-creation-area"></div>
-                    </div>
-                </div>
-                <div id="menu-custom-search-component-area"></div>
+            <div class="modal-body">
+                <button type="button" class="btn btn-primary" id="exC" onclick="loadExample('csv')"
+                        data-dismiss="modal">
+                    example_trajectories.cvs
+                </button>
+                <button type="button" class="btn btn-primary" id="exJ" onclick="loadExample('json')"
+                        data-dismiss="modal">
+                    example_trajectories.json
+                </button>
             </div>
-
-
-            <div class="tab-pane fade" id="menu-all-trajectories" role="tabpanel" aria-labelledby="contact-tab"></div>
         </div>
     </div>
-
-    <div class="modal fade" id="exampleFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleFileModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleFileModalLabel">Choose an example file!</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <button type="button" class="btn btn-primary" id="exC" onclick="loadExample('csv')"
-                            data-dismiss="modal">
-                        example_trajectories.cvs
-                    </button>
-                    <button type="button" class="btn btn-primary" id="exJ" onclick="loadExample('json')"
-                            data-dismiss="modal">
-                        example_trajectories.json
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 </div>
 
 <form id="svgform" method="post" action="download.pl">
