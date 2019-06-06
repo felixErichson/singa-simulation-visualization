@@ -4,31 +4,31 @@ const trajectoryPlotMargin = {top: 40, right: 25, bottom: 40, left: 25},
 
 const Orientation = {
 
-    West : "west",
-    East : "east"
+    West: "west",
+    East: "east"
 };
 
 const Position = {
-    Left : "left",
+    Left: "left",
     Right: "right"
 };
 
 const AxisAlignment = {
-    LeftEast:{
-        orientation : Orientation.East,
-        position : Position.Left
+    LeftEast: {
+        orientation: Orientation.East,
+        position: Position.Left
     },
-    LeftWest:{
-        orientation : Orientation.West,
-        position : Position.Left
+    LeftWest: {
+        orientation: Orientation.West,
+        position: Position.Left
     },
-    RightEast:{
-        orientation : Orientation.East,
-        position : Position.Right
+    RightEast: {
+        orientation: Orientation.East,
+        position: Position.Right
     },
-    RightWest:{
-        orientation : Orientation.West,
-        position : Position.Right
+    RightWest: {
+        orientation: Orientation.West,
+        position: Position.Right
     }
 };
 
@@ -81,12 +81,13 @@ function createTrajectoryPlot() {
     lines.length = 0;
 
     activeComponentIdices.forEach(function (indexIdentifier) {
-            createAxis(indexIdentifier);
-            createLine(indexIdentifier);
+        createAxis(indexIdentifier);
+        createLine(indexIdentifier);
 
 
     });
     initializeLineDataView();
+
     function getPlotData(indexIdentifier) {
 
         let compartment = getCompartmentFromIndexIdentifier(indexIdentifier);
@@ -94,13 +95,14 @@ function createTrajectoryPlot() {
 
         return reducedNodeData[compartment + "_" + species];
 
+
     }
 
     function getDomain(data) {
 
-       let scale = getScale();
+        let scale = getScale();
 
-       return scale.domain([0, d3.max(data, function (d) {
+        return scale.domain([0, d3.max(data, function (d) {
             return d.y;
         })]);
     }
@@ -114,12 +116,18 @@ function createTrajectoryPlot() {
             .attr("class", "line")
             .attr("id", "line_" + indexIdentifier)
             .style("stroke", getLineColor())
-            .attr("d", d3.line()
+            .attr("d", d3.line().defined(function (d) {
+                return d.y !== undefined
+            })
                 .x(function (d) {
                     return x(d.x);
                 })
                 .y(function (d) {
-                    return scale(d.y);
+
+
+    return scale(d.y);
+
+
                 }));
         $("#" + indexIdentifier + ".btn-outline-secondary:not(:disabled):not(.disabled).active")
             .css("background-color", getLineColor(), "!important");
@@ -176,7 +184,7 @@ function createTrajectoryPlot() {
             .attr("font-size", 20)
             .text("Elapsed time [ms]");
 
-    //label Y-Axis
+        //label Y-Axis
         trajectoryPlot.append("text")
             .attr("class", "y label")
             .attr("text-anchor", "end")
@@ -197,7 +205,7 @@ function createTrajectoryPlot() {
 
         let axisNode = trajectoryPlot.append("g");
 
-        if (alignment.position  === Position.Right) {
+        if (alignment.position === Position.Right) {
             axisNode.attr("transform", "translate(" + trajectoryPlotWidth + " ,0)")
         }
         axisClassName += " " + alignment.position;

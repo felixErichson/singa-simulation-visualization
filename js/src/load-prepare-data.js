@@ -241,21 +241,24 @@ function sumCurrentNodeData() {
     let combinationsofComponants = [];
 
     nestedData.keys().forEach(function (timeStep) {
-        nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
-            nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
-                if (!combinationsofComponants.includes(compartment+"_"+species)
-                    && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined
-                    && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
+        if (nestedData.get(timeStep).get(selectedNode) !== undefined) {
+            nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
+                nestedData.get(timeStep).get(selectedNode).get(compartment).keys().forEach(function (species) {
+                    if (!combinationsofComponants.includes(compartment + "_" + species)
+                        && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) !== undefined
+                        && nestedData.get(timeStep).get(selectedNode).get(compartment).get(species) > 0) {
 
 
-                    combinationsofComponants.push(compartment+"_"+species);
-                    reducedNodeData[compartment + "_" + species]  = filterData(compartment, species);
+                        combinationsofComponants.push(compartment + "_" + species);
+                        reducedNodeData[compartment + "_" + species] = filterData(compartment, species);
 
 
-                }
+                    }
+                })
             })
-        })
-    })
-//console.log(reducedNodeData);
+        }
+    });
+
+console.log(reducedNodeData);
 
 }

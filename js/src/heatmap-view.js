@@ -327,7 +327,7 @@ function drawHeatmapLegend() {
         .attr("class", "heatmap legend label")
         .attr("text-anchor", "end")
         .attr("x", 450)
-        .attr("y",25 )
+        .attr("y", 25)
         .attr("font-size", 12)
         .text(concentrationUnit);
 
@@ -678,7 +678,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                         if (compartmentEntry.value.get("concentration") === undefined) {
                             generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
                         } else {
-                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " +concentrationUnit);
+                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
                         }
                     })
                     .on("mouseleave", function () {
@@ -808,11 +808,15 @@ function changeVerticalLineData(selectedTime) {
 function setNodeCompartments() {
 
     nestedData.keys().forEach(function (timeStep) {
-        nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
-            if (!compartmentsOfSelectedNode.includes(compartment) && !compartment.startsWith("x") && !compartment.startsWith("y")) {
-                compartmentsOfSelectedNode.push(compartment)
-            }
-        })
+        if (nestedData.get(timeStep).get(selectedNode) !== undefined) {
+            nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
+                    if (!compartmentsOfSelectedNode.includes(compartment) && !compartment.startsWith("x") && !compartment.startsWith("y")) {
+                        compartmentsOfSelectedNode.push(compartment)
+                    }
+
+                }
+            )
+        }
     });
 }
 
