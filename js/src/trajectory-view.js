@@ -56,7 +56,7 @@ function initializePlotSvg() {
         .append("svg")
         .attr("width", trajectoryPlotWidth)
         .attr("height", trajectoryPlotHeight + trajectoryPlotMargin.top + trajectoryPlotMargin.bottom)
-        .attr("viewBox", "-50 +80 " + (100 + currentDivWidth) + " " + currentDivHeight)
+        .attr("viewBox", "-60 +80 " + (100 + currentDivWidth) + " " + currentDivHeight)
         .attr("preserveAspectRatio", "xMidYMax meet")
         .append('g')
         .attr('transform', `translate(${trajectoryPlotMargin.left}, ${trajectoryPlotMargin.top})`)

@@ -206,7 +206,7 @@ function drawTrackOverlay(slider) {
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 10 + ")")
         .selectAll("text")
-        .data(xTimeScale.ticks(10))
+        .data(xTimeScale.ticks(8))
         .enter()
         .append("text")
         .attr("x", xTimeScale)
