@@ -809,7 +809,7 @@ function changeVerticalLineData(selectedTime) {
             return "translate(" + x(d.x) + "," + scales[0](d.y) + ")";
         });
 
-
+//TODO zusammenfassen
     if (activeComponentIdices[1] !== undefined) {
 
         let id2 = activeComponentIdices[1];
@@ -833,6 +833,55 @@ function changeVerticalLineData(selectedTime) {
                 return "translate(" + x(d.x) + "," + scales[1](d.y) + ")";
             })
     }
+
+    if (activeComponentIdices[2] !== undefined) {
+
+        let id3 = activeComponentIdices[2];
+        let data3;
+
+        data3 = reducedNodeData[getCompartmentFromIndexIdentifier(id3) + "_" + getSpeciesFromIndexIdentifier(id3)];
+        data3 = data3[selectedTime];
+
+        d3.select(".trajectory.view.graph.verticalLine.valueLabel.three")
+            .datum(data3)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[2](d.y) + ")";
+            }).text(function (d) {
+            return d.y;
+
+        });
+
+        d3.select(".trajectory.view.graph.verticalLine.circle3")
+            .datum(data3)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[2](d.y) + ")";
+            })
+    }
+
+    if (activeComponentIdices[3] !== undefined) {
+
+        let id4 = activeComponentIdices[3];
+        let data4;
+
+        data4 = reducedNodeData[getCompartmentFromIndexIdentifier(id4) + "_" + getSpeciesFromIndexIdentifier(id4)];
+        data4 = data4[selectedTime];
+
+        d3.select(".trajectory.view.graph.verticalLine.valueLabel.four")
+            .datum(data4)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[3](d.y) + ")";
+            }).text(function (d) {
+            return d.y;
+
+        });
+
+        d3.select(".trajectory.view.graph.verticalLine.circle4")
+            .datum(data4)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[3](d.y) + ")";
+            })
+    }
+
 }
 
 function setNodeCompartments() {
@@ -890,7 +939,6 @@ function drawGraphFromNode() {
 
     reducedNodeData.length = 0;
     sumCurrentNodeData();
-    //console.log("hallo 2");
     initializeMainContent();
 
 

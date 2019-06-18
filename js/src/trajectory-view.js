@@ -171,6 +171,16 @@ function createTrajectoryPlot() {
                 appendDataViewLabel("valueLabel two", 15);
                 appendDataViewCircle("circle2", color[1]);
             }
+
+            if (activeComponentIdices[2] !== undefined) {
+                appendDataViewLabel("valueLabel three", 15);
+                appendDataViewCircle("circle3", color[2]);
+            }
+
+            if (activeComponentIdices[3] !== undefined) {
+                appendDataViewLabel("valueLabel four", 15);
+                appendDataViewCircle("circle4", color[3]);
+            }
         }
     }
 

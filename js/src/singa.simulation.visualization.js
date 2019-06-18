@@ -1,6 +1,6 @@
 //Global variables
 
-const color = ['#d95f02', '#7570b3', '#88763e'];
+const color = ['#d95f02', '#0570b0', '#d7301f', '#88763e'];
 
 let componentCombinations = [],
     reducedNodeData = [],
