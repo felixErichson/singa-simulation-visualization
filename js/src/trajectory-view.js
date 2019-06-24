@@ -228,7 +228,7 @@ function createTrajectoryPlot() {
         axisClassName += " " + alignment.orientation;
 
         axisNode.attr("class", axisClassName)
-            .call(axis.tickFormat(d3.format('.3f')))
+            .call(axis.tickFormat(d3.format('.3f')).ticks(7))
             .styles({
                 fill: "none", stroke: getLineColor()
             })
