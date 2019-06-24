@@ -106,6 +106,9 @@ function createAllTrajectoriesMenu() {
             .style("stroke", getRandomColor())
             .style("fill", "none")
             .attr("d", d3.line()
+                .defined(function (d){
+                   return d.y !== undefined
+                })
                 .x(function (d) {
                     return xAxisScale(d.x);
                 })

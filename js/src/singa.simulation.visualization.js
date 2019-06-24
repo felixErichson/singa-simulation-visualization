@@ -1,6 +1,6 @@
 //Global variables
 
-const color = ['#d95f02', '#7570b3', '#e7298a'];
+const color = ['#d95f02', '#0570b0', '#d7301f', '#88763e'];
 
 let componentCombinations = [],
     reducedNodeData = [],
@@ -120,7 +120,7 @@ function resetGlobalArrays() {
     allSpecies.length = 0;
     allCompartments.length = 0;
     allNodes.length = 0;
-   // heatmapData.length = 0;
+    // heatmapData.length = 0;
     heatmapXRange.length = 0;
     heatmapYRange.length = 0;
 
@@ -129,6 +129,7 @@ function resetGlobalArrays() {
 function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
+
 }
 
 function clearHtmlTags() {
@@ -163,20 +164,30 @@ function filterData(compartment, spec) {
     let trajectoryData = [];
     let obj = {};
 
+console.log(spec);
     nestedData.keys().forEach(function (element) {
-        if (nestedData.get(element).get(selectedNode).get(compartment).get(spec) === undefined) {
+
+        if (nestedData.get(element).get(selectedNode) === undefined) {
+            obj = {
+                x: parseFloat(element),
+                y: undefined
+            };
+            trajectoryData.push(obj);
+
+        }else  if (nestedData.get(element).get(selectedNode).get(compartment).get(spec) === undefined) {
             obj = {
                 x: parseFloat(element),
                 y: 0
             };
             trajectoryData.push(obj);
         } else {
-            obj = {
-                x: parseFloat(element),
-                y: nestedData.get(element).get(selectedNode).get(compartment).get(spec)
-            };
-            trajectoryData.push(obj);
-        }
+                obj = {
+                    x: parseFloat(element),
+                    y: nestedData.get(element).get(selectedNode).get(compartment).get(spec)
+                };
+                trajectoryData.push(obj);
+            }
+
     });
     return trajectoryData;
 }
@@ -192,13 +203,13 @@ function getRandomColor() {
 }
 
 function showOptions() {
-    $('#optionModal').css('visibility','visible');
+    $('#optionModal').css('visibility', 'visible');
     // $("#optionModal").show();
 
 }
 
 function hideOptions() {
-    $('#optionModal').css('visibility','hidden');
+    $('#optionModal').css('visibility', 'hidden');
     // $("#optionModal").hide();
 
 }
@@ -209,7 +220,7 @@ function hideOptions() {
  */
 function generateTooltip(text) {
     infoTooltip.html(text)
-        .style("left", (d3.event.pageX + 20) + "px")
+        .style("left", (d3.event.pageX +20) + "px")
         .style("top", (d3.event.pageY - 28) + "px");
 }
 
@@ -228,11 +239,11 @@ function hideTooltip() {
 
 d3.select("#home-tab")
     .on("mouseover", function () {
-    generateTooltip(" All species are represented as " +
-        "<br> buttons to their assigned compartment. " +
-        "<br> Click the buttons to show " +
-        "<br>concentration change as line plot" );
-    showTooltip()
+        generateTooltip(" All species are represented as " +
+            "<br> buttons to their assigned compartment. " +
+            "<br> Click the buttons to show " +
+            "<br>concentration change as line plot");
+        showTooltip()
     })
     .on("mouseleave", function () {
         hideTooltip()

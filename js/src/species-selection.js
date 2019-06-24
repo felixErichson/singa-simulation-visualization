@@ -74,7 +74,7 @@ function addSpeciesButton(compartment, species, optionalTitle) {
 }
 
 function onSpeciesButtonClick(indexIdentifier, title) {
-    if (activeComponentIdices.length < 2 && getButtonSelector(indexIdentifier).attr("class") === "btn btn-outline-secondary") {
+    if (activeComponentIdices.length < 4 && getButtonSelector(indexIdentifier).attr("class") === "btn btn-outline-secondary") {
         d3.select('[id= "' + indexIdentifier + '"]').remove();
 
         //TODO auslagern

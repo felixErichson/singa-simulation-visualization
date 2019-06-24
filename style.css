@@ -486,6 +486,10 @@ nav.shift ul li a:hover:after {
     height: 200px;
     padding: 0.5em;
     z-index: 100;
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    color: #333333;
+    border-radius: 0.25rem;
 }
 
 #nav-button{

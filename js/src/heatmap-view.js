@@ -8,6 +8,8 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatwidth = 450 - heatMargin.left - heatMargin.right,
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
+const colorgrad = ['#008000','#208600','#318d00','#409300','#4d9900','#59a000','#65a600','#70ac00','#7cb300','#87b900','#92bf00','#9dc600','#a8cc00','#b3d300','#bed900','#c9e000','#d4e600','#e0ed00','#ebf300','#f6fa00','#fffe00','#fffa00','#fff500','#fff100','#ffec00','#ffe800','#ffe300','#ffdf00','#ffda00','#ffd600','#ffd100','#ffcd00','#ffc800','#ffc400','#ffbf00','#ffba00','#ffb600','#ffb100','#ffad00','#ffa800','#ffa300','#ff9e00','#ff9900','#ff9300','#ff8e00','#ff8900','#ff8300','#ff7d00','#ff7700','#ff7100','#ff6b00','#ff6500','#ff5e00','#ff5700','#ff4f00','#ff4700','#ff3e00','#ff3300','#ff2500','#ff1000','#fc000a','#f60017','#f00020','#eb0027','#e5002e','#df0034','#d9003a','#d30040','#cd0045','#c7004b','#c10050','#bb0056','#b4005b','#ae0060','#a70065','#a0006a','#990070','#920075','#8a007a','#82007f','#7f0085','#7e008b','#7d0091','#7b0097','#79009d','#7700a4','#7500aa','#7200b0','#6f00b7','#6c00bd','#6800c3','#6400ca','#5f00d0','#5900d7','#5300de','#4b00e4','#4200eb','#3600f2','#2600f8','#0000ff'];
+let currentcolor;
 
 let xScale;
 let yScale;
@@ -27,7 +29,9 @@ let dragedTime,
     comp,
     spec,
     legendSvg,
-    LegendAxisScale;
+    LegendAxisScale,
+    c,
+    s;
 
 
 function setHeatmapDropdown(container, text, csv) {
@@ -76,6 +80,8 @@ function setHeatmapDropdown(container, text, csv) {
 
 function onClickHeatmapDropdown(clickedSpeciesText, csv) {
 
+    //TODO Code aufräumen Compartment und Spezies Global anlegen irgendwie
+    s = clickedSpeciesText;
 
     $('#nav-option').css('visibility', 'visible');
     $("#dropdown_button").text(clickedSpeciesText);
@@ -112,7 +118,7 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
             .append("h2")
             .attr("class", "heatmapHeading")
             .style("display", "inline-block")
-            .style("margin-left", "4px").text("HEATMAP");
+            .style("margin-left", "4px").text("SPACIAL VIEW");
 
         setHeatMapSvg();
         appendPlayButton();
@@ -145,6 +151,8 @@ function appendPlayButton() {
 }
 
 function initializeSlider(species) {
+
+    c = getCompartmentFromSpecies(species);
 
     let compartment = getCompartmentFromSpecies(species);
     concentrationRange = getRangeOfSpecies(species, getCompartmentFromSpecies(species));
@@ -198,7 +206,7 @@ function drawTrackOverlay(slider) {
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 10 + ")")
         .selectAll("text")
-        .data(xTimeScale.ticks(10))
+        .data(xTimeScale.ticks(8))
         .enter()
         .append("text")
         .attr("x", xTimeScale)
@@ -219,7 +227,10 @@ function drawTrackOverlay(slider) {
         .attr("transform", "translate(0," + (-25) + ")");
 }
 
+let counter = 0;
+
 function drawSilder(species) {
+
 
     let compartment = getCompartmentFromSpecies(species);
 
@@ -237,6 +248,7 @@ function drawSilder(species) {
 
     playButton
         .on("click", function () {
+
             let button = d3.select(this);
             if (button.select("i").attr("class") === "fas fa-pause") {
                 moving = false;
@@ -265,14 +277,14 @@ function step() {
     }
 }
 
-function update(h, compartment, species) {
+function update(h, compartment, species, figure) {
     slideControl.attr("cx", xTimeScale(h));
     dragedTimeLabel.attr("x", xTimeScale(h))
         .text(d3.format(".3f")(time[h]) + " ms");
 
     getHeatmapData(time[h], species);
     heatmapColor = setHeatmapColor();
-    drawHeatmapRectangles(time[h], species);
+    drawHeatmapRectangles(time[h], species, figure);
     relativeScaleAxis();
     absoluteScaleAxis();
     drawHeatmapLegend();
@@ -327,7 +339,7 @@ function drawHeatmapLegend() {
         .attr("class", "heatmap legend label")
         .attr("text-anchor", "end")
         .attr("x", 450)
-        .attr("y",25 )
+        .attr("y", 25)
         .attr("font-size", 12)
         .text(concentrationUnit);
 
@@ -493,7 +505,7 @@ function setHeatMapSvg() {
         .append("svg")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", 450)
-        .attr("height", 450)
+        .attr("height", 500)
         .attr("id", "heatmapSvg")
 
         .style("border", "1px solid black")
@@ -505,8 +517,10 @@ function setHeatMapSvg() {
 
     legendSvg = d3.select("#trajectory-view-heatmap")
         .append("svg")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", 450)
         .attr("height", 50)
+        .attr("id", "heatmapLegend")
         .attr("class", "heatLegend");
 
 
@@ -528,10 +542,19 @@ function positionsToPath(positions) {
     return path;
 }
 
-function drawHeatmapRectangles(currentTimeStep, species) {
+function drawHeatmapRectangles(currentTimeStep, species, figure) {
 
-    heatmapSvg.selectAll("path").remove();
-    heatmapSvg.selectAll("circle").remove();
+    let rectOpacity;
+
+    if (figure === "YAS") {
+        heatmapSvg.selectAll("path").remove();
+        rectOpacity = 0.0;
+    } else {
+        heatmapSvg.selectAll("path").remove();
+        heatmapSvg.selectAll("circle").remove();
+        rectOpacity = 1.0;
+    }
+
 
     let membranePaths = [];
 
@@ -549,7 +572,9 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                             } else {
                                 return "#fff"
                             }
-
+                        })
+                        .style("opacity", function () {
+                            return rectOpacity;
                         })
                         .on("click", function () {
                             d3.select("#trajectory-view-hint").remove();
@@ -594,12 +619,17 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                 .style("stroke", "black")
                 .style("stroke-width", "0.01em")
                 .style("fill", function () {
-                    if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
+                    if(figure === "YAS"){
+                        return currentcolor;
+                    }else {
+                        if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
 
-                        return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
-                    } else {
-                        return "#fff"
+                         return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
+                        } else {
+                            return "#fff"
+                        }
                     }
+                    
                 });
 
             heatmapSvg.append("circle")
@@ -678,7 +708,7 @@ function drawHeatmapRectangles(currentTimeStep, species) {
                         if (compartmentEntry.value.get("concentration") === undefined) {
                             generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
                         } else {
-                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " +concentrationUnit);
+                            generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
                         }
                     })
                     .on("mouseleave", function () {
@@ -779,7 +809,7 @@ function changeVerticalLineData(selectedTime) {
             return "translate(" + x(d.x) + "," + scales[0](d.y) + ")";
         });
 
-
+//TODO zusammenfassen
     if (activeComponentIdices[1] !== undefined) {
 
         let id2 = activeComponentIdices[1];
@@ -803,16 +833,69 @@ function changeVerticalLineData(selectedTime) {
                 return "translate(" + x(d.x) + "," + scales[1](d.y) + ")";
             })
     }
+
+    if (activeComponentIdices[2] !== undefined) {
+
+        let id3 = activeComponentIdices[2];
+        let data3;
+
+        data3 = reducedNodeData[getCompartmentFromIndexIdentifier(id3) + "_" + getSpeciesFromIndexIdentifier(id3)];
+        data3 = data3[selectedTime];
+
+        d3.select(".trajectory.view.graph.verticalLine.valueLabel.three")
+            .datum(data3)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[2](d.y) + ")";
+            }).text(function (d) {
+            return d.y;
+
+        });
+
+        d3.select(".trajectory.view.graph.verticalLine.circle3")
+            .datum(data3)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[2](d.y) + ")";
+            })
+    }
+
+    if (activeComponentIdices[3] !== undefined) {
+
+        let id4 = activeComponentIdices[3];
+        let data4;
+
+        data4 = reducedNodeData[getCompartmentFromIndexIdentifier(id4) + "_" + getSpeciesFromIndexIdentifier(id4)];
+        data4 = data4[selectedTime];
+
+        d3.select(".trajectory.view.graph.verticalLine.valueLabel.four")
+            .datum(data4)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[3](d.y) + ")";
+            }).text(function (d) {
+            return d.y;
+
+        });
+
+        d3.select(".trajectory.view.graph.verticalLine.circle4")
+            .datum(data4)
+            .attr("transform", function (d) {
+                return "translate(" + x(d.x) + "," + scales[3](d.y) + ")";
+            })
+    }
+
 }
 
 function setNodeCompartments() {
 
     nestedData.keys().forEach(function (timeStep) {
-        nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
-            if (!compartmentsOfSelectedNode.includes(compartment) && !compartment.startsWith("x") && !compartment.startsWith("y")) {
-                compartmentsOfSelectedNode.push(compartment)
-            }
-        })
+        if (nestedData.get(timeStep).get(selectedNode) !== undefined) {
+            nestedData.get(timeStep).get(selectedNode).keys().forEach(function (compartment) {
+                    if (!compartmentsOfSelectedNode.includes(compartment) && !compartment.startsWith("x") && !compartment.startsWith("y")) {
+                        compartmentsOfSelectedNode.push(compartment)
+                    }
+
+                }
+            )
+        }
     });
 }
 
@@ -851,27 +934,28 @@ function drawGraphFromNode() {
         .append("h2")
         .attr("class", "graphHeading")
         .style("display", "inline-block")
-        .style("margin-left", "4px").text("PLOT");
+        .style("margin-left", "4px").text("CONCENTRATION PLOT");
 
 
     reducedNodeData.length = 0;
     sumCurrentNodeData();
-    //console.log("hallo 2");
     initializeMainContent();
 
 
 }
 
-function showSvgCode() {
+function showSvgCode(downloadName) {
     //get svg element.
-    let temp = document.getElementById("trajectory-view-heatmap");
-    var svgExport = temp.getElementsByTagName("svg")[0];
+
+        let temp = document.getElementById("trajectory-view-heatmap") ;
+        let svgExport = temp.getElementsByTagName("svg")[0];
 
 
-    //get svg source.
-    let svgxml = (new XMLSerializer).serializeToString(svgExport);
+        //get svg source.
+       let  svgxml =  (new XMLSerializer).serializeToString(svgExport);
+
+
     console.log(svgxml);
-
 
     $("#svg_code").text(svgxml);
 
@@ -887,14 +971,75 @@ function showSvgCode() {
     svgxml = '<?xml version="1.0" standalone="no"?>\r\n' + svgxml;
 
 //convert svg source to URI data scheme.
-    var svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgxml);
+    let svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgxml);
 
-    var downloadLink = document.createElement("a");
+    let downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = "heatmap.svg";
+    downloadLink.download = downloadName;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
 
+
+}
+
+function trackVesicleToSvg() {
+
+    let paletton = ["green", "yellow", "orange", "red", "purple", "blue"];
+    
+    for (let i = 0; i < time.length; i += 20) {
+
+        counter++;
+        currentcolor = colorgrad[counter];
+        console.log(counter);
+        dragedTime = i;
+
+        update(dragedTime, c, s, "YAS");
+
+    }
+
+   let vesicletrack =
+       d3.select("#heatmapSvg")
+        .append("g")
+        .attr("transform",
+            "translate(60,470)");
+
+
+    for (let i = 0; i < 6 ; i++){
+
+        vesicletrack
+            .append("circle")
+            .attr("cx", i*60)
+            .attr("cy", "0")
+            .attr("r", "5")
+            .style("stroke", "black")
+            .style("stroke-width", "0.01em")
+            .style("fill", paletton[i]);
+
+        vesicletrack
+            .append("circle")
+            .attr("cx", i*60)
+            .attr("cy", "0")
+            .attr("r", "2")
+            .style("stroke", "black")
+            .style("stroke-width", "0.01em")
+            .style("fill", "white");
+
+        vesicletrack
+            .append("text")
+            .attr("x", (i*60)-10)
+            .attr("y", "20")
+            .style("font-size", "10px")
+            .text(Math.trunc(time[Math.trunc(time.length*(i/6))]) + " ms");
+
+    }
+
+
+    showSvgCode("VesicleTrack20Step.svg");
+    heatmapSvg.selectAll("circle").remove();
+    vesicletrack.selectAll("text").remove();
+    vesicletrack.selectAll("circle").remove();
+
+    update(0, c, s);
 
 }
