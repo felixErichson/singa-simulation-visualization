@@ -249,19 +249,26 @@ function drawSilder(species) {
     playButton
         .on("click", function () {
 
-            let button = d3.select(this);
-            if (button.select("i").attr("class") === "fas fa-pause") {
-                moving = false;
-                clearInterval(timer);
-                // timer = 0;
-                button.select("i").attr("class", "fas fa-play");
-            } else {
-                moving = true;
-                timer = setInterval("step()", 100);
-                //console.log(timer);
-                button.select("i").attr("class", "fas fa-pause");
-                //button.text("Pause");
-            }
+
+            let x = dragedTime ++;
+
+
+            update(x, compartment,species)
+
+        //
+        //     let button = d3.select(this);
+        //     if (button.select("i").attr("class") === "fas fa-pause") {
+        //         moving = false;
+        //         clearInterval(timer);
+        //         // timer = 0;
+        //         button.select("i").attr("class", "fas fa-play");
+        //     } else {
+        //         moving = true;
+        //         timer = setInterval("step()", 100);
+        //         //console.log(timer);
+        //         button.select("i").attr("class", "fas fa-pause");
+        //         //button.text("Pause");
+        //     }
         });
 }
 
@@ -544,6 +551,8 @@ function positionsToPath(positions) {
 
 function drawHeatmapRectangles(currentTimeStep, species, figure) {
 
+    console.log(heatmapData);
+
     let rectOpacity;
 
     if (figure === "YAS") {
@@ -656,10 +665,10 @@ function drawHeatmapRectangles(currentTimeStep, species, figure) {
                 d3.select(this).style("stroke-width", "2px").style("stroke", "black");
                 showTooltip();
                 showTooltip();
-                if (nodeEntry.value.get("vesicle membrane").value === undefined) {
+                if (nodeEntry.value.get("vesicle membrane").get("concentration") === undefined) {
                     generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + "none");
                 } else {
-                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").value + " " + concentrationUnit);
+                    generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit);
                 }
 
             }).on("mouseleave", function () {
@@ -945,6 +954,22 @@ function drawGraphFromNode() {
 }
 
 function showSvgCode(downloadName) {
+
+    let vesicletrack =
+        d3.select("#heatmapSvg")
+            .append("g")
+            .attr("transform",
+                "translate(60,470)");
+
+vesicletrack.append("text")
+        .attr("x", 60)
+        .attr("y", "20")
+        .style("font-size", "10px")
+        .text(time[dragedTime] + " " + s);
+
+
+
+
     //get svg element.
 
         let temp = document.getElementById("trajectory-view-heatmap") ;
