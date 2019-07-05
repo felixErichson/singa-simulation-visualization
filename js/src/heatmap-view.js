@@ -8,7 +8,7 @@ const heatMargin = {top: 30, right: 30, bottom: 30, left: 30},
     heatwidth = 450 - heatMargin.left - heatMargin.right,
     heatheight = 450 - heatMargin.top - heatMargin.bottom;
 
-const colorgrad = ['#008000','#208600','#318d00','#409300','#4d9900','#59a000','#65a600','#70ac00','#7cb300','#87b900','#92bf00','#9dc600','#a8cc00','#b3d300','#bed900','#c9e000','#d4e600','#e0ed00','#ebf300','#f6fa00','#fffe00','#fffa00','#fff500','#fff100','#ffec00','#ffe800','#ffe300','#ffdf00','#ffda00','#ffd600','#ffd100','#ffcd00','#ffc800','#ffc400','#ffbf00','#ffba00','#ffb600','#ffb100','#ffad00','#ffa800','#ffa300','#ff9e00','#ff9900','#ff9300','#ff8e00','#ff8900','#ff8300','#ff7d00','#ff7700','#ff7100','#ff6b00','#ff6500','#ff5e00','#ff5700','#ff4f00','#ff4700','#ff3e00','#ff3300','#ff2500','#ff1000','#fc000a','#f60017','#f00020','#eb0027','#e5002e','#df0034','#d9003a','#d30040','#cd0045','#c7004b','#c10050','#bb0056','#b4005b','#ae0060','#a70065','#a0006a','#990070','#920075','#8a007a','#82007f','#7f0085','#7e008b','#7d0091','#7b0097','#79009d','#7700a4','#7500aa','#7200b0','#6f00b7','#6c00bd','#6800c3','#6400ca','#5f00d0','#5900d7','#5300de','#4b00e4','#4200eb','#3600f2','#2600f8','#0000ff'];
+const colorgrad = ['#008000', '#208600', '#318d00', '#409300', '#4d9900', '#59a000', '#65a600', '#70ac00', '#7cb300', '#87b900', '#92bf00', '#9dc600', '#a8cc00', '#b3d300', '#bed900', '#c9e000', '#d4e600', '#e0ed00', '#ebf300', '#f6fa00', '#fffe00', '#fffa00', '#fff500', '#fff100', '#ffec00', '#ffe800', '#ffe300', '#ffdf00', '#ffda00', '#ffd600', '#ffd100', '#ffcd00', '#ffc800', '#ffc400', '#ffbf00', '#ffba00', '#ffb600', '#ffb100', '#ffad00', '#ffa800', '#ffa300', '#ff9e00', '#ff9900', '#ff9300', '#ff8e00', '#ff8900', '#ff8300', '#ff7d00', '#ff7700', '#ff7100', '#ff6b00', '#ff6500', '#ff5e00', '#ff5700', '#ff4f00', '#ff4700', '#ff3e00', '#ff3300', '#ff2500', '#ff1000', '#fc000a', '#f60017', '#f00020', '#eb0027', '#e5002e', '#df0034', '#d9003a', '#d30040', '#cd0045', '#c7004b', '#c10050', '#bb0056', '#b4005b', '#ae0060', '#a70065', '#a0006a', '#990070', '#920075', '#8a007a', '#82007f', '#7f0085', '#7e008b', '#7d0091', '#7b0097', '#79009d', '#7700a4', '#7500aa', '#7200b0', '#6f00b7', '#6c00bd', '#6800c3', '#6400ca', '#5f00d0', '#5900d7', '#5300de', '#4b00e4', '#4200eb', '#3600f2', '#2600f8', '#0000ff'];
 let currentcolor;
 
 let xScale;
@@ -139,12 +139,13 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
 
 function appendPlayButton() {
 
+
     d3.select("#heatmap-view-slider")
         .append("button")
         .attr("id", "play-button")
         .attr("class", "btn btn-primary")
         .append("i")
-        .attr("class", "fas fa-play");
+        .attr("class", "fas fa-play")  ;
 
 
     playButton = d3.select("#play-button")
@@ -153,6 +154,7 @@ function appendPlayButton() {
 function initializeSlider(species) {
 
     c = getCompartmentFromSpecies(species);
+
 
     let compartment = getCompartmentFromSpecies(species);
     concentrationRange = getRangeOfSpecies(species, getCompartmentFromSpecies(species));
@@ -202,6 +204,7 @@ function drawTrack(slider, compartment, species) {
 }
 
 function drawTrackOverlay(slider) {
+
     slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 10 + ")")
@@ -232,6 +235,40 @@ let counter = 0;
 function drawSilder(species) {
 
 
+    d3.select("#heatmap-view-slider")
+        .append("div")
+        .style("margin-left", "60px")
+        .style("margin-top", "40px")
+        .style("position", "absolute")   .on("click", function () {
+
+        if (dragedTime > 0) {
+            let x = dragedTime--;
+            update(x, compartment, species);
+        }
+    })
+        .append("i")
+        .attr("class", "fas fa-caret-left");
+
+
+    d3.select("#heatmap-view-slider")
+        .append("div")
+        .style("margin-left", "640px")
+        .style("margin-top", "40px")
+        .style("position", "absolute")
+        .on("click", function () {
+
+
+ if (dragedTime < time.length){
+
+    let x = dragedTime++;
+    update(x, compartment, species);
+
+}
+        })
+        .append("i")
+        .attr("class", "fas fa-caret-right");
+
+
     let compartment = getCompartmentFromSpecies(species);
 
     initializeSlider(species);
@@ -246,29 +283,25 @@ function drawSilder(species) {
     drawTrack(slider, compartment, species);
     drawTrackOverlay(slider);
 
+
+
     playButton
         .on("click", function () {
 
 
-            let x = dragedTime ++;
-
-
-            update(x, compartment,species)
-
-        //
-        //     let button = d3.select(this);
-        //     if (button.select("i").attr("class") === "fas fa-pause") {
-        //         moving = false;
-        //         clearInterval(timer);
-        //         // timer = 0;
-        //         button.select("i").attr("class", "fas fa-play");
-        //     } else {
-        //         moving = true;
-        //         timer = setInterval("step()", 100);
-        //         //console.log(timer);
-        //         button.select("i").attr("class", "fas fa-pause");
-        //         //button.text("Pause");
-        //     }
+                let button = d3.select(this);
+                if (button.select("i").attr("class") === "fas fa-pause") {
+                    moving = false;
+                    clearInterval(timer);
+                    // timer = 0;
+                    button.select("i").attr("class", "fas fa-play");
+                } else {
+                    moving = true;
+                    timer = setInterval("step()", 100);
+                    //console.log(timer);
+                    button.select("i").attr("class", "fas fa-pause");
+                    //button.text("Pause");
+                }
         });
 }
 
@@ -628,17 +661,17 @@ function drawHeatmapRectangles(currentTimeStep, species, figure) {
                 .style("stroke", "black")
                 .style("stroke-width", "0.01em")
                 .style("fill", function () {
-                    if(figure === "YAS"){
+                    if (figure === "YAS") {
                         return currentcolor;
-                    }else {
+                    } else {
                         if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
 
-                         return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
+                            return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
                         } else {
                             return "#fff"
                         }
                     }
-                    
+
                 });
 
             heatmapSvg.append("circle")
@@ -961,23 +994,21 @@ function showSvgCode(downloadName) {
             .attr("transform",
                 "translate(60,470)");
 
-vesicletrack.append("text")
+    vesicletrack.append("text")
         .attr("x", 60)
         .attr("y", "20")
         .style("font-size", "10px")
         .text(time[dragedTime] + " " + s);
 
 
-
-
     //get svg element.
 
-        let temp = document.getElementById("trajectory-view-heatmap") ;
-        let svgExport = temp.getElementsByTagName("svg")[0];
+    let temp = document.getElementById("trajectory-view-graph");
+    let svgExport = temp.getElementsByTagName("svg")[0];
 
 
-        //get svg source.
-       let  svgxml =  (new XMLSerializer).serializeToString(svgExport);
+    //get svg source.
+    let svgxml = (new XMLSerializer).serializeToString(svgExport);
 
 
     console.log(svgxml);
@@ -1011,7 +1042,7 @@ vesicletrack.append("text")
 function trackVesicleToSvg() {
 
     let paletton = ["green", "yellow", "orange", "red", "purple", "blue"];
-    
+
     for (let i = 0; i < time.length; i += 20) {
 
         counter++;
@@ -1023,18 +1054,18 @@ function trackVesicleToSvg() {
 
     }
 
-   let vesicletrack =
-       d3.select("#heatmapSvg")
-        .append("g")
-        .attr("transform",
-            "translate(60,470)");
+    let vesicletrack =
+        d3.select("#heatmapSvg")
+            .append("g")
+            .attr("transform",
+                "translate(60,470)");
 
 
-    for (let i = 0; i < 6 ; i++){
+    for (let i = 0; i < 6; i++) {
 
         vesicletrack
             .append("circle")
-            .attr("cx", i*60)
+            .attr("cx", i * 60)
             .attr("cy", "0")
             .attr("r", "5")
             .style("stroke", "black")
@@ -1043,7 +1074,7 @@ function trackVesicleToSvg() {
 
         vesicletrack
             .append("circle")
-            .attr("cx", i*60)
+            .attr("cx", i * 60)
             .attr("cy", "0")
             .attr("r", "2")
             .style("stroke", "black")
@@ -1052,10 +1083,10 @@ function trackVesicleToSvg() {
 
         vesicletrack
             .append("text")
-            .attr("x", (i*60)-10)
+            .attr("x", (i * 60) - 10)
             .attr("y", "20")
             .style("font-size", "10px")
-            .text(Math.trunc(time[Math.trunc(time.length*(i/6))]) + " ms");
+            .text(Math.trunc(time[Math.trunc(time.length * (i / 6))]) + " ms");
 
     }
 

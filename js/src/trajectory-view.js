@@ -54,6 +54,7 @@ function initializePlotSvg() {
 
     trajectoryPlot = d3.select("#trajectory-view-graph")
         .append("svg")
+        .attr("id", "trajectoryView")
         .attr("width", trajectoryPlotWidth)
         .attr("height", trajectoryPlotHeight + trajectoryPlotMargin.top + trajectoryPlotMargin.bottom)
         .attr("viewBox", "-60 +80 " + (100 + currentDivWidth) + " " + currentDivHeight)
@@ -228,7 +229,7 @@ function createTrajectoryPlot() {
         axisClassName += " " + alignment.orientation;
 
         axisNode.attr("class", axisClassName)
-            .call(axis.tickFormat(d3.format('.3f')).ticks(7))
+            .call(axis.tickFormat(d3.format('.2f')).ticks(7))
             .styles({
                 fill: "none", stroke: getLineColor()
             })
