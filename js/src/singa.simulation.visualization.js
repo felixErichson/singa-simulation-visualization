@@ -214,6 +214,20 @@ function hideOptions() {
 
 }
 
+
+
+function showFigureMenu() {
+    $('#figure-modal').css('visibility', 'visible');
+    // $("#optionModal").show();
+
+}
+
+function hideFigureMenu() {
+    $('#figure-modal').css('visibility', 'hidden');
+    // $("#optionModal").hide();
+
+}
+
 /**
  * genarates tooltip on mouseouver events at mouse position
  * @param text content of tooltip (html text possible)

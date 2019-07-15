@@ -118,7 +118,7 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
             .append("h2")
             .attr("class", "heatmapHeading")
             .style("display", "inline-block")
-            .style("margin-left", "4px").text("SPACIAL VIEW");
+            .style("margin-left", "4px").text("SPATIAL VIEW");
 
         setHeatMapSvg();
         appendPlayButton();
@@ -238,7 +238,7 @@ function drawSilder(species) {
     d3.select("#heatmap-view-slider")
         .append("div")
         .style("margin-left", "60px")
-        .style("margin-top", "40px")
+        .style("margin-top", "35px")
         .style("position", "absolute")   .on("click", function () {
 
         if (dragedTime > 0) {
@@ -247,13 +247,14 @@ function drawSilder(species) {
         }
     })
         .append("i")
+        .style("font-size", "xx-large")
         .attr("class", "fas fa-caret-left");
 
 
     d3.select("#heatmap-view-slider")
         .append("div")
-        .style("margin-left", "640px")
-        .style("margin-top", "40px")
+        .style("margin-left", "630px")
+        .style("margin-top", "35px")
         .style("position", "absolute")
         .on("click", function () {
 
@@ -266,6 +267,7 @@ function drawSilder(species) {
 }
         })
         .append("i")
+        .style("font-size", "xx-large")
         .attr("class", "fas fa-caret-right");
 
 
@@ -986,7 +988,39 @@ function drawGraphFromNode() {
 
 }
 
-function showSvgCode(downloadName) {
+
+
+
+
+
+function showSvgCode(track) {
+let svgExport;
+
+    console.log($('#figure-file-name').val()+".svg");
+
+
+   console.log( $('input[name="fig"]:checked').val());
+
+
+     if ($('input[name="fig"]:checked').val() === "spatial-view"){
+         let temp = document.getElementById("trajectory-view-heatmap");
+         svgExport = temp.getElementsByTagName("svg")[0];
+         exportSVG(svgExport);
+     }
+
+    if ($('input[name="fig"]:checked').val() === "sv-legend"){
+        let temp = document.getElementById("trajectory-view-heatmap");
+        svgExport = temp.getElementsByTagName("svg")[1];
+        exportSVG(svgExport);
+
+    }
+
+    if ($('input[name="fig"]:checked').val() === "concentration-plot"){
+        let temp = document.getElementById("trajectory-view-graph");
+         svgExport = temp.getElementsByTagName("svg")[0];
+        exportSVG(svgExport);
+
+    }
 
     let vesicletrack =
         d3.select("#heatmapSvg")
@@ -1002,12 +1036,18 @@ function showSvgCode(downloadName) {
 
 
     //get svg element.
-
-    let temp = document.getElementById("trajectory-view-graph");
-    let svgExport = temp.getElementsByTagName("svg")[0];
+    //
+    // let temp = document.getElementById("trajectory-view-graph");
+    // let svgExport = temp.getElementsByTagName("svg")[0];
 
 
     //get svg source.
+
+
+
+}
+
+function exportSVG(svgExport){
     let svgxml = (new XMLSerializer).serializeToString(svgExport);
 
 
@@ -1031,7 +1071,7 @@ function showSvgCode(downloadName) {
 
     let downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = downloadName;
+    downloadLink.download = $('#figure-file-name').val()+".svg";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -1043,7 +1083,7 @@ function trackVesicleToSvg() {
 
     let paletton = ["green", "yellow", "orange", "red", "purple", "blue"];
 
-    for (let i = 0; i < time.length; i += 20) {
+    for (let i = 0; i < time.length; i += 50) {
 
         counter++;
         currentcolor = colorgrad[counter];

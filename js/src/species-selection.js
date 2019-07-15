@@ -81,6 +81,7 @@ function onSpeciesButtonClick(indexIdentifier, title) {
 console.log(indexIdentifier);
         d3.select("#selected_Button_area")
             .append("div")
+            .style("margin-left","30px")
             .attr("class", "col-xs-4")
             .append("button")
             .attr("id", indexIdentifier)

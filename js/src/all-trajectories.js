@@ -3,6 +3,8 @@ const allTrajectoriesPlotMargin = {top: 40, right: 20, bottom: 40, left: 100},
       allTrajectoriesPlotWidth = 400 - allTrajectoriesPlotMargin.left - allTrajectoriesPlotMargin.right,
       allTrajectoriesPlotHeight = 330 - allTrajectoriesPlotMargin.top - allTrajectoriesPlotMargin.bottom;
 
+const colorCheme = ['#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#6a3d9a','#b15928'];
+
 function createAllTrajectoriesMenu() {
 
     let allTrajectoriesContext;
@@ -103,7 +105,7 @@ function createAllTrajectoriesMenu() {
             .attr("transform", "translate(0," + 15 + ")")
             .append("path")
             .datum(reducedNodeData[identifier])
-            .style("stroke", getRandomColor())
+            .style("stroke", colorCheme[getRandomInt(colorCheme.length-1)])
             .style("fill", "none")
             .attr("d", d3.line()
                 .defined(function (d){
@@ -115,6 +117,10 @@ function createAllTrajectoriesMenu() {
                 .y(function (d) {
                     return yAxisScale(d.y);
                 }));
+    }
+
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
     }
 
 }

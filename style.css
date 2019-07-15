@@ -199,7 +199,7 @@ align-self: end;
 
     width: 650px;
     height: 100px;
-    margin: 50px auto 25px auto;
+    margin: 75px auto 25px auto;
     background-color: #ffffff;
     text-align: justify;
     box-sizing: border-box;
@@ -376,6 +376,7 @@ a.nav-link, a.nav-link:hover {
     position: absolute;
     vertical-align: middle;
     margin-top: 33px;
+    margin-left: -100px;
 }
 
 .trajectory.view.graph.verticalLine.valueLabel{
@@ -482,12 +483,27 @@ nav.shift ul li a:hover:after {
 
 
 #optionModal {
+
+    background-color: mintcream;
     width: 200px;
     height: 200px;
     padding: 0.5em;
     z-index: 100;
     border: 1px solid #dddddd;
-    background: #ffffff;
+    /*background: #ffffff;*/
+    color: #333333;
+    border-radius: 0.25rem;
+}
+
+
+#figure-modal {
+    background-color: mintcream;
+    width: 300px;
+    height: 400px;
+    padding: 0.5em;
+    z-index: 100;
+    border: 1px solid #dddddd;
+    /*background: #ffffff;*/
     color: #333333;
     border-radius: 0.25rem;
 }

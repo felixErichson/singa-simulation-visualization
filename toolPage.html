@@ -84,7 +84,7 @@
 
 
             <li>
-                <a id="nav-figure" onclick="showSvgCode('campResult.svg')" style="color: #ffffff; visibility: visible">
+                <a id="nav-figure" onclick="showFigureMenu()" style="color: #ffffff; visibility: visible">
                     <i class="fas fa-camera-retro" style="margin-right: 3px"></i>
                     Figure
                 </a>
@@ -133,6 +133,58 @@
 
 </div>
 
+
+
+<div id="figure-modal" class="ui-widget-content" style="position: fixed; visibility: hidden">
+    <p>Download Figure as SVG
+        <i class="fas fa-times" onclick="hideFigureMenu()" style="float: right"></i>
+    </p>
+
+
+    <div class="input-group-text" style="margin: 10px">
+        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
+               value="spatial-view" checked>spatial view
+        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        </a>
+    </div>
+
+    <div class="input-group-text" style="margin: 10px">
+        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
+               value="sv-legend" > spatial view legend
+        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        </a>
+    </div>
+
+    <div class="input-group-text" style="margin: 10px">
+        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
+               value="concentration-plot"> concentration plot
+        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        </a>
+    </div>
+
+<!--    <div class="input-group-text" style="margin: 10px">-->
+<!--        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"-->
+<!--               value="vesicle-track"> vesicle track-->
+<!--        <a style="float: right"> &lt;!&ndash;<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>&ndash;&gt;-->
+<!--        </a>-->
+<!--    </div>-->
+
+
+
+
+    <div class="form-group" style="margin: 10px">
+        <input  class="form-control" id="figure-file-name" aria-describedby="emailHelp" placeholder="Enter file name">
+        <small id="emailHelp" class="form-text text-muted">The file is downloaded as SVG file. No ending is needed</small>
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="showSvgCode()">Download</button>
+
+
+
+</div>
+
+
+
 <div class="trajectory-view-menu-container">
 
     <div id="loadFileHint">
@@ -163,7 +215,7 @@
 </div>
 
 
-<div id="trajectory-view-navigation" style="position: absolute; margin-top: 850px; width: 100%">
+<div id="trajectory-view-navigation" style="position: absolute; margin-top: 900px; width: 100%">
     <ul class="nav nav-tabs justify-content-center invisible" id="menu" role="tablist">
 
 
@@ -255,6 +307,10 @@
 
     $(function () {
         $("#optionModal").draggable();
+    });
+
+    $(function () {
+        $("#figure-modal").draggable();
     });
 
 </script>
