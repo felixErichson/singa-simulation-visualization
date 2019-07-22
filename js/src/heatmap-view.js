@@ -97,6 +97,8 @@ function onClickHeatmapDropdown(clickedSpeciesText, csv) {
     d3.selectAll('#trajectory-view-heatmap svg').remove();
     d3.selectAll('.heatmapHeading').remove();
     d3.select("#play-button").remove();
+    d3.select("#forward").remove();
+    d3.select("#backward").remove();
     d3.selectAll('#heatmap-view-slider svg').remove();
 
 
@@ -150,11 +152,12 @@ function appendPlayButton() {
 
 
     d3.select("#heatmap-view-slider")
-        .append("button")
+        .append("div")
         .attr("id", "play-button")
-        .attr("class", "btn btn-primary")
+        .attr("class", "playbutton")
         .append("i")
-        .attr("class", "fas fa-play")  ;
+        .attr("class", "far fa-play-circle fa-2x")
+        .style("color", "#0cac79");
 
 
     playButton = d3.select("#play-button")
@@ -236,7 +239,7 @@ function drawTrackOverlay(slider) {
         .attr("class", "timeLabelSlider")
         .attr("text-anchor", "middle")
         .text(time[0] + " ms")
-        .attr("transform", "translate(0," + (-25) + ")");
+        .attr("transform", "translate(450," + (-30) + ")");
 }
 
 let counter = 0;
@@ -246,9 +249,9 @@ function drawSilder(species) {
 
     d3.select("#heatmap-view-slider")
         .append("div")
-        .style("margin-left", "60px")
-        .style("margin-top", "35px")
-        .style("position", "absolute")   .on("click", function () {
+        .attr("id","backward")
+        .style("margin-left", "273px")
+        .style("position", "absolute").on("click", function () {
 
         if (dragedTime > 0) {
             let x = dragedTime--;
@@ -256,28 +259,28 @@ function drawSilder(species) {
         }
     })
         .append("i")
-        .style("font-size", "xx-large")
-        .attr("class", "fas fa-caret-left");
+        .attr("class", "fas fa-step-backward fa-lg")
+        .style("color", "#0cac79");
 
 
     d3.select("#heatmap-view-slider")
         .append("div")
-        .style("margin-left", "630px")
-        .style("margin-top", "35px")
+        .attr("id","forward")
+        .style("margin-left", "394px")
         .style("position", "absolute")
         .on("click", function () {
 
 
- if (dragedTime < time.length){
+            if (dragedTime < time.length) {
 
-    let x = dragedTime++;
-    update(x, compartment, species);
+                let x = dragedTime++;
+                update(x, compartment, species);
 
-}
+            }
         })
         .append("i")
-        .style("font-size", "xx-large")
-        .attr("class", "fas fa-caret-right");
+        .attr("class", "fas fa-step-forward fa-lg")
+        .style("color", "#0cac79");
 
 
     let compartment = getCompartmentFromSpecies(species);
@@ -295,24 +298,21 @@ function drawSilder(species) {
     drawTrackOverlay(slider);
 
 
-
     playButton
         .on("click", function () {
-
-
-                let button = d3.select(this);
-                if (button.select("i").attr("class") === "fas fa-pause") {
-                    moving = false;
-                    clearInterval(timer);
-                    // timer = 0;
-                    button.select("i").attr("class", "fas fa-play");
-                } else {
-                    moving = true;
-                    timer = setInterval("step()", 100);
-                    //console.log(timer);
-                    button.select("i").attr("class", "fas fa-pause");
-                    //button.text("Pause");
-                }
+            let button = d3.select(this);
+            if (button.select("i").attr("class") === "far fa-pause-circle fa-2x") {
+                moving = false;
+                clearInterval(timer);
+                // timer = 0;
+                button.select("i").attr("class", "far fa-play-circle fa-2x");
+            } else {
+                moving = true;
+                timer = setInterval("step()", 100);
+                //console.log(timer);
+                button.select("i").attr("class", "far fa-pause-circle fa-2x");
+                //button.text("Pause");
+            }
         });
 }
 
@@ -324,13 +324,13 @@ function step() {
         moving = false;
         dragedTime = 0;
         clearInterval(timer);
-        playButton.select("i").attr("class", "fas fa-play");
+        playButton.select("i").attr("class", "far fa-play-circle fa-2x");
     }
 }
 
 function update(h, compartment, species, figure) {
     slideControl.attr("cx", xTimeScale(h));
-    dragedTimeLabel.attr("x", xTimeScale(h))
+    dragedTimeLabel
         .text(d3.format(".3f")(time[h]) + " ms");
 
     getHeatmapData(time[h], species);
@@ -721,7 +721,7 @@ function drawHeatmapRectangles(currentTimeStep, species, figure) {
         }
     });
 
-     membranePaths.forEach(function (nodeEntry, i) {
+    membranePaths.forEach(function (nodeEntry, i) {
         nodeEntry.value.entries().forEach(function (compartmentEntry) {
             if (compartmentEntry.key.includes("membrane")) {
 
@@ -997,43 +997,36 @@ function drawGraphFromNode() {
 }
 
 
-
-
-
-
 function showSvgCode(track) {
-let svgExport;
+    let svgExport;
 
-    console.log($('#figure-file-name').val()+".svg");
-
-
-   console.log( $('input[name="fig"]:checked').val());
+    console.log($('#figure-file-name').val() + ".svg");
 
 
-     if ($('input[name="fig"]:checked').val() === "spatial-view"){
-         let temp = document.getElementById("trajectory-view-heatmap");
-         svgExport = temp.getElementsByTagName("svg")[0];
-         exportSVG(svgExport);
-     }
+    console.log($('input[name="fig"]:checked').val());
 
-    if ($('input[name="fig"]:checked').val() === "sv-legend"){
+
+    if ($('input[name="fig"]:checked').val() === "spatial-view") {
+        let temp = document.getElementById("trajectory-view-heatmap");
+        svgExport = temp.getElementsByTagName("svg")[0];
+        exportSVG(svgExport);
+    }
+
+    if ($('input[name="fig"]:checked').val() === "sv-legend") {
         let temp = document.getElementById("trajectory-view-heatmap");
         svgExport = temp.getElementsByTagName("svg")[1];
         exportSVG(svgExport);
 
     }
 
-    if ($('input[name="fig"]:checked').val() === "concentration-plot"){
+    if ($('input[name="fig"]:checked').val() === "concentration-plot") {
         let temp = document.getElementById("trajectory-view-graph");
-         svgExport = temp.getElementsByTagName("svg")[0];
+        svgExport = temp.getElementsByTagName("svg")[0];
         exportSVG(svgExport);
 
     }
 
-    if ($('input[name="fig"]:checked').val() === "vesicle-track"){
-
-
-
+    if ($('input[name="fig"]:checked').val() === "vesicle-track") {
 
 
         trackVesicleToSvg();
@@ -1071,10 +1064,9 @@ let svgExport;
     //get svg source.
 
 
-
 }
 
-function exportSVG(svgExport){
+function exportSVG(svgExport) {
     let svgxml = (new XMLSerializer).serializeToString(svgExport);
 
 
@@ -1098,7 +1090,7 @@ function exportSVG(svgExport){
 
     let downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = $('#figure-file-name').val()+".svg";
+    downloadLink.download = $('#figure-file-name').val() + ".svg";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -1160,7 +1152,7 @@ function trackVesicleToSvg() {
     let temp = document.getElementById("trajectory-view-heatmap");
     let svgExport = temp.getElementsByTagName("svg")[0];
     exportSVG(svgExport);
-   //showSvgCode("VesicleTrack20Step.svg");
+    //showSvgCode("VesicleTrack20Step.svg");
 
 
 }
