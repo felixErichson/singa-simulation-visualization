@@ -110,6 +110,8 @@ $(document).ready(function () {
     });
 });
 
+
+
 function resetGlobalArrays() {
     componentCombinations.length = 0;
     reducedNodeData.length = 0;
@@ -148,8 +150,6 @@ function initializeMainContent() {
     initializePlotSvg();
     createAllTrajectoriesMenu();
     createCustomSearchMenu();
-
-
 }
 
 /**
@@ -191,15 +191,6 @@ console.log(spec);
     return trajectoryData;
 }
 
-
-function getRandomColor() {
-    let letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
 
 function showOptions() {
     $('#optionModal').css('visibility', 'visible');

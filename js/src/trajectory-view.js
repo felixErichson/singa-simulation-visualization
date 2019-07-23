@@ -166,21 +166,21 @@ function createTrajectoryPlot() {
                 .style("fill", "none");
 
             appendDataViewLabel("valueLabel one", 5);
-            appendDataViewCircle("circle", color[0]);
+            appendDataViewCircle("circle one", color[0]);
 
             if (activeComponentIdices[1] !== undefined) {
                 appendDataViewLabel("valueLabel two", 15);
-                appendDataViewCircle("circle2", color[1]);
+                appendDataViewCircle("circle two", color[1]);
             }
 
             if (activeComponentIdices[2] !== undefined) {
                 appendDataViewLabel("valueLabel three", 15);
-                appendDataViewCircle("circle3", color[2]);
+                appendDataViewCircle("circle three", color[2]);
             }
 
             if (activeComponentIdices[3] !== undefined) {
                 appendDataViewLabel("valueLabel four", 15);
-                appendDataViewCircle("circle4", color[3]);
+                appendDataViewCircle("circle four", color[3]);
             }
         }
     }
