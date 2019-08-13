@@ -130,7 +130,6 @@ function resetGlobalArrays() {
 function btnAllTrajectoriesVisible() {
     $(".input-group.mb-3").removeClass("invisible");
     $(".input-group.mb-3").toggleClass("visible");
-
 }
 
 function clearHtmlTags() {

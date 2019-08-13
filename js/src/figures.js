@@ -61,7 +61,7 @@ function showSvgCode() {
         // vesicletrack.selectAll("text").remove();
         // vesicletrack.selectAll("circle").remove();
 
-        update(0, c, s);
+        updateSpatialView(0, c, s);
 
     }
 }
@@ -109,7 +109,7 @@ function trackVesicleToSvg() {
         console.log(counter);
         dragedTime = i;
 
-        update(dragedTime, c, s, "YAS");
+        updateSpatialView(dragedTime, c, s, true);
 
     }
 

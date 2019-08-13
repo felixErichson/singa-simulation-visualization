@@ -73,7 +73,7 @@ function setChartTitle(node) {
         .text(node);
 }
 
-function createTrajectoryPlot() {
+function createConcentrationPlot() {
 
     // let trajectoryCounter = 0;
     removeElementsOfSvg();

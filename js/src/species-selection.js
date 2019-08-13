@@ -112,7 +112,7 @@ console.log(indexIdentifier);
 function addLine(indexIdentifier) {
     activeComponentIdices.push(indexIdentifier);
     getButtonSelector(indexIdentifier).toggleClass("active");
-    createTrajectoryPlot();
+    createConcentrationPlot();
 }
 
 function removeLine(indexIdentifier) {
@@ -122,7 +122,7 @@ function removeLine(indexIdentifier) {
     if (index > -1) {
         activeComponentIdices.splice(index, 1);
     }
-    createTrajectoryPlot();
+    createConcentrationPlot();
 }
 
 function getButtonSelector(indexIdentifier) {

@@ -31,23 +31,6 @@ function loadExample(fileEnding) {
 
 
 function loadFile() {
-    d3.select("#loadFileHint").remove();
-
-    d3.select("body")
-        .append("div")
-        .attr("id", "spinner")
-        .attr("class", "spinner-grow text-success");
-
-    resetGlobalArrays();
-    btnAllTrajectoriesVisible();
-    clearHtmlTags();
-    d3.select('#trajectory-view-heatmap').html('');
-    d3.select('#trajectory-view-heatmap').append("div").attr("class", "loader");
-    d3.select("#play-button").remove();
-    d3.select("#forward").remove();
-    d3.select("#backward").remove();
-    d3.selectAll('#heatmap-view-slider svg').remove();
-
 
     let file = document.querySelector('input[type=file]').files[0];
     reader = new FileReader();
@@ -59,6 +42,25 @@ function loadFile() {
         alert("only json and csv allowed");
     }
     if (file) {
+        $('#nav-option').css('visibility', 'hidden');
+        $('#nav-figure').css('visibility', 'hidden');
+
+        d3.select("#loadFileHint").remove();
+
+        d3.select("body")
+            .append("div")
+            .attr("id", "spinner")
+            .attr("class", "spinner-grow text-success");
+
+        resetGlobalArrays();
+        btnAllTrajectoriesVisible();
+        clearHtmlTags();
+        d3.select('#trajectory-view-heatmap').html('');
+        d3.select('#trajectory-view-heatmap').append("div").attr("class", "loader");
+        d3.select("#play-button").remove();
+        d3.select("#forward").remove();
+        d3.select("#backward").remove();
+        d3.selectAll('#heatmap-view-slider svg').remove();
         reader.readAsText(file);
     }
 }
@@ -109,6 +111,17 @@ function prepareDataFromCsv() {
 
 let currentSpecies;
 
+/**
+ * Traverses through the JSON file and creates new data format.
+ * data format:
+ * timestep
+ * ---node
+ * -----compartment
+ * --------species:concentration
+ * --------positions
+ *
+ * @param JSON Data
+ */
 function prepareNestedDataFromJson(data) {
 
     for (let currentKey in data) {
@@ -186,6 +199,14 @@ function prepareNestedDataFromJson(data) {
 
 }
 
+/**
+ * Nest the data from CSV files.
+ *timestep
+ *  ---n(0,0)
+ *  -----compartment
+ *  --------species:concentration
+ * @param CSV Data
+ */
 function prepareNestedDataFromCsv(data) {
 
     nestedData =
@@ -210,10 +231,12 @@ function prepareNestedDataFromCsv(data) {
             .map(data);
 }
 
+
+/**
+ * Creates an arry of all compartment species combinations
+ * [compartment_species]
+ */
 function sumData() {
-
-
-
     let rememberSpecies = [];
     allCompartments.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {
@@ -236,7 +259,11 @@ function sumData() {
 
 }
 
-
+/**
+ * Creates an Array of all compartment species combinations with assigned concentrations of one node
+ * [compartment_species] = concentration;
+ *
+ */
 function sumCurrentNodeData() {
     reducedNodeData = [];
     //console.log(nestedData);
