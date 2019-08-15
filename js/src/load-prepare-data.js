@@ -127,13 +127,15 @@ function prepareNestedDataFromJson(data) {
     for (let currentKey in data) {
 
         if (data[currentKey] !== null) {
+
             if (typeof (data[currentKey]) === "object") {
 
                 if (parent === "trajectory-data") {
                     currentTime = currentKey;
                     if (!time.includes(currentKey)) {
                         time.push(parseFloat(currentKey));
-                        nestedData.set(currentKey, d3.map())
+                        nestedData.set(currentKey, d3.map());
+                        vesicleStates.set(currentKey, d3.map());
                     }
                 }
 
@@ -181,6 +183,11 @@ function prepareNestedDataFromJson(data) {
 
                     }
 
+                }
+
+                if (currentKey === "state") {
+                    console.log(data[currentKey]);
+                    vesicleStates.get(currentTime).set(currentNode, data[currentKey]);
                 }
 
                 if (currentKey === "time-unit") {

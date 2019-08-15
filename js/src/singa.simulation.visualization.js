@@ -15,6 +15,15 @@ let componentCombinations = [],
     concentrationUnit = null,
     reader = new FileReader(),
     globalData = null,
+
+    /**
+     * a nested map containing the vesicle states grouped by time step
+     *
+     * key: time step -> value:
+     *      ( key: vesicle -> value: state)
+     */
+    vesicleStates = d3.map(),
+
     heatmapSvg,
     searchButtonDataArray = [],
     heatmapData = d3.map(),

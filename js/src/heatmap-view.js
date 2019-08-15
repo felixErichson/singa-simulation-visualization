@@ -697,11 +697,7 @@ function drawSpatialView(selectedSpecies, figure) {
                     .style("stroke-width", "1");
                 mouseOverNode(this, nodeEntry, species, currentTimeStep);
                 showTooltip();
-                if (compartmentEntry.value.get("concentration") === undefined) {
-                    generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
-                } else {
-                    generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
-                }
+                createTooltip("compartment", nodeEntry, compartmentEntry);
             })
             .on("mouseleave", function () {
                 d3.select(this)
@@ -712,7 +708,6 @@ function drawSpatialView(selectedSpecies, figure) {
                 hideTooltip();
             });
     }
-
 
     function drawVesicle(nodeEntry, figure) {
 
@@ -729,7 +724,6 @@ function drawSpatialView(selectedSpecies, figure) {
                     return currentcolor;
                 } else {
                     if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
-
                         return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
                     } else {
                         return "#fff"
@@ -763,18 +757,53 @@ function drawSpatialView(selectedSpecies, figure) {
             d3.select(this).style("stroke-width", "2px").style("stroke", "black");
             showTooltip();
             showTooltip();
-            if (nodeEntry.value.get("vesicle membrane").get("concentration") === undefined) {
-                generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + "none");
-            } else {
-                generateTooltip(nodeEntry.key + "<br/>" + "<br/>" + "value: " + nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit);
-            }
-
+            createTooltip("vesicle", nodeEntry, null);
         }).on("mouseleave", function () {
             d3.select(this).style("stroke-width", "0").style("stroke", "unset");
             hideTooltip();
         })
 
+    }
 
+    function createTooltip(context, nodeEntry, compartmentEntry) {
+        // FIXME node entries are different depending on where the function is called
+        // FIXME it would be desirable to design uniform access to concentrations
+        switch (context) {
+            case "vesicle": {
+                createVesicleTooltipContent(nodeEntry);
+                break;
+            }
+            case "compartment": {
+                createCompartmentTooltipContent(nodeEntry, compartmentEntry);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    function createCompartmentTooltipContent(nodeEntry, compartmentEntry) {
+        if (compartmentEntry.value.get("concentration") === undefined) {
+            generateTooltip(nodeEntry.key + "<br/>" +
+                compartmentEntry.key + "<br/>" +
+                "value: " + "none");
+        } else {
+            generateTooltip(nodeEntry.key + "<br/>" +
+                compartmentEntry.key + "<br/>" +
+                "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
+        }
+    }
+
+    function createVesicleTooltipContent(nodeEntry) {
+        if (nodeEntry.value.get("vesicle membrane").get("concentration") === undefined) {
+            generateTooltip(nodeEntry.key + "<br/>" +
+                "state: " + vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase() + "<br/>" +
+                "value: " + "none");
+        } else {
+            generateTooltip(nodeEntry.key + "<br/>" +
+                "state: " + vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase()  + "<br/>" +
+                "value: " + nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit);
+        }
     }
 
     function drawMembrane() {
@@ -815,11 +844,7 @@ function drawSpatialView(selectedSpecies, figure) {
                                 .style("stroke-width", "6px");
                             mouseOverNode(this, nodeEntry, species, currentTimeStep);
                             showTooltip();
-                            if (compartmentEntry.value.get("concentration") === undefined) {
-                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + "none");
-                            } else {
-                                generateTooltip(nodeEntry.key + "<br/>" + compartmentEntry.key + "<br/>" + "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
-                            }
+                            createTooltip("compartment", nodeEntry, compartmentEntry);
                         })
                         .on("mouseleave", function () {
                             d3.select("#membrane" + i)
