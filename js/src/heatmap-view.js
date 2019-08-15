@@ -779,27 +779,33 @@ function drawSpatialView(selectedSpecies, figure) {
     }
 
     function createCompartmentTooltipContent(nodeEntry, compartmentEntry) {
-        if (compartmentEntry.value.get("concentration") === undefined) {
-            generateTooltip(nodeEntry.key + "<br/>" +
-                compartmentEntry.key + "<br/>" +
-                "value: " + "none");
-        } else {
-            generateTooltip(nodeEntry.key + "<br/>" +
-                compartmentEntry.key + "<br/>" +
-                "value: " + compartmentEntry.value.get("concentration") + " " + concentrationUnit);
+        // determine concentration, if available
+        let vesicleMembraneConcentration = "none";
+        if (compartmentEntry.value.get("concentration") !== undefined) {
+            vesicleMembraneConcentration = compartmentEntry.value.get("concentration") + " " + concentrationUnit;
         }
+        // set tooltip
+        generateTooltip(nodeEntry.key + "<br/>" +
+            compartmentEntry.key + "<br/>" +
+            "value: " + vesicleMembraneConcentration);
+
     }
 
     function createVesicleTooltipContent(nodeEntry) {
-        if (nodeEntry.value.get("vesicle membrane").get("concentration") === undefined) {
-            generateTooltip(nodeEntry.key + "<br/>" +
-                "state: " + vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase() + "<br/>" +
-                "value: " + "none");
-        } else {
-            generateTooltip(nodeEntry.key + "<br/>" +
-                "state: " + vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase()  + "<br/>" +
-                "value: " + nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit);
+        // determine state, if available
+        let vesicleState = "none";
+        if (vesicleStates.get(currentTimeStep).get(nodeEntry.key) !== undefined) {
+            vesicleState = vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase()
         }
+        // determine concentration, if available
+        let vesicleMembraneConcentration = "none";
+        if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
+            vesicleMembraneConcentration = nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit;
+        }
+        // set tooltip
+        generateTooltip(nodeEntry.key + "<br/>" +
+            "state: " + vesicleState + "<br/>" +
+            "value: " + vesicleMembraneConcentration);
     }
 
     function drawMembrane() {
