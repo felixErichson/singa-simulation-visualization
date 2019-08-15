@@ -23,12 +23,6 @@ const colorgrad = ['#008000', '#208600', '#318d00', '#409300',
 function showSvgCode() {
     let svgExport;
 
-    console.log($('#figure-file-name').val() + ".svg");
-
-
-    console.log($('input[name="fig"]:checked').val());
-
-
     if ($('input[name="fig"]:checked').val() === "spatial-view") {
         let temp = document.getElementById("trajectory-view-heatmap");
         svgExport = temp.getElementsByTagName("svg")[0];
@@ -51,7 +45,6 @@ function showSvgCode() {
 
     if ($('input[name="fig"]:checked').val() === "vesicle-track") {
 
-
         trackVesicleToSvg();
 
         let temp = document.getElementById("trajectory-view-graph");
@@ -68,9 +61,6 @@ function showSvgCode() {
 
 function exportSVG(svgExport) {
     let svgxml = (new XMLSerializer).serializeToString(svgExport);
-
-
-    console.log(svgxml);
 
     $("#svg_code").text(svgxml);
 
@@ -106,7 +96,6 @@ function trackVesicleToSvg() {
 
         counter++;
         currentcolor = colorgrad[counter];
-        console.log(counter);
         dragedTime = i;
 
         updateSpatialView(dragedTime, c, s, true);

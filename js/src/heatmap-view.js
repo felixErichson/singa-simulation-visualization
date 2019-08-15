@@ -311,7 +311,6 @@ function drawSilder(species) {
                     timer = setInterval(function () {
                         step();
                     }, 100);
-                    //console.log(timer);
                     button.select("i").attr("class", "far fa-pause-circle fa-2x");
                     //button.text("Pause");
                 }
@@ -323,7 +322,6 @@ function drawSilder(species) {
 function step() {
     updateSpatialView(dragedTime, comp, spec);
     dragedTime = dragedTime + (5);
-    // console.log(dragedTime);
     if (dragedTime > time.length - 1) {
         moving = false;
         dragedTime = 0;
@@ -472,7 +470,6 @@ function getHeatmapData(species) {
                     compartmentMap.set("concentration", value.value);
                 }
                 if (value.key === "positions") {
-                    //  console.log(value.value);
                     if (updatable.key.startsWith("n")) {
                         if (compartment.key.includes("membrane")) {
 
@@ -495,7 +492,6 @@ function getHeatmapData(species) {
             })
         })
     });
-    console.log(heatmapData);
 }
 
 /**
@@ -952,7 +948,6 @@ function changeVerticalLineData(selectedTimeIdentifier) {
         d3.select(".trajectory.view.graph.verticalLine.valueLabel." + designator)
             .datum(data)
             .attr("transform", function (d) {
-                console.log(d);
                 return "translate(" + x(d.x) + "," + scales[number](d.y) + ")";
             }).text(function (d) {
             return d.y;

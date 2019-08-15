@@ -186,7 +186,6 @@ function prepareNestedDataFromJson(data) {
                 }
 
                 if (currentKey === "state") {
-                    console.log(data[currentKey]);
                     vesicleStates.get(currentTime).set(currentNode, data[currentKey]);
                 }
 
@@ -273,7 +272,6 @@ function sumData() {
  */
 function sumCurrentNodeData() {
     reducedNodeData = [];
-    //console.log(nestedData);
     let combinationsofComponants = [];
 
     nestedData.keys().forEach(function (timeStep) {
@@ -294,7 +292,4 @@ function sumCurrentNodeData() {
             })
         }
     });
-
-console.log(reducedNodeData);
-
 }
