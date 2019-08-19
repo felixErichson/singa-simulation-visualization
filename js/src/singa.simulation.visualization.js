@@ -15,6 +15,15 @@ let componentCombinations = [],
     concentrationUnit = null,
     reader = new FileReader(),
     globalData = null,
+
+    /**
+     * a nested map containing the vesicle states grouped by time step
+     *
+     * key: time step -> value:
+     *      ( key: vesicle -> value: state)
+     */
+    vesicleStates = d3.map(),
+
     heatmapSvg,
     searchButtonDataArray = [],
     heatmapData = d3.map(),
@@ -93,10 +102,7 @@ function getIndexIdentifier(selectedCompartment, selectedSpecies) {
  */
 function getCompartmentFromSpecies(species) {
     let compartment = [];
-    //console.log(componentCombinations);
     componentCombinations.forEach(function (currentTrajectory) {
-
-        //console.log(currentTrajectory);
         if (currentTrajectory.split("_")[1] === species) {
             compartment.push(currentTrajectory.split("_")[0]);
         }
@@ -162,7 +168,6 @@ function filterData(compartment, spec) {
     let trajectoryData = [];
     let obj = {};
 
-console.log(spec);
     nestedData.keys().forEach(function (element) {
 
         if (nestedData.get(element).get(selectedNode) === undefined) {

@@ -78,7 +78,6 @@ function onSpeciesButtonClick(indexIdentifier, title) {
         d3.select('[id= "' + indexIdentifier + '"]').remove();
 
         //TODO auslagern
-console.log(indexIdentifier);
         d3.select("#selected_Button_area")
             .append("div")
             .style("margin-left","30px")

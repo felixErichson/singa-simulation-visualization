@@ -236,7 +236,6 @@ function createCustomSearchMenu() {
                     }
                 })
             });
-         //   console.log(summedConcentration);
             summedConcentrationValues.push(summedConcentration);
         });
         return summedConcentrationValues;
