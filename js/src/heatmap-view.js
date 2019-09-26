@@ -376,11 +376,15 @@ function drawHeatmapLegend() {
 
     linearGradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "#f1ff7f");
+        .attr("stop-color", "#440154");
+
+    linearGradient.append("stop")
+        .attr("offset", "50%")
+        .attr("stop-color", "#238A8D");
 
     linearGradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "#0cac79");
+        .attr("stop-color", "#FDE725");
 
     let legendWidth = Math.max(heatwidth, 460);
 
@@ -556,20 +560,18 @@ function setHeatmapColor() {
 
         let concentrations = getCurrentConcentrations();
 
-        return d3.scaleLinear()
-            .range(["#f1ff7f", "#0cac79"])
+        return d3.scaleSequential()
             .domain([d3.min(concentrations, function (d) {
                 return d
-
             }), d3.max(concentrations, function (d) {
                 return d
-
             })])
+            .interpolator(d3.interpolateViridis);
 
     } else {
-        return d3.scaleLinear()
-            .range(["#f1ff7f", "#0cac79"])
-            .domain([concentrationRange[0], concentrationRange[1]])
+        return d3.scaleSequential()
+            .domain([concentrationRange[0],concentrationRange[1]])
+            .interpolator(d3.interpolateViridis)
     }
 }
 
