@@ -368,38 +368,22 @@ function drawHeatmapLegend() {
     d3.select(".legendRect").remove();
     d3.select(".axislegend").remove();
 
-    let linearGradient = legendSvg.append("defs")
-        .append("linearGradient")
-        .attr("id", "legend-traffic")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "100%").attr("y2", "0%");
-
-    linearGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#440154");
-
-    linearGradient.append("stop")
-        .attr("offset", "50%")
-        .attr("stop-color", "#238A8D");
-
-    linearGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#FDE725");
-
-    let legendWidth = Math.max(heatwidth, 460);
-
     let legendsvg = legendSvg.append("g")
         .attr("class", "legendWrapper")
         .attr("transform", "translate(0,10)");
 
-    legendsvg.append("rect")
-        .attr("class", "legendRect")
-        .attr("x", 15)
+     const legendColorScale = d3.scaleSequential()
+         .domain([0, heatwidth]).interpolator(d3.interpolateViridis);
+
+    legendsvg.selectAll(".bars")
+        .data(d3.range(heatwidth), function(d) { return d; })
+        .enter().append("rect")
+        .attr("class", "bars")
+        .attr("x", function(d, i) { return i+15; })
         .attr("y", 0)
-        //.attr("rx", hexRadius*1.25/2)
-        .attr("width", heatwidth)
         .attr("height", 10)
-        .style("fill", "url(#legend-traffic)");
+        .attr("width", 1)
+        .style("fill", function(d, i ) { return legendColorScale(d)});
 
     legendsvg.append("text")
         .attr("class", "heatmap legend label")
