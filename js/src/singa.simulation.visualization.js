@@ -23,6 +23,7 @@ let componentCombinations = [],
      *      ( key: vesicle -> value: state)
      */
     vesicleStates = d3.map(),
+    vesiclePaths = d3.map(),
 
     heatmapSvg,
     searchButtonDataArray = [],

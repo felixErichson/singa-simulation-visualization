@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="PROJECT" libraries="{bootstrap, d3-format.v1, d3-selection-multi.v0.4, d3.v3, d3.v4, jquery, jquery-1.11.3, jquery-1.12.4, jquery-3.3.1.slim, jquery-ui, moment, popper, topojson.v1, underscore}" />
+    <file url="PROJECT" libraries="{bootstrap, d3-format.v1, d3-selection-multi.v0.4, d3.v3, d3.v4, jquery, jquery-1.11.3, jquery-1.12.4, jquery-3.3.1.slim, jquery-ui, material-components-web, moment, popper, topojson.v1, underscore}" />
   </component>
 </project>

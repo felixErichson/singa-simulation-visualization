@@ -89,6 +89,7 @@ function readDataFromJson() {
     prepareNestedDataFromJson(globalData);
     sumData();
     setHeatmapDropdown("#heatmap-view-species-selection", "select species");
+    setVesiclePaths();
 }
 
 function prepareDataFromCsv() {
@@ -292,4 +293,25 @@ function sumCurrentNodeData() {
             })
         }
     });
+}
+
+function setVesiclePaths() {
+
+    let vesicles = [];
+    xSc = d3.scaleLinear().domain([0, simulationWidth]).range([0, 450]);
+    ySc = d3.scaleLinear().domain([0, simulationHeight]).range([0, 450]);
+
+    nestedData.entries().forEach(function (updatable) {
+        updatable.value.entries().forEach(function (compartment) {
+        if(compartment.key.startsWith("v")){
+            if (vesicles.includes(compartment.key)){
+             vesiclePaths.set(compartment.key ,vesiclePaths.get(compartment.key) +  " L " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc (compartment.value.get("vesicle lumen").get("positions")[0].y))
+            } else {
+                vesicles.push(compartment.key);
+                vesiclePaths.set(compartment.key, "M " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc( compartment.value.get("vesicle lumen").get("positions")[0].y))
+            }
+        }
+    })
+    });
+    console.log(vesiclePaths);
 }

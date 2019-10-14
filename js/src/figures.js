@@ -54,7 +54,7 @@ function showSvgCode() {
         // vesicletrack.selectAll("text").remove();
         // vesicletrack.selectAll("circle").remove();
 
-        updateSpatialView(0, c, s);
+        updateSpatialView(0);
 
     }
 }
@@ -98,7 +98,7 @@ function trackVesicleToSvg() {
         currentcolor = colorgrad[counter];
         dragedTime = i;
 
-        updateSpatialView(dragedTime, c, s, true);
+        updateSpatialView(dragedTime, true);
 
     }
 
