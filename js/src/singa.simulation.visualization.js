@@ -5,21 +5,39 @@ const color = ['#d95f02', '#0570b0', '#d7301f', '#88763e'];
 let componentCombinations = [],
     reducedNodeData = [],
     activeComponentIdices = [],
-    time = [],
+    /**
+     * contains all timeSteps steps
+     * @type {Array}
+     */
+    timeSteps = [],
     selectedNode,
     compartmentsOfSelectedNode = [],
-    allCompartments = [],
-    allSpecies = [],
-    allNodes = [],
+    /**
+     * contains all identifiers of all compartments once
+     * @type {Array}
+     */
+    compartmentIdentifiers = [],
+
+    /**
+     * contains all identifiers of all species once
+     * @type {Array}
+     */
+    speciesIdentifiers = [],
+
+    /**
+     * contains all identifiers of all nodes once
+     * @type {Array}
+     */
+    nodeIdentifiers = [],
     timeUnit = null,
     concentrationUnit = null,
     reader = new FileReader(),
     globalData = null,
 
     /**
-     * a nested map containing the vesicle states grouped by time step
+     * a nested map containing the vesicle states grouped by timeSteps step
      *
-     * key: time step -> value:
+     * key: timeSteps step -> value:
      *      ( key: vesicle -> value: state)
      */
     vesicleStates = d3.map(),
@@ -61,7 +79,7 @@ function getSpeciesFromStringIdentifier(identifier) {
 }
 
 /**
- * searches the index number of array allSpecies with second number of indexIdentifier
+ * searches the index number of array speciesIdentifiers with second number of indexIdentifier
  * @param indexIdentifier component consisting of two numbers separated by "_" (1_2)
  * @return species as string
  */
@@ -69,12 +87,12 @@ function getSpeciesFromIndexIdentifier(indexIdentifier) {
     if (indexIdentifier.split("_")[0] === "search") {
         return indexIdentifier.split("_")[1]
     } else {
-        return allSpecies[parseInt(indexIdentifier.split("_")[1])]
+        return speciesIdentifiers[parseInt(indexIdentifier.split("_")[1])]
     }
 }
 
 /**
- * searches the index number of array allCompartments with first number of indexIdentifier
+ * searches the index number of array compartmentIdentifiers with first number of indexIdentifier
  * @param indexIdentifier component consisting of two numbers separated by "_" (1_2)
  * @return compartment as string
  */
@@ -93,7 +111,7 @@ function getCompartmentFromIndexIdentifier(indexIdentifier) {
  * @return index identifier (2_1)
  */
 function getIndexIdentifier(selectedCompartment, selectedSpecies) {
-    return compartmentsOfSelectedNode.indexOf(selectedCompartment) + "_" + allSpecies.indexOf(selectedSpecies)
+    return compartmentsOfSelectedNode.indexOf(selectedCompartment) + "_" + speciesIdentifiers.indexOf(selectedSpecies)
 }
 
 /**
@@ -123,11 +141,11 @@ function resetGlobalArrays() {
     componentCombinations.length = 0;
     reducedNodeData.length = 0;
     activeComponentIdices.length = 0;
-    time.length = 0;
+    timeSteps.length = 0;
     compartmentsOfSelectedNode.length = 0;
-    allSpecies.length = 0;
-    allCompartments.length = 0;
-    allNodes.length = 0;
+    speciesIdentifiers.length = 0;
+    compartmentIdentifiers.length = 0;
+    nodeIdentifiers.length = 0;
     // heatmapData.length = 0;
     heatmapXRange.length = 0;
     heatmapYRange.length = 0;
@@ -246,6 +264,21 @@ function hideTooltip() {
         .style("opacity", 0);
 }
 
+function setInterpolator(){
+
+    if ($('input[name="colorcheme"]:checked').val() === "Viridis") {
+        interpolator = d3.interpolateViridis;
+        updateSpatialView();
+    } else if ($('input[name="colorcheme"]:checked').val() === "Inferno") {
+        interpolator = d3.interpolateInferno;
+        updateSpatialView();
+    } else if ($('input[name="colorcheme"]:checked').val() === "Magma") {
+        interpolator = d3.interpolateMagma;
+        updateSpatialView();
+    }
+
+}
+
 d3.select("#home-tab")
     .on("mouseover", function () {
         generateTooltip(" All species are represented as " +
@@ -280,7 +313,7 @@ d3.select("#contact-tab")
 
 d3.select("#relative_scale_info")
     .on("mouseover", function () {
-        generateTooltip("scaled to the maximum value of a time step");
+        generateTooltip("scaled to the maximum value of a timeSteps step");
         showTooltip()
     })
     .on("mouseleave", function () {
@@ -289,7 +322,7 @@ d3.select("#relative_scale_info")
 
 d3.select("#absolute_scale_info")
     .on("mouseover", function () {
-        generateTooltip("scaled to the maximum value over all time steps");
+        generateTooltip("scaled to the maximum value over all timeSteps steps");
         showTooltip()
     })
     .on("mouseleave", function () {

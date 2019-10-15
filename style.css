@@ -370,12 +370,12 @@ a.nav-link, a.nav-link:hover {
 .track {
     stroke: #000;
     stroke-opacity: 0.3;
-    stroke-width: 10px;
+    stroke-width: 1px;
 }
 
 .track-inset {
-    stroke: #dcdcdc;
-    stroke-width: 8px;
+    stroke: #0cac78;
+    stroke-width: 3px;
 }
 
 .track-overlay {
@@ -386,11 +386,12 @@ a.nav-link, a.nav-link:hover {
 }
 
 .slideControl {
-    fill: #fff;
-    stroke: #000;
-    stroke-opacity: 0.5;
-    stroke-width: 1px;
+    fill: #0cac78;
+    stroke-opacity: 1.0;
+
 }
+
+
 
 #play-button {
     width: 40px;
@@ -517,7 +518,7 @@ nav.shift ul li a:hover:after {
 
     background-color: mintcream;
     width: 200px;
-    height: 200px;
+    height: 350px;
     padding: 0.5em;
     z-index: 100;
     border: 1px solid #dddddd;

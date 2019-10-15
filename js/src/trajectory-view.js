@@ -193,7 +193,7 @@ function createConcentrationPlot() {
             .attr("x", trajectoryPlotWidth)
             .attr("y", trajectoryPlotHeight + 50)
             .attr("font-size", 20)
-            .text("Elapsed time [ms]");
+            .text("Elapsed timeSteps [ms]");
 
         //label Y-Axis
         trajectoryPlot.append("text")
@@ -238,7 +238,7 @@ function createConcentrationPlot() {
     }
 
     function setPlotXAxis() {
-        x.domain(d3.extent(time));
+        x.domain(d3.extent(timeSteps));
         trajectoryPlot.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + trajectoryPlotHeight + ")")

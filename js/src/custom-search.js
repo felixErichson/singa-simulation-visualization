@@ -217,7 +217,7 @@ function createCustomSearchMenu() {
             if(getSpeciesFromStringIdentifier(components) !== "positions"){
                 let species = getSpeciesFromStringIdentifier(components);
                 selectedSpecies.push(species);
-                $("li[id$=_" + allSpecies.indexOf(species) + "]").toggleClass("list-group-item-info");
+                $("li[id$=_" + speciesIdentifiers.indexOf(species) + "]").toggleClass("list-group-item-info");
             }
         });
         generateLineFromSearch()
@@ -246,10 +246,10 @@ function createCustomSearchMenu() {
         let summedLineArray = [];
         let summedConcentrationValues = sumSelectedData();
 
-        for (let timeIndex = 0; timeIndex < time.length; timeIndex++) {
+        for (let timeIndex = 0; timeIndex < timeSteps.length; timeIndex++) {
             summedLineObject = {
-                //TODO rename x in time and y concentration
-                x: time[timeIndex],
+                //TODO rename x in timeSteps and y concentration
+                x: timeSteps[timeIndex],
                 y: summedConcentrationValues[timeIndex]
             };
             summedLineArray.push(summedLineObject);

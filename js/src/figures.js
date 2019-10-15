@@ -54,7 +54,8 @@ function showSvgCode() {
         // vesicletrack.selectAll("text").remove();
         // vesicletrack.selectAll("circle").remove();
 
-        updateSpatialView(0);
+        currentTimeIndex = 0;
+        updateSpatialView();
 
     }
 }
@@ -92,13 +93,13 @@ function trackVesicleToSvg() {
 
     let paletton = ["green", "yellow", "orange", "red", "purple", "blue"];
 
-    for (let i = 0; i < time.length; i += 20) {
+    for (let i = 0; i < timeSteps.length; i += 20) {
 
         counter++;
         currentcolor = colorgrad[counter];
-        dragedTime = i;
+        currentTimeIndex = i;
 
-        updateSpatialView(dragedTime, true);
+        updateSpatialView(true);
 
     }
 
@@ -134,7 +135,7 @@ function trackVesicleToSvg() {
             .attr("x", (i * 60) - 10)
             .attr("y", "20")
             .style("font-size", "10px")
-            .text(Math.trunc(time[Math.trunc(time.length * (i / 6))]) + " ms");
+            .text(Math.trunc(timeSteps[Math.trunc(timeSteps.length * (i / 6))]) + " ms");
 
     }
 

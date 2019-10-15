@@ -54,6 +54,10 @@
             crossorigin="anonymous"></script>
 
 
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+
 </head>
 
 <body>
@@ -92,12 +96,12 @@
                 </a>
 
             </li>
-<!--            <li>-->
-<!--                <a id="tutorial" onclick="showSvgCode()" style="color: #ffffff;">-->
-<!--                    <i class="fas fa-book"></i>-->
-<!--                    Tutorial-->
-<!--                </a>-->
-<!--            </li>-->
+            <!--            <li>-->
+            <!--                <a id="tutorial" onclick="showSvgCode()" style="color: #ffffff;">-->
+            <!--                    <i class="fas fa-book"></i>-->
+            <!--                    Tutorial-->
+            <!--                </a>-->
+            <!--            </li>-->
             <li>
                 <a href="index.html">
                     <i class="fas fa-home"></i>
@@ -110,31 +114,85 @@
 
 
 <div id="optionModal" class="ui-widget-content" style="position: fixed; visibility: hidden">
-    <p> Options
+    <p>
+        Options
         <i class="fas fa-times" onclick="hideOptions()" style="float: right"></i>
     </p>
 
-    <p>Set the scaling of the heatmap.
+    <p>Set the scaling of the heatmap.</p>
 
+    <div class="mdc-form-field">
+        <div class="mdc-radio">
+            <input class="mdc-radio__native-control" type="radio" id="radio-scales-relative" value="relative"
+                   name="scalecheck" onclick="updateSpatialView()" checked>
+            <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+            </div>
+        </div>
+        <label for="radio-scales-absolute">relative</label>
+        <a style="float: right">
+            <i id="relative_scale_info" class="fas fa-info-circle" style="margin-left: 5px"></i>
+        </a>
+    </div>
+
+    <div class="mdc-form-field">
+        <div class="mdc-radio">
+            <input class="mdc-radio__native-control" type="radio" id="radio-scales-absolute" value="absolute"
+                   name="scalecheck" onclick="updateSpatialView()">
+            <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+            </div>
+        </div>
+        <label for="radio-scales-absolute">absolute</label>
+        <a style="float: right">
+            <i class="fas fa-info-circle" style="margin-left: 5px" id=absolute_scale_info></i>
+        </a>
+    </div>
+
+    <p>
+        Choose color scheme.
     </p>
-    <div class="input-group-text">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="check"
-               value="relative" checked> relative
-        <a style="float: right"> <i id="relative_scale_info" class="fas fa-info-circle" style="margin-left: 5px"
-        ></i></a>
+
+    <div class="mdc-form-field">
+        <div class="mdc-radio">
+            <input class="mdc-radio__native-control" type="radio" id="radio-1" value="Viridis" name="colorcheme"
+                   onclick="setInterpolator()" checked>
+            <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+            </div>
+        </div>
+        <label for="radio-1">Viridis</label>
     </div>
 
-    <div class="input-group-text">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="check"
-               value="absolute" onclick="drawHeatmapLegend()">
-        absolute
-
-        <i class="fas fa-info-circle" style="margin-left: 5px"
-           id=absolute_scale_info></i>
+    <div class="mdc-form-field">
+        <div class="mdc-radio">
+            <input class="mdc-radio__native-control" type="radio" id="radio-2" value="Inferno" name="colorcheme"
+                   onclick="setInterpolator()">
+            <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+            </div>
+        </div>
+        <label for="radio-2">Inferno</label>
     </div>
+
+    <div class="mdc-form-field">
+        <div class="mdc-radio">
+            <input class="mdc-radio__native-control" type="radio" id="radio-3" value="Magma" name="colorcheme"
+                   onclick="setInterpolator()">
+            <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+            </div>
+        </div>
+        <label for="radio-3">Magma</label>
+    </div>
+
 
 </div>
-
 
 
 <div id="figure-modal" class="ui-widget-content" style="position: fixed; visibility: hidden">
@@ -146,45 +204,46 @@
     <div class="input-group-text" style="margin: 10px">
         <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
                value="spatial-view" checked>spatial view
-        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        <a style="float: right">
+            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
         </a>
     </div>
 
     <div class="input-group-text" style="margin: 10px">
         <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
-               value="sv-legend" > spatial view legend
-        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+               value="sv-legend"> spatial view legend
+        <a style="float: right">
+            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
         </a>
     </div>
 
     <div class="input-group-text" style="margin: 10px">
         <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
                value="concentration-plot"> concentration plot
-        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        <a style="float: right">
+            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
         </a>
     </div>
 
     <div class="input-group-text" style="margin: 10px">
         <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
                value="vesicle-track"> vesicle track
-        <a style="float: right"> <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
+        <a style="float: right">
+            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
         </a>
     </div>
 
 
-
-
     <div class="form-group" style="margin: 10px">
-        <input  class="form-control" id="figure-file-name" aria-describedby="emailHelp" placeholder="Enter file name">
-        <small id="emailHelp" class="form-text text-muted">The file is downloaded as SVG file. No ending is needed</small>
+        <input class="form-control" id="figure-file-name" aria-describedby="emailHelp" placeholder="Enter file name">
+        <small id="emailHelp" class="form-text text-muted">The file is downloaded as SVG file. No ending is
+            needed</small>
     </div>
 
     <button type="button" class="btn btn-primary" onclick="showSvgCode()">Download</button>
 
 
-
 </div>
-
 
 
 <div class="trajectory-view-menu-container">

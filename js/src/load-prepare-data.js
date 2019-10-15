@@ -1,35 +1,3 @@
-function loadExample(fileEnding) {
-    resetGlobalArrays();
-    btnAllTrajectoriesVisible();
-    clearHtmlTags();
-    d3.select('#trajectory-view-heatmap').html('');
-
-    if (fileEnding === "csv") {
-        d3.csv("js/src/example_trajectories.csv", function (data) {
-            globalData = data;
-        });
-        setTimeout(function () {
-            prepareDataFromCsv();
-            prepareNestedDataFromCsv(globalData);
-            sumData();
-            setHeatmapDropdown();
-        }, 200)
-
-    } else if (fileEnding === "json") {
-        d3.json("js/src/example_simulation.json", function (data) {
-            globalData = data;
-        });
-        setTimeout(function () {
-            nestedData = d3.map();
-            prepareNestedDataFromJson(globalData);
-            sumData();
-            setHeatmapDropdown();
-        }, 200);
-    }
-
-}
-
-
 function loadFile() {
 
     let file = document.querySelector('input[type=file]').files[0];
@@ -94,18 +62,18 @@ function readDataFromJson() {
 
 function prepareDataFromCsv() {
     globalData.forEach(function (d) {
-        d.elapsed_time = +d["elapsed time"];
+        d.elapsed_time = +d["elapsed timeSteps"];
         d.concentration = +d.concentration;
 
-        if (!time.includes(d.elapsed_time)) {
-            time.push(d.elapsed_time)
+        if (!timeSteps.includes(d.elapsed_time)) {
+            timeSteps.push(d.elapsed_time)
         }
         /** @namespace d.compartment */
-        if (!allCompartments.includes(d.compartment)) {
-            allCompartments.push(d.compartment)
+        if (!compartmentIdentifiers.includes(d.compartment)) {
+            compartmentIdentifiers.push(d.compartment)
         }
-        if (!allSpecies.includes(d.species)) {
-            allSpecies.push(d.species)
+        if (!speciesIdentifiers.includes(d.species)) {
+            speciesIdentifiers.push(d.species)
         }
     });
 }
@@ -133,8 +101,8 @@ function prepareNestedDataFromJson(data) {
 
                 if (parent === "trajectory-data") {
                     currentTime = currentKey;
-                    if (!time.includes(currentKey)) {
-                        time.push(parseFloat(currentKey));
+                    if (!timeSteps.includes(currentKey)) {
+                        timeSteps.push(parseFloat(currentKey));
                         nestedData.set(currentKey, d3.map());
                         vesicleStates.set(currentKey, d3.map());
                     }
@@ -143,8 +111,8 @@ function prepareNestedDataFromJson(data) {
                 if (parent === "data") {
                     currentNode = currentKey;
 
-                    if (!allNodes.includes(currentKey)) {
-                        allNodes.push(currentKey)
+                    if (!nodeIdentifiers.includes(currentKey)) {
+                        nodeIdentifiers.push(currentKey)
 
                     }
                     nestedData.get(currentTime).set(currentNode, d3.map())
@@ -153,8 +121,8 @@ function prepareNestedDataFromJson(data) {
 
                 if (parent === "subsections") {
                     currentCompartment = currentKey;
-                    if (!allCompartments.includes(currentKey)) {
-                        allCompartments.push(currentKey);
+                    if (!compartmentIdentifiers.includes(currentKey)) {
+                        compartmentIdentifiers.push(currentKey);
 
                     }
                     if (nestedData.get(currentTime).get(currentNode) !== undefined) {
@@ -176,8 +144,8 @@ function prepareNestedDataFromJson(data) {
 
                 if (parent === "concentrations") {
                     currentSpecies = currentKey;
-                    if (!allSpecies.includes(currentKey)) {
-                        allSpecies.push(currentKey);
+                    if (!speciesIdentifiers.includes(currentKey)) {
+                        speciesIdentifiers.push(currentKey);
                     }
                     if (nestedData.get(currentTime).get(currentNode) !== undefined) {
                         nestedData.get(currentTime).get(currentNode).get(currentCompartment).set(currentKey, data[currentKey]);
@@ -190,7 +158,7 @@ function prepareNestedDataFromJson(data) {
                     vesicleStates.get(currentTime).set(currentNode, data[currentKey]);
                 }
 
-                if (currentKey === "time-unit") {
+                if (currentKey === "timeSteps-unit") {
                     timeUnit = data[currentKey];
                 } else if (currentKey === "concentration-unit") {
                     concentrationUnit = data[currentKey]
@@ -245,7 +213,7 @@ function prepareNestedDataFromCsv(data) {
  */
 function sumData() {
     let rememberSpecies = [];
-    allCompartments.forEach(function (compartment) {
+    compartmentIdentifiers.forEach(function (compartment) {
         nestedData.keys().forEach(function (timeStep) {
             nestedData.get(timeStep).keys().forEach(function (node) {
                 if (nestedData.get(timeStep).get(node).get(compartment) !== undefined
