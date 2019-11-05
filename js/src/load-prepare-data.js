@@ -281,5 +281,5 @@ function setVesiclePaths() {
         }
     })
     });
-    console.log(vesiclePaths);
+    // console.log(vesiclePaths);
 }

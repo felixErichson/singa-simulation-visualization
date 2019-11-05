@@ -27,7 +27,8 @@ let currentTimeIndex,
     globalSpecies,
     currentTimeStep = 0,
     counter = 0,
-    interpolator = d3.interpolateViridis;
+    interpolator = d3.interpolateViridis,
+    observed = ["", ""];
 
 
 function setHeatmapDropdown(container, text, csv) {
@@ -344,12 +345,6 @@ function updateSpatialView(figure) {
     relativeScaleAxis();
     absoluteScaleAxis();
     drawHeatmapLegend();
-
-    d3.select("#menu-heatmap-data")
-        .selectAll("p").remove();
-    if (activeComponentIdices[0] !== undefined) {
-        changeVerticalLineData(currentTimeIndex);
-    }
 }
 
 function drawHeatmapLegend() {
@@ -392,14 +387,11 @@ function drawHeatmapLegend() {
         .attr("font-size", 12)
         .text(concentrationUnit);
 
-    if ($('input[name="check"]:checked').val() === "relative") {
+    if ($('input[name="scalecheck"]:checked').val() === "relative") {
         relativeScaleAxis();
-
     } else {
         absoluteScaleAxis();
-
     }
-
 
     let xAxis = d3.axisBottom()
         .ticks(5)
@@ -430,84 +422,117 @@ function absoluteScaleAxis() {
         .domain(concentrationRange);
 }
 
-/**
- * Creates a new data format for a time step. The data contains all nodes and compartments.
- * Compartments contains concentrations of selected species and the svg path data.
- *  Example:
- *  n(0,0):
- *  -- cytoplasms:
- *  ----- concatration: 1000
- *  ----- path: "M0,42,0,5Z"
- */
 
 let concentrationData = d3.map();
-let pathData = d3.map();
+let pathData = [];
 
 function setCirclePath(cx, cy, r) {
-
-   return `M ${cx} ${cy} m ${-r}, 0 a ${r},${r} 0 1,1 ${(r * 2)},0 a ${r},${r} 0 1,1 ${-(r * 2)},0`;
-
-    // return "M " + cx + " , " + cy + " m " + -r + " , 0 "
-    //     + " a " + r + " , " + r + " 0 1 , 1 " + (r * 2) + " , 0"
-    //     +  " a " + r + " , " + r + " 0 1 , 1 " + (r * 2) + " , 0"
+    return `M ${cx} ${cy} m ${-r}, 0 a ${r},${r} 0 1,1 ${(r * 2)},0 a ${r},${r} 0 1,1 ${-(r * 2)},0`;
 }
 
 function getHeatmapData() {
 
+    pathData.length = 0;
 
-    heatmapData = d3.map();
+    let i = 0;
     let simulationExtend = simulationWidth < simulationHeight ? simulationHeight : simulationWidth;
     simulationScale = d3.scaleLinear().domain([0, simulationExtend]).range([0, 450]);
 
     nestedData.get(currentTimeStep).entries().forEach(function (updatable) {
+
             let updatableConcentrationMap = d3.map();
-            let updatablePathMap = d3.map();
-
-            heatmapData.set(updatable.key, updatableConcentrationMap);
-
             concentrationData.set(updatable.key, updatableConcentrationMap);
-            pathData.set(updatable.key, updatablePathMap);
 
             // iterate updatables
             updatable.value.entries().forEach(function (compartment) {
+
+                    // create concentration map
                     let concentrationtMap = undefined;
-                    let pathMap = undefined;
-                    updatablePathMap.set(compartment.key, pathMap);
                     compartment.value.entries().forEach(function (value) {
                         if (value.key === globalSpecies) {
-                            concentrationtMap =  value.value;
+                            concentrationtMap = value.value;
                         }
-                        // iterate compartments
                         updatableConcentrationMap.set(compartment.key, concentrationtMap);
+
+                        // console.log(updatable.key, compartment.key);
+
                         if (isNode(updatable)) {
                             if (value.key === "positions") {
                                 if (compartment.key.includes("membrane")) {
-                                    pathMap =  positionsToPath(value.value);
+                                    pathData.push({
+                                        "path": positionsToPath(value.value),
+                                        "class": "spatialView lowerMembraneLine",
+                                        "referenceNode": updatable.key,
+                                        "referenceCompartment": compartment.key,
+                                        "toColor": "stroke",
+                                        "sortNumber": "2"
+                                    });
+                                    i++;
+                                    pathData.push({
+                                        "path": positionsToPath(value.value),
+                                        "class": "spatialView upperMembraneLine",
+                                        "referenceNode": updatable.key,
+                                        "referenceCompartment": compartment.key,
+                                        "toColor": "stroke",
+                                        "sortNumber": "3"
+                                    });
                                 } else {
-                                    pathMap =  positionsToPath(value.value) + "Z";
+                                    pathData.push({
+                                        "path": positionsToPath(value.value) + "Z",
+                                        "class": "spatialView closedCompartment",
+                                        "referenceNode": updatable.key,
+                                        "referenceCompartment": compartment.key,
+                                        "toColor": "fill",
+                                        "sortNumber": "1"
+                                    });
                                 }
-                                updatablePathMap.set(compartment.key, pathMap);
                             }
                         }
                     });
                     // set vesicle positions
                     if (isVesicle(updatable)) {
-
                         let centerX = updatable.value.get("vesicle lumen").get("positions")[0].x;
                         let centerY = updatable.value.get("vesicle lumen").get("positions")[0].y;
                         let borderY = updatable.value.get("vesicle membrane").get("positions")[0].y;
-                        pathMap = setCirclePath(simulationScale(centerX), simulationScale(centerY), simulationScale(borderY - centerY) );
 
-                        updatablePathMap.set(compartment.key, pathMap);
-                        // updatablePathMap.set("position", [simulationScale(centerX), simulationScale(centerY), simulationScale(borderY - centerY)])
+                        if (compartment.key.includes("membrane")) {
+                            pathData.push({
+                                "path": setCirclePath(simulationScale(centerX), simulationScale(centerY), 2 * simulationScale((borderY - centerY))),
+                                "class": "spatialView vesicleMembrane",
+                                "referenceNode": updatable.key,
+                                "referenceCompartment": compartment.key,
+                                "toColor": "fill",
+                                "sortNumber": "4" + updatable.key.split("v")[1] + "1"
+                            });
+                        } else {
+                            pathData.push({
+                                "path": setCirclePath(simulationScale(centerX), simulationScale(centerY), simulationScale(borderY - centerY)),
+                                "class": "spatialView vesicleCore",
+                                "referenceNode": updatable.key,
+                                "referenceCompartment": compartment.key,
+                                "toColor": "fill",
+                                "sortNumber": "4" + updatable.key.split("v")[1] + "2"
+                            });
+                        }
                     }
+
+                    // console.log(observed[0], " ", updatable.key)
+                    // console.log(observed[1], " ", compartment.key)
+                    if (updatable.key === observed[0] && compartment.key === observed[1]) {
+                        // console.log("!!!!", pathData[pathData.length - 1].class);
+                        pathData[pathData.length - 1].class = pathData[pathData.length - 1].class.concat(" observed");
+                    }
+
+                    i++
                 }
-            )
+            );
+            i++
         }
     );
 
-    console.log(concentrationData);
-    console.log(pathData)
+    pathData.sort(function (a, b) {
+        return a.sortNumber - b.sortNumber;
+    });
 }
 
 /**
@@ -643,342 +668,93 @@ function positionsToPath(positions) {
  */
 function drawSpatialView(figure) {
 
-    let rectOpacity;
-    let membranePaths = [];
+    d3.selectAll(".spatialView").remove();
 
-    if (figure === true) {
-        heatmapSvg.selectAll("path").remove();
-        rectOpacity = 0.0;
-    } else {
-        heatmapSvg.selectAll("path").remove();
-        heatmapSvg.selectAll("circle").remove();
-        rectOpacity = 1.0;
-    }
+    pathData.forEach(function (element) {
 
-    pathData.entries().forEach(function (nodeEntry) {
-        nodeEntry.value.entries().forEach(function (compartmentEntry) {
-            if (!compartmentEntry.key.includes("membrane")) {
-                drawNodes(compartmentEntry, nodeEntry);
-            } else {
-                membranePaths.push(nodeEntry);
-            }
-        })
-
-        // if (isNode(nodeEntry)) {
-        //
-        // } else if (isVesicle(nodeEntry)) {
-        //     drawVesicle(nodeEntry, figure);
-        // }
-    });
-
-    drawMembrane();
-
-
-    function drawNodes(compartmentEntry, nodeEntry) {
-
-        let concentration = concentrationData.get(nodeEntry.key).get(compartmentEntry.key);
+        let concentration = concentrationData.get(element.referenceNode).get(element.referenceCompartment);
 
         heatmapSvg.append("path")
-            .attr("d", compartmentEntry.value)
-            .style("fill", function () {
+            .attr("class", element.class)
+            .attr("d", element.path)
+            .style(element.toColor, function () {
                 if (concentration !== undefined) {
-                    return heatmapColor(concentration )
+                    return heatmapColor(concentration)
                 } else {
                     return "#fff"
                 }
             })
-            .style("opacity", function () {
-                return rectOpacity;
-            })
             .on("click", function () {
-                d3.selectAll(".observed")
-                    .style("stroke", "black")
-                    .style("stroke-width", "0px")
-                    .classed("observed", false);
-
-                d3.select(this)
-                    .classed("observed", true)
-                    .style("stroke-width", "2px")
-                    .style("stroke", "red");
-
                 d3.select("#trajectory-view-hint").remove();
-                selectedNode = nodeEntry.key;
+                selectedNode = element.referenceNode;
                 drawConcentrationPlotFromNode();
                 onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies(globalSpecies)[0], globalSpecies), globalSpecies);
                 setChartTitle(selectedNode);
-
+                setObserved(selectedNode, element.referenceCompartment);
+                getHeatmapData();
+                updateSpatialView();
             })
             .on("mouseover", function () {
 
-                d3.selectAll(".vesiclePaths").remove();
-                d3.select(this)
-                    .style("stroke", "black")
-                    .style("stroke-width", "1");
-                mouseOverNode(this, nodeEntry, currentTimeStep);
+                createTooltip(element.referenceNode, element.referenceCompartment);
                 showTooltip();
-                createTooltip("compartment", nodeEntry, compartmentEntry);
             })
             .on("mouseleave", function () {
-                if (this.className.animVal !== "observed") {
-                    d3.select(this)
-                        .style("stroke-width", "0");
-                }
-
-
-                d3.select("#menu-heatmap-data")
-                    .selectAll("p").remove();
                 hideTooltip();
             });
-    }
-
-    function drawVesicle(nodeEntry, figure) {
-
-        let position = nodeEntry.value.get("position");
-        //first circle = vesicle membrane
-        heatmapSvg.append("circle")
-            .attr("cx", position[0])
-            .attr("cy", position[1])
-            .attr("r", position[2] + position[2])
-            .style("stroke", "black")
-            .style("stroke-width", "0.01em")
-            .style("fill", function () {
-                if (figure === true) {
-                    return currentcolor;
-                } else {
-                    if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
-                        return heatmapColor(nodeEntry.value.get("vesicle membrane").get("concentration"))
-                    } else {
-                        return "#fff"
-                    }
-                }
-
-            });
-        //second circle = vesicle lumen
-        heatmapSvg.append("circle")
-            .attr("cx", position[0])
-            .attr("cy", position[1])
-            .attr("r", position[2])
-            .style("stroke", "black")
-            .style("stroke-width", "0.01em")
-            .style("fill", "white");
-
-        //third circle = overlay to catch the whole vesicle with mouse functions.
-        heatmapSvg.append("circle")
-            .attr("cx", position[0])
-            .attr("cy", position[1])
-            .attr("r", position[2] + position[2])
-            .style("fill", "black")
-            .style("fill-opacity", "0.0")
-            .on("click", function () {
-
-                // Vesicle Path-------------------------------
-                heatmapSvg.append("path")
-                    .attr("class", "vesiclePathsClicked")
-                    .attr("d", vesiclePaths.get(nodeEntry.key))
-                    .style("stroke-width", "1px")
-                    .style("stroke", "black");
-
-                d3.selectAll(".observed")
-                    .style("stroke", "black")
-                    .style("stroke-width", "0px")
-                    .classed("observed", false);
-
-                d3.select(this)
-                    .classed("observed", true)
-                    .style("stroke", "red");
-
-                d3.select("#trajectory-view-hint").remove();
-                selectedNode = nodeEntry.key;
-                drawConcentrationPlotFromNode();
-                setChartTitle(nodeEntry.key);
-                onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies()[0],),);
-            }).on("mouseover", function () {
-            d3.selectAll(".vesiclePaths").remove();
-            if (this.className.animVal === "observed") {
-                d3.select(this).style("stroke-width", "2px").style("stroke", "red");
-            } else {
-                d3.select(this).style("stroke-width", "2px").style("stroke", "black");
-            }
-            showTooltip();
-            showTooltip();
-            createTooltip("vesicle", nodeEntry, null);
-
-            heatmapSvg.append("path")
-                .attr("class", "vesiclePaths")
-                .attr("d", vesiclePaths.get(nodeEntry.key))
-                .style("stroke-width", "1px")
-                .style("stroke", "black");
-
-            // console.log(nodeEntry.key);
 
 
-        }).on("mouseleave", function () {
+    });
 
-            if (this.className.animVal !== "observed") {
-                d3.select(this).style("stroke-width", "0px").style("stroke", "unset");
-            }
-
-            hideTooltip();
-        })
-
-    }
-
-    function createTooltip(context, nodeEntry, compartmentEntry) {
+    function createTooltip(nodeEntry, compartmentEntry) {
+        // console.log(nodeEntry);
         // FIXME node entries are different depending on where the function is called
         // FIXME it would be desirable to design uniform access to concentrations
-        switch (context) {
-            case "vesicle": {
-                createVesicleTooltipContent(nodeEntry);
-                break;
-            }
-            case "compartment": {
-                createCompartmentTooltipContent(nodeEntry, compartmentEntry);
-                break;
-            }
-            default:
-                break;
+        if (nodeEntry.startsWith("v")) {
+            createVesicleTooltipContent(nodeEntry, compartmentEntry);
+        } else {
+            createCompartmentTooltipContent(nodeEntry, compartmentEntry);
         }
     }
 
     function createCompartmentTooltipContent(nodeEntry, compartmentEntry) {
+
         // determine concentration, if available
         let vesicleMembraneConcentration = "none";
-        if (compartmentEntry.value.get("concentration") !== undefined) {
-            vesicleMembraneConcentration = compartmentEntry.value.get("concentration") + " " + concentrationUnit;
+        if (concentrationData.get(nodeEntry).get(compartmentEntry) !== undefined) {
+            vesicleMembraneConcentration = concentrationData.get(nodeEntry).get(compartmentEntry) + " " + concentrationUnit;
         }
         // set tooltip
-        generateTooltip(nodeEntry.key + "<br/>" +
-            compartmentEntry.key + "<br/>" +
+        generateTooltip(nodeEntry + "<br/>" +
+            compartmentEntry + "<br/>" +
             "value: " + vesicleMembraneConcentration);
 
     }
 
-    function createVesicleTooltipContent(nodeEntry) {
+    function createVesicleTooltipContent(nodeEntry, compartmentEntry) {
         // determine state, if available
         let vesicleState = "none";
-        if (vesicleStates.get(currentTimeStep).get(nodeEntry.key) !== undefined) {
-            vesicleState = vesicleStates.get(currentTimeStep).get(nodeEntry.key).replace("_", " ").toLowerCase()
+        if (vesicleStates.get(currentTimeStep).get(nodeEntry) !== undefined) {
+            vesicleState = vesicleStates.get(currentTimeStep).get(nodeEntry).replace("_", " ").toLowerCase()
         }
         // determine concentration, if available
         let vesicleMembraneConcentration = "none";
-        if (nodeEntry.value.get("vesicle membrane").get("concentration") !== undefined) {
-            vesicleMembraneConcentration = nodeEntry.value.get("vesicle membrane").get("concentration") + " " + concentrationUnit;
+        if (concentrationData.get(nodeEntry).get(compartmentEntry) !== undefined) {
+            vesicleMembraneConcentration = concentrationData.get(nodeEntry).get(compartmentEntry) + " " + concentrationUnit;
+            ;
         }
         // set tooltip
-        generateTooltip(nodeEntry.key + "<br/>" +
+        generateTooltip(nodeEntry + "<br/>" +
+            compartmentEntry + "<br/>" +
             "state: " + vesicleState + "<br/>" +
             "value: " + vesicleMembraneConcentration);
     }
 
-    function drawMembrane() {
-
-        membranePaths.forEach(function (nodeEntry, i) {
-            nodeEntry.value.entries().forEach(function (compartmentEntry) {
-                if (compartmentEntry.key.includes("membrane")) {
-
-                    //first path = edge of membrane
-                    heatmapSvg.append("path")
-                        .attr("id", "membrane" + i)
-                        .attr("d", compartmentEntry.value.get("path"))
-                        .style("stroke", "black")
-                        .style("stroke-width", "4px");
-
-                    //second path = membrane
-                    heatmapSvg.append("path")
-                        .attr("d", compartmentEntry.value.get("path"))
-                        .style("stroke", function () {
-                            if (compartmentEntry.value.get("concentration") !== undefined) {
-
-                                return heatmapColor(compartmentEntry.value.get("concentration"))
-                            } else {
-                                return "#fff"
-                            }
-                        })
-                        .style("stroke-width", "3px")
-                        .on("click", function () {
-                            d3.selectAll(".observed")
-                                .style("stroke", "black")
-                                .classed("observed", false);
-
-                            d3.select("#membrane" + i)
-                                .classed("observed", true)
-                                .style("stroke", "red");
-
-                            d3.select("#trajectory-view-hint").remove();
-                            selectedNode = nodeEntry.key;
-                            drawConcentrationPlotFromNode();
-                            onSpeciesButtonClick(getIndexIdentifier(getCompartmentFromSpecies()[0],),);
-                            setChartTitle(selectedNode);
-
-                        })
-                        .on("mouseover", function () {
-                            d3.selectAll(".vesiclePaths").remove();
-                            d3.select("#membrane" + i)
-                                .style("stroke-width", "6px");
-                            mouseOverNode(this, nodeEntry, currentTimeStep);
-                            showTooltip();
-                            createTooltip("compartment", nodeEntry, compartmentEntry);
-                        })
-                        .on("mouseleave", function () {
-                            d3.select("#membrane" + i)
-                                .style("stroke-width", "4px");
-                            d3.select("#menu-heatmap-data")
-                                .selectAll("p").remove();
-                            hideTooltip();
-                        });
-
-                }
-            });
-
-        })
-    }
-
 }
 
-function mouseOverNode(currentNode, CurrentNodeObject, dragedTime) {
-
-    d3.select("#menu-heatmap-data")
-        .append("p")
-        .attr("position", "absolute")
-        .attr("bottom", "0")
-        .text("Node (" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")");
-
-    d3.select("#menu-heatmap-data")
-        .append("p")
-        .attr("id", "showed_species")
-        .attr("position", "absolute")
-        .attr("bottom", "0");
-
-    if (CurrentNodeObject.value === -1) {
-
-        d3.select("#menu-heatmap-data")
-            .append("p")
-            .attr("position", "absolute")
-            .attr("bottom", "0")
-            .text("value: " + "none");
-
-    } else {
-
-        d3.select("#menu-heatmap-data")
-            .append("p")
-            .attr("position", "absolute")
-            .attr("bottom", "0")
-            .text("value: " + CurrentNodeObject.value);
-
-    }
-
-    let possibleCompartments = nestedData.get(dragedTime).get("n(" + CurrentNodeObject.x + "," + CurrentNodeObject.y + ")");
-
-    if (possibleCompartments !== undefined) {
-        possibleCompartments = possibleCompartments.keys();
-    }
-
-    d3.select("#menu-heatmap-data")
-        .append("p")
-        .attr("id", "showed_species")
-        .attr("position", "absolute")
-        .attr("bottom", "0")
-        .text("possible nodeCompartments: " + possibleCompartments);
+function setObserved(nodeName, compartmentName) {
+    observed = [nodeName, compartmentName];
+    // console.log(observed);
 }
 
 /**

@@ -392,7 +392,6 @@ a.nav-link, a.nav-link:hover {
 }
 
 
-
 #play-button {
     width: 40px;
     height: 40px;
@@ -552,3 +551,48 @@ nav.shift ul li a:hover:after {
     padding: 15px 10px;
 
 }
+
+.lowerMembraneLine {
+    stroke: #110600 !important;
+    stroke-width: 5px;
+}
+
+.upperMembraneLine {
+    stroke-width: 3px;
+}
+
+.lowerMembraneLine:hover{
+    stroke-width: 7px;
+}
+
+
+.closedCompartment:hover {
+    stroke: black;
+    stroke-width: 1
+}
+
+
+
+.vesicleCore {
+    stroke: #110600;
+    stroke-width: 1px;
+}
+
+.vesicleCore:hover {
+    stroke: #110600;
+    stroke-width: 2px;
+}
+
+.vesicleMembrane {
+    stroke: #110600;
+    stroke-width: 1px;
+}
+
+.vesicleMembrane:hover {
+    stroke: #110600;
+    stroke-width: 2px;
+}
+
+.observed{
+     stroke: red !important;
+ }
