@@ -345,6 +345,10 @@ function updateSpatialView(figure) {
     relativeScaleAxis();
     absoluteScaleAxis();
     drawHeatmapLegend();
+
+    if (activeComponentIdices[0] !== undefined) {
+        changeVerticalLineData(currentTimeIndex);
+    }
 }
 
 function drawHeatmapLegend() {
