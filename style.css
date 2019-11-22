@@ -555,10 +555,12 @@ nav.shift ul li a:hover:after {
 .lowerMembraneLine {
     stroke: #110600 !important;
     stroke-width: 5px;
+    fill:transparent !important;
 }
 
 .upperMembraneLine {
     stroke-width: 3px;
+    fill: transparent !important;
 }
 
 .lowerMembraneLine:hover{

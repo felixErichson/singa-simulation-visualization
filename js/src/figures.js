@@ -19,9 +19,33 @@ const colorgrad = ['#008000', '#208600', '#318d00', '#409300',
     '#6c00bd', '#6800c3', '#6400ca', '#5f00d0', '#5900d7',
     '#5300de', '#4b00e4', '#4200eb', '#3600f2', '#2600f8', '#0000ff'];
 
-
+function addInlineStyling(elements) {
+    if(elements && elements.length) {
+        elements.forEach(function(d) {
+            d3.selectAll(d.stylingClass).each(function(){
+                let element = this;
+                if(d.properties && d.properties.length) {
+                    d.properties.forEach(function(prop) {
+                        let computedStyle = getComputedStyle(element, null);
+                        element.style[prop] = computedStyle.getPropertyValue(prop);
+                    });
+                }
+            });
+        });
+    }
+}
 function showSvgCode() {
     let svgExport;
+
+    addInlineStyling([
+        {stylingClass: ".lowerMembraneLine", properties: ["stroke", "stroke-width", "fill"]},
+        {stylingClass: ".upperMembraneLine", properties: ["stroke-width", "fill"]},
+        {stylingClass: ".vesicleCore", properties:["stroke", "stroke-width"]},
+        {stylingClass: ".vesicleMembrane", properties:["stroke", "stroke-width"]},
+        {stylingClass: ".observed", properties:["stroke"]}
+
+    ]);
+
 
     if ($('input[name="fig"]:checked').val() === "spatial-view") {
         let temp = document.getElementById("trajectory-view-heatmap");
