@@ -69,6 +69,7 @@ function setChartTitle(node) {
         .attr("y", -(trajectoryPlotMargin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "24px")
+        .style("font-family", "sans-serif")
         .style("text-decoration", "underline")
         .text(node);
 }
@@ -117,6 +118,8 @@ function createConcentrationPlot() {
             .attr("class", "line")
             .attr("id", "line_" + indexIdentifier)
             .style("stroke", getLineColor())
+            .style("stroke-width", "2px")
+            .style("fill", "transparent")
             .attr("d", d3.line().defined(function (d) {
                 return d.y !== undefined
             })
@@ -163,7 +166,7 @@ function createConcentrationPlot() {
                 .attr("y2", trajectoryPlotHeight)
                 .style("stroke-width", 1)
                 .style("stroke", "#808080")
-                .style("fill", "none");
+                .style("fill", "transparent");
 
             appendDataViewLabel("valueLabel one", 5);
             appendDataViewCircle("circle one", color[0]);
@@ -193,7 +196,8 @@ function createConcentrationPlot() {
             .attr("x", trajectoryPlotWidth)
             .attr("y", trajectoryPlotHeight + 50)
             .attr("font-size", 20)
-            .text("Elapsed timeSteps [ms]");
+            .attr("font-family", "sans-serif")
+            .text("Elapsed time [ms]");
 
         //label Y-Axis
         trajectoryPlot.append("text")
@@ -202,6 +206,7 @@ function createConcentrationPlot() {
             .attr("y", -10)
             .attr("x", 130)
             .attr("font-size", 20)
+            .attr("font-family", "sans-serif")
             .text("Concentration [nmol/l]");
     }
 
@@ -230,8 +235,9 @@ function createConcentrationPlot() {
 
         axisNode.attr("class", axisClassName)
             .call(axis.tickFormat(d3.format('.2f')).ticks(7))
+
             .styles({
-                fill: "none", stroke: getLineColor()
+                fill: "transparent" , stroke: getLineColor()
             })
             .attr("font-size", 17);
 
@@ -250,7 +256,8 @@ function createConcentrationPlot() {
         trajectoryPlot.append("text")
             .attr("class", "trajectory view graph verticalLine " + className)
             .attr("dx", 15)
-            .attr("style", "font-size: 15px")
+            .style("font-size", "15px")
+            .style("font-family", "sans-serif")
             .attr("dy", dyPosition)
     }
 
@@ -261,7 +268,7 @@ function createConcentrationPlot() {
             .style("stroke", strokeColor)
             .attr("x", 0)
             .attr("dy", 0)
-            .style("fill", "none")
+            .style("fill", "transparent")
             .style("stroke-width", "1px")
             .style("opacity", "1");
     }

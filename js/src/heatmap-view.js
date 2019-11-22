@@ -365,10 +365,10 @@ function drawHeatmapLegend() {
         .attr("transform", "translate(0,10)");
 
     const legendColorScale = d3.scaleSequential()
-        .domain([0, heatwidth]).interpolator(interpolator);
+        .domain([0, heatwidth-6]).interpolator(interpolator);
 
     legendsvg.selectAll(".bars")
-        .data(d3.range(heatwidth), function (d) {
+        .data(d3.range(heatwidth-6), function (d) {
             return d;
         })
         .enter().append("rect")
@@ -389,7 +389,9 @@ function drawHeatmapLegend() {
         .attr("x", 450)
         .attr("y", 25)
         .attr("font-size", 12)
-        .text(concentrationUnit);
+        .attr("font-family", "sans-serif")
+        .text(concentrationUnit)
+        ;
 
     if ($('input[name="scalecheck"]:checked').val() === "relative") {
         relativeScaleAxis();
@@ -412,7 +414,7 @@ function relativeScaleAxis() {
     let legendWidth = Math.min(heatwidth, 400);
 
     LegendAxisScale = d3.scaleLinear()
-        .range([-legendWidth / 2, legendWidth / 2])
+        .range([(-legendWidth / 2), (legendWidth / 2)-7])
         .domain(d3.extent(getCurrentConcentrations(), function (d) {
             return d
         }));
@@ -422,7 +424,7 @@ function absoluteScaleAxis() {
     let legendWidth = Math.min(heatwidth, 400);
 
     LegendAxisScale = d3.scaleLinear()
-        .range([-legendWidth / 2, legendWidth / 2])
+        .range([(-legendWidth / 2), (legendWidth / 2)-7])
         .domain(concentrationRange);
 }
 
@@ -634,7 +636,10 @@ function setHeatMapSvg() {
         .attr("class", "PiYG")
         .call(zoom);
 
-    legendSvg = d3.select("#trajectory-view-heatmap")
+    legendSvg = d3.select("#heatmapSvg")
+        .append("g")
+        .attr("transform",
+        "translate(-2, "+ 450 + ")")
         .append("svg")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", 450)
@@ -711,9 +716,6 @@ function drawSpatialView(figure) {
     });
 
     function createTooltip(nodeEntry, compartmentEntry) {
-        // console.log(nodeEntry);
-        // FIXME node entries are different depending on where the function is called
-        // FIXME it would be desirable to design uniform access to concentrations
         if (nodeEntry.startsWith("v")) {
             createVesicleTooltipContent(nodeEntry, compartmentEntry);
         } else {
@@ -745,7 +747,7 @@ function drawSpatialView(figure) {
         let vesicleMembraneConcentration = "none";
         if (concentrationData.get(nodeEntry).get(compartmentEntry) !== undefined) {
             vesicleMembraneConcentration = concentrationData.get(nodeEntry).get(compartmentEntry) + " " + concentrationUnit;
-            ;
+
         }
         // set tooltip
         generateTooltip(nodeEntry + "<br/>" +

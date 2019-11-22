@@ -10,6 +10,16 @@ function loadFile() {
         alert("only json and csv allowed");
     }
     if (file) {
+
+        observed = ["", ""];
+        const selector = ".nav.nav-tabs.justify-content-center";
+        if ($(selector).attr("class").includes("visible") === true) {
+            d3.selectAll(selector)
+                .classed("visible", false);
+            d3.selectAll(selector)
+                .classed("invisible", true);
+        }
+
         $('#nav-option').css('visibility', 'hidden');
         $('#nav-figure').css('visibility', 'hidden');
 
@@ -219,7 +229,7 @@ function sumData() {
                 if (nestedData.get(timeStep).get(node).get(compartment) !== undefined
                     && nestedData.get(timeStep).get(node).get(compartment).keys() !== undefined) {
                     nestedData.get(timeStep).get(node).get(compartment).keys().forEach(function (species) {
-                        if (!componentCombinations.includes(compartment+"_"+species)
+                        if (!componentCombinations.includes(compartment + "_" + species)
                             && nestedData.get(timeStep).get(node).get(compartment).get(species) !== 0
                             && nestedData.get(timeStep).get(node).get(compartment).get(species) !== undefined) {
                             rememberSpecies.push(species);
@@ -271,15 +281,15 @@ function setVesiclePaths() {
 
     nestedData.entries().forEach(function (updatable) {
         updatable.value.entries().forEach(function (compartment) {
-        if(compartment.key.startsWith("v")){
-            if (vesicles.includes(compartment.key)){
-             vesiclePaths.set(compartment.key ,vesiclePaths.get(compartment.key) +  " L " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc (compartment.value.get("vesicle lumen").get("positions")[0].y))
-            } else {
-                vesicles.push(compartment.key);
-                vesiclePaths.set(compartment.key, "M " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc( compartment.value.get("vesicle lumen").get("positions")[0].y))
+            if (compartment.key.startsWith("v")) {
+                if (vesicles.includes(compartment.key)) {
+                    vesiclePaths.set(compartment.key, vesiclePaths.get(compartment.key) + " L " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc(compartment.value.get("vesicle lumen").get("positions")[0].y))
+                } else {
+                    vesicles.push(compartment.key);
+                    vesiclePaths.set(compartment.key, "M " + xSc(compartment.value.get("vesicle lumen").get("positions")[0].x) + "," + ySc(compartment.value.get("vesicle lumen").get("positions")[0].y))
+                }
             }
-        }
-    })
+        })
     });
     // console.log(vesiclePaths);
 }
