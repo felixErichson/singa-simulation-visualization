@@ -136,7 +136,6 @@ $(document).ready(function () {
 });
 
 
-
 function resetGlobalArrays() {
     componentCombinations.length = 0;
     reducedNodeData.length = 0;
@@ -196,19 +195,19 @@ function filterData(compartment, spec) {
             };
             trajectoryData.push(obj);
 
-        }else  if (nestedData.get(element).get(selectedNode).get(compartment).get(spec) === undefined) {
+        } else if (nestedData.get(element).get(selectedNode).get(compartment).get(spec) === undefined) {
             obj = {
                 x: parseFloat(element),
                 y: 0
             };
             trajectoryData.push(obj);
         } else {
-                obj = {
-                    x: parseFloat(element),
-                    y: nestedData.get(element).get(selectedNode).get(compartment).get(spec)
-                };
-                trajectoryData.push(obj);
-            }
+            obj = {
+                x: parseFloat(element),
+                y: nestedData.get(element).get(selectedNode).get(compartment).get(spec)
+            };
+            trajectoryData.push(obj);
+        }
 
     });
     return trajectoryData;
@@ -226,7 +225,6 @@ function hideOptions() {
     // $("#optionModal").hide();
 
 }
-
 
 
 function showFigureMenu() {
@@ -247,7 +245,7 @@ function hideFigureMenu() {
  */
 function generateTooltip(text) {
     infoTooltip.html(text)
-        .style("left", (d3.event.pageX +20) + "px")
+        .style("left", (d3.event.pageX + 20) + "px")
         .style("top", (d3.event.pageY - 28) + "px");
 }
 
@@ -264,7 +262,7 @@ function hideTooltip() {
         .style("opacity", 0);
 }
 
-function setInterpolator(){
+function setInterpolator() {
 
     if ($('input[name="colorcheme"]:checked').val() === "Viridis") {
         interpolator = d3.interpolateViridis;
@@ -328,3 +326,23 @@ d3.select("#absolute_scale_info")
     .on("mouseleave", function () {
         hideTooltip()
     });
+
+
+function getModal(id) {
+    console.log(document.getElementById(id));
+    return document.getElementById(id);
+}
+
+function closeModal(id) {
+    getModal(id).style.display = "none";
+}
+function handleModal(id) {
+
+    getModal(id).style.display = "block";
+
+    window.onclick = function (event) {
+        if (event.target === getModal(id)) {
+            closeModal(id);
+        }
+    }
+}

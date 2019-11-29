@@ -81,26 +81,12 @@
 
 
         <ul style="float: right">
-            <li>
-                <a id="nav-option" onclick="showOptions()" style="color: #ffffff; visibility: hidden">
-                    <i class="fas fa-tools" style="margin-right: 3px"></i>
-                    options
-                </a>
-            </li>
-
-
-            <li>
-                <a id="nav-figure" onclick="showFigureMenu()" style="color: #ffffff; visibility: hidden">
-                    <i class="fas fa-camera-retro" style="margin-right: 3px"></i>
-                    Figure
-                </a>
-
-            </li>
             <!--            <li>-->
-            <!--                <a id="tutorial" onclick="showSvgCode()" style="color: #ffffff;">-->
-            <!--                    <i class="fas fa-book"></i>-->
-            <!--                    Tutorial-->
+            <!--                <a id="nav-figure" onclick="showFigureMenu()" style="color: #ffffff; visibility: hidden">-->
+            <!--                    <i class="fas fa-camera-retro" style="margin-right: 3px"></i>-->
+            <!--                    Figure-->
             <!--                </a>-->
+
             <!--            </li>-->
             <li>
                 <a href="index.html">
@@ -113,7 +99,7 @@
 </div>
 
 
-<div id="optionModal" class="ui-widget-content" style="position: fixed; visibility: hidden">
+<div id="optionModal" class="ui-widget-content" style="position: absolute; visibility: hidden">
     <p>
         Options
         <i class="fas fa-times" onclick="hideOptions()" style="float: right"></i>
@@ -194,58 +180,6 @@
 
 </div>
 
-
-<div id="figure-modal" class="ui-widget-content" style="position: fixed; visibility: hidden">
-    <p>Download Figure as SVG
-        <i class="fas fa-times" onclick="hideFigureMenu()" style="float: right"></i>
-    </p>
-
-
-    <div class="input-group-text" style="margin: 10px">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
-               value="spatial-view" checked>spatial view
-        <a style="float: right">
-            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
-        </a>
-    </div>
-
-    <div class="input-group-text" style="margin: 10px">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
-               value="sv-legend"> spatial view legend
-        <a style="float: right">
-            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
-        </a>
-    </div>
-
-    <div class="input-group-text" style="margin: 10px">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
-               value="concentration-plot"> concentration plot
-        <a style="float: right">
-            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
-        </a>
-    </div>
-
-    <div class="input-group-text" style="margin: 10px">
-        <input type="checkbox" aria-label="Checkbox for following text input" name="fig"
-               value="vesicle-track"> vesicle track
-        <a style="float: right">
-            <!--<i id="selection-spatial-view" class="fas fa-info-circle" style="margin-left: 5px"></i>-->
-        </a>
-    </div>
-
-
-    <div class="form-group" style="margin: 10px">
-        <input class="form-control" id="figure-file-name" aria-describedby="emailHelp" placeholder="Enter file name">
-        <small id="emailHelp" class="form-text text-muted">The file is downloaded as SVG file. No ending is
-            needed</small>
-    </div>
-
-    <button type="button" class="btn btn-primary" onclick="showSvgCode()">Download</button>
-
-
-</div>
-
-
 <div class="trajectory-view-menu-container">
 
     <div id="loadFileHint">
@@ -274,10 +208,6 @@
     <div id="heatmap-view-species-selection"></div>
     <div id="heatmap-view-slider"></div>
 </div>
-
-
-
-
 
 <div id="trajectory-view-navigation" style="position: absolute; margin-top: 900px; width: 100%">
 
@@ -362,6 +292,34 @@
 </div>
 </div>
 
+<!-- The Modal for downloading spatial view -->
+<div id="figure_download" class="figureModal">
+    <!-- Modal content -->
+    <div class="figureModalContent">
+        <span class="close" onclick="closeModal('figure_download')">&times;</span>
+        <p>Download spatial view</p>
+        <div class="form-group">
+            <input class="form-control" id="spatialViewInput" placeholder="Enter file name">
+            <small class="form-text text-muted">Download as SVG file. No file ending is needed.</small>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="showSvgCode('sv')">Download</button>
+    </div>
+</div>
+
+<!-- Modal for downloading concentration plot -->
+<div id="cp_figure_download" class="figureModal">
+    <!-- Modal content -->
+    <div class="figureModalContent">
+        <span class="close" onclick="closeModal('cp_figure_download')">&times;</span>
+        <p>Download concentration plot</p>
+        <div class="form-group">
+            <input class="form-control" id="concentrationPlotInput" placeholder="Enter file name">
+            <small class="form-text text-muted">Download as SVG file. No file ending is needed.</small>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="showSvgCode('cp')">Download</button>
+    </div>
+</div>
+
 <form id="svgform" method="post" action="download.pl">
 
 </form>
@@ -391,32 +349,3 @@
 
 </body>
 </html>
-
-
-<!--    <div class="mdc-tab-bar" role="tablist">-->
-<!--        <div class="mdc-tab-scroller">-->
-<!--            <div class="mdc-tab-scroller__scroll-area">-->
-<!--                <div class="mdc-tab-scroller__scroll-content">-->
-<!--                    <button class="mdc-tab mdc-tab&#45;&#45;active" role="tab" aria-selected="true" tabindex="0">-->
-<!--                        <span class="mdc-tab__content">-->
-<!--                            <span class="mdc-tab__text-label">species selection</span>-->
-<!--                        </span>-->
-<!--                        <span class="mdc-tab-indicator mdc-tab-indicator&#45;&#45;active">-->
-<!--                             <span class="mdc-tab-indicator__content mdc-tab-indicator__content&#45;&#45;underline"></span>-->
-<!--                        </span>-->
-<!--                        <span class="mdc-tab__ripple"></span>-->
-<!--                    </button>-->
-
-<!--                    <button class="mdc-tab mdc-tab" role="tab" aria-selected="true" tabindex="1">-->
-<!--                        <span class="mdc-tab__content">-->
-<!--                            <span class="mdc-tab__text-label">custom search</span>-->
-<!--                        </span>-->
-<!--                        <span class="mdc-tab-indicator mdc-tab-indicator&#45;&#45;active">-->
-<!--                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content&#45;&#45;underline"></span>-->
-<!--                        </span>-->
-<!--                        <span class="mdc-tab__ripple"></span>-->
-<!--                    </button>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->

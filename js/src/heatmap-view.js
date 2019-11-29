@@ -90,7 +90,36 @@ function appendSpatialViewHeadLine() {
 
     d3.select('#trajectory-view-heatmap')
         .append("i")
+        // .style("font-size", "xx-large")
+        .style("display", "inline-block")
+        .style("margin-left", "20px")
+        .style("margin-top", "10px")
+        .style("float", "left")
+        .attr("class", "heatmapHeading fas fa-cog")
+        .on("click", function () {
+            showOptions();
+            d3.select("#optionModal")
+                .style("left", "50px")
+                .style("top", "200px")
+        });
+
+    d3.select('#trajectory-view-heatmap')
+        .append("i")
+        // .style("font-size", "xx-large")
+        .style("display", "inline-block")
+        .style("margin-left", "10px")
+        .style("margin-top", "10px")
+        .style("float", "left")
+        .attr("class", "heatmapHeading fas fa-camera-retro")
+        .on("click", function () {
+            handleModal("figure_download");
+            // showSvgCode("sv")
+        });
+
+    d3.select('#trajectory-view-heatmap')
+        .append("i")
         .style("font-size", "xx-large")
+        .style("margin-left", "-50px")
         .attr("class", "heatmapHeading fas fa-th")
         .on("mouseover", function () {
             generateTooltip('The heatmap represents a part of a cell. <br>' +
@@ -107,6 +136,8 @@ function appendSpatialViewHeadLine() {
         .attr("class", "heatmapHeading")
         .style("display", "inline-block")
         .style("margin-left", "4px").text("SPATIAL VIEW");
+
+
 }
 
 /**
@@ -439,6 +470,7 @@ function setCirclePath(cx, cy, r) {
 function getHeatmapData() {
 
     pathData.length = 0;
+    concentrationData.clear();
 
     let i = 0;
     let simulationExtend = simulationWidth < simulationHeight ? simulationHeight : simulationWidth;
@@ -863,10 +895,25 @@ function drawConcentrationPlotFromNode() {
 }
 
 function appendConcentrationPlotTitle() {
+
+    d3.select('#trajectory-view-graph')
+        .append("i")
+        // .style("font-size", "xx-large")
+        .style("display", "inline-block")
+        .style("margin-right", "50px")
+        .style("margin-top", "10px")
+        .style("float", "right")
+        .attr("class", "cplotHeading fas fa-camera-retro")
+        .on("click", function () {
+            handleModal("cp_figure_download")
+        });
+
+
     d3.select('#trajectory-view-graph')
         .append("i")
         .attr("class", "graphHeading")
         .style("font-size", "xx-large")
+        .style("display", "inline-block")
         .attr("class", "fas fa-chart-line")
         .on("mouseover", function () {
             generateTooltip("The plot shows the change in concentration over" +
@@ -880,6 +927,7 @@ function appendConcentrationPlotTitle() {
     d3.select('#trajectory-view-graph')
         .append("h2")
         .attr("class", "graphHeading")
+        .style("margin-right", "-150px")
         .style("display", "inline-block")
         .style("margin-left", "4px").text("CONCENTRATION PLOT");
 }

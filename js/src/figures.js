@@ -34,7 +34,11 @@ function addInlineStyling(elements) {
         });
     }
 }
-function showSvgCode() {
+
+
+let filename = "figure";
+
+function showSvgCode(selector) {
     let svgExport;
 
     addInlineStyling([
@@ -46,42 +50,47 @@ function showSvgCode() {
 
     ]);
 
-
-    if ($('input[name="fig"]:checked').val() === "spatial-view") {
+    if (selector === "sv"){
         let temp = document.getElementById("trajectory-view-heatmap");
         svgExport = temp.getElementsByTagName("svg")[0];
+        filename = $('#spatialViewInput').val();
         exportSVG(svgExport);
-    }
-
-    if ($('input[name="fig"]:checked').val() === "sv-legend") {
-        let temp = document.getElementById("trajectory-view-heatmap");
-        svgExport = temp.getElementsByTagName("svg")[1];
-        exportSVG(svgExport);
-
-    }
-
-    if ($('input[name="fig"]:checked').val() === "concentration-plot") {
+    } else if (selector === "cp"){
         let temp = document.getElementById("trajectory-view-graph");
         svgExport = temp.getElementsByTagName("svg")[0];
+        filename = $('#concentrationPlotInput').val();
         exportSVG(svgExport);
-
     }
 
-    if ($('input[name="fig"]:checked').val() === "vesicle-track") {
-
-        trackVesicleToSvg();
-
-        let temp = document.getElementById("trajectory-view-graph");
-        svgExport = temp.getElementsByTagName("svg")[0];
-        exportSVG(svgExport);
-        heatmapSvg.selectAll("circle").remove();
-        // vesicletrack.selectAll("text").remove();
-        // vesicletrack.selectAll("circle").remove();
-
-        currentTimeIndex = 0;
-        updateSpatialView();
-
-    }
+    //
+    // if ($('input[name="fig"]:checked').val() === "spatial-view") {
+    //     let temp = document.getElementById("trajectory-view-heatmap");
+    //     svgExport = temp.getElementsByTagName("svg")[0];
+    //     exportSVG(svgExport);
+    // }
+    //
+    // if ($('input[name="fig"]:checked').val() === "concentration-plot") {
+    //     let temp = document.getElementById("trajectory-view-graph");
+    //     svgExport = temp.getElementsByTagName("svg")[0];
+    //     exportSVG(svgExport);
+    //
+    // }
+    //
+    // if ($('input[name="fig"]:checked').val() === "vesicle-track") {
+    //
+    //     trackVesicleToSvg();
+    //
+    //     let temp = document.getElementById("trajectory-view-graph");
+    //     svgExport = temp.getElementsByTagName("svg")[0];
+    //     exportSVG(svgExport);
+    //     heatmapSvg.selectAll("circle").remove();
+    //     // vesicletrack.selectAll("text").remove();
+    //     // vesicletrack.selectAll("circle").remove();
+    //
+    //     currentTimeIndex = 0;
+    //     updateSpatialView();
+    //
+    // }
 }
 
 function exportSVG(svgExport) {
@@ -105,7 +114,7 @@ function exportSVG(svgExport) {
 
     let downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = $('#figure-file-name').val() + ".svg";
+    downloadLink.download = filename + ".svg";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
