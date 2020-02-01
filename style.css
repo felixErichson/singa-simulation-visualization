@@ -526,10 +526,12 @@ nav.shift ul li a:hover:after {
     stroke-width: 7px;
 }
 
-
+.closedCompartment{
+    fill:#ffffff;
+}
 .closedCompartment:hover {
     stroke: black;
-    stroke-width: 1
+    stroke-width: 1;
 }
 
 
@@ -541,6 +543,16 @@ nav.shift ul li a:hover:after {
 
 .vesicleCore:hover {
     stroke: #110600;
+    stroke-width: 2px;
+}
+
+.pit {
+    stroke: #000000;
+    stroke-width: 1px;
+}
+
+.pit:hover {
+    stroke: #000396;
     stroke-width: 2px;
 }
 

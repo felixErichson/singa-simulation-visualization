@@ -181,7 +181,6 @@ function prepareNestedDataFromJson(data) {
             }
         }
     }
-
 }
 
 /**

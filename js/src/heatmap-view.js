@@ -553,6 +553,21 @@ function getHeatmapData() {
                             });
                         }
                     }
+                    //set pit positions
+                    if (isPit(updatable)){
+                        let centerX = updatable.value.get("pit membrane").get("positions")[0].x;
+                        let centerY = updatable.value.get("pit membrane").get("positions")[0].y;
+                        let borderY = 3+(updatable.value.get("pit membrane").get("positions")[0].y);
+
+                        pathData.push({
+                            "path": setCirclePath(simulationScale(centerX), simulationScale(centerY), simulationScale(borderY - centerY)),
+                            "class": "spatialView pit",
+                            "referenceNode": updatable.key,
+                            "referenceCompartment": compartment.key,
+                            "toColor": "fill",
+                            "sortNumber": "5"
+                        })
+                    }
 
                     // console.log(observed[0], " ", updatable.key)
                     // console.log(observed[1], " ", compartment.key)
@@ -611,6 +626,10 @@ function isVesicle(nodeEntry) {
     return nodeEntry.key.startsWith("v");
 }
 
+function isPit(nodeEntry) {
+    return nodeEntry.key.startsWith("p")
+}
+
 /**
  * Returns all concentrations of a species for one timeSteps step
  * @return Array of concentrations
@@ -632,14 +651,22 @@ function setHeatmapColor() {
 
     if ($('input[name="scalecheck"]:checked').val() === "relative") {
         let concentrations = getCurrentConcentrations();
-        return d3.scaleSequential()
-            .domain([d3.min(concentrations, function (d) {
-                return d
-            }), d3.max(concentrations, function (d) {
-                return d
-            })])
-            .interpolator(interpolator);
 
+        if (d3.min(concentrations, function (d) {return d}) === d3.max(concentrations, function (d) {return d })){
+            return d3.scaleSequential()
+                .domain([d3.min(concentrations, function (d) {
+                    return d
+                }),Number.MAX_VALUE])
+                .interpolator(interpolator);
+        } else {
+            return d3.scaleSequential()
+                .domain([d3.min(concentrations, function (d) {
+                    return d
+                }), d3.max(concentrations, function (d) {
+                    return d
+                })])
+                .interpolator(interpolator);
+        }
     } else if ($('input[name="scalecheck"]:checked').val() === "absolute") {
         return d3.scaleSequential()
             .domain([concentrationRange[0], concentrationRange[1]])
@@ -715,14 +742,17 @@ function drawSpatialView(figure) {
 
         let concentration = concentrationData.get(element.referenceNode).get(element.referenceCompartment);
 
+
         heatmapSvg.append("path")
             .attr("class", element.class)
             .attr("d", element.path)
             .style(element.toColor, function () {
                 if (concentration !== undefined) {
+                    console.log(concentration);
+                    console.log(heatmapColor(concentration));
                     return heatmapColor(concentration)
                 } else {
-                    return "#fff"
+                    return "#ffffff"
                 }
             })
             .on("click", function () {
